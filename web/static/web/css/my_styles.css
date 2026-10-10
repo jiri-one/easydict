@@ -1,8 +1,27 @@
+/* Light and dark theme, both plain black and white (high contrast for a
+   black-and-white monitor); js/theme.js switches them. */
+:root {
+	color-scheme: light;
+	--fg: #000000;
+	--bg: #ffffff;
+}
+
+html[data-theme="dark"] {
+	color-scheme: dark;
+	--fg: #ffffff;
+	--bg: #000000;
+}
+
 body {
 	font-size: 24px;
-	color: #ffffff !important;
+	color: var(--fg) !important;
 	font-family: Arial !important;
-	background-color:#47516d;
+	background-color: var(--bg);
+	accent-color: var(--fg);
+}
+
+a:link, a:visited {
+	color: var(--fg);
 }
 
 .container {
@@ -24,10 +43,11 @@ border-width: 1px;
 
 header {
 grid-column: span 3;
-padding: 5px;
+position: relative;
+padding: 5px 50px 5px 5px;
 text-align: center;
 #font-size: 1.4em;
-color: white;
+color: var(--fg);
 }
 
 main {
@@ -48,7 +68,7 @@ grid-column: span 3;
 padding: 10px;
 text-align: center;
 font-size: 1.0em;
-color: white;
+color: var(--fg);
 }
 
 h1 {
@@ -92,4 +112,22 @@ fieldset {
 
 .img_flag {
 	margin: 3px
+}
+
+/* light/dark switch: a sun in the top right corner of the page */
+.theme-toggle {
+	position: absolute;
+	top: 8px;
+	right: 10px;
+	padding: 0;
+	border: none;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+}
+
+.theme-toggle svg {
+	display: block;
+	width: 32px;
+	height: 32px;
 }

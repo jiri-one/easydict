@@ -9,12 +9,14 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="{% static 'web/css/reset.css' %}">
 	<link rel="stylesheet" href="{% static 'web/css/my_styles.css' %}">
+	<script src="{% static 'web/js/theme.js' %}"></script>
 	<link rel="shortcut icon" href="{% static 'web/images/ed_tray_icon.svg' %}" />
 </head>
 
 <body class="container">
 	<header>
 		<img align="left" src="{% static 'web/images/ed_icon.svg' %}" width="100" height="100" />
+		<button class="theme-toggle" type="button" title="Světlý / tmavý režim" aria-label="Přepnout světlý a tmavý režim"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg></button>
 		<a title="Přepnout stránku na český jazyk" href="/cze"><img align="right" class="img_flag" src="{% static 'web/images/flag_cze.svg' %}"/></a>
 		<a title="Switch site to english language" href="/eng"><img align="right" class="img_flag" src="{% static 'web/images/flag_eng.svg' %}"/></a>
 		<h1>EasyDict vás vítá.</h1>
@@ -72,6 +74,6 @@
 		<div class="rest">
 			<hr />Novinky: TBA</div>
 	</side_bar>
-	<footer>Jiří Němec, 2022</footer>
+	<footer>Jiří Němec, {% now "Y" %}</footer>
 </body>
 </html>
