@@ -1,30 +1,44 @@
 # Production image of easydict.jiri.one (rootless Podman + Quadlet on the M1S).
 # Build: podman build -f deploy/Containerfile .
-FROM docker.io/library/python:3.13-slim
+#
+# Runtime: Google's distroless Python (no shell, no package manager, user nonroot = 65532).
+# Its Python is Debian's, so the virtualenv is built with the same Debian release's python3.
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_ROOT_USER_ACTION=ignore
+FROM docker.io/library/debian:13-slim AS build
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+RUN python3 -m venv /venv
+# pip itself is not needed at runtime
+COPY deploy/requirements.txt /tmp/requirements.txt
+RUN /venv/bin/pip install -r /tmp/requirements.txt \
+    && /venv/bin/pip uninstall -y pip
 
 WORKDIR /app
-COPY deploy/requirements.txt deploy/requirements.txt
-RUN pip install -r deploy/requirements.txt
-
 # only what the site needs (utils/en-cs.txt is import data, 7.5 MB)
 COPY manage.py ./
 COPY easydict ./easydict
 COPY web ./web
 COPY deploy ./deploy
+# bytecode now, the runtime cannot write it
+RUN /venv/bin/python -m compileall -q easydict web deploy \
+    && mkdir -p /data/static
 
-RUN useradd --uid 1000 --home-dir /app --no-create-home --shell /usr/sbin/nologin app \
-    && mkdir -p /data/static \
-    && chown app:app /data/static
 
-USER app
-ENV SYSTEM_ENV=PRODUCTION \
+FROM gcr.io/distroless/python3-debian13:nonroot
+COPY --from=build /venv /venv
+COPY --from=build /app /app
+COPY --from=build --chown=65532:65532 /data /data
+
+WORKDIR /app
+ENV PATH=/venv/bin:/usr/bin:/bin \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    SYSTEM_ENV=PRODUCTION \
+    DJANGO_SETTINGS_MODULE=easydict.settings \
     PGSERVICEFILE=/app/deploy/pg_service.conf
 EXPOSE 8000
-ENTRYPOINT ["/app/deploy/entrypoint.sh"]
+ENTRYPOINT ["/venv/bin/python", "/app/deploy/entrypoint.py"]
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "easydict.wsgi"]
