@@ -143,3 +143,11 @@ if os.environ.get("SYSTEM_ENV") == "PRODUCTION":
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_PRELOAD = True
     STATIC_ROOT = os.environ.get("STATIC_ROOT", BASE_DIR / "staticfiles")
+    # names with a content hash: a changed file gets a new URL, so browsers can keep static
+    # files for good and never use an outdated stylesheet
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+        },
+    }
