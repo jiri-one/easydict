@@ -1,0 +1,29 @@
+# Production image of easydict.jiri.one (rootless Podman + Quadlet on the M1S).
+# Build: podman build -f deploy/Containerfile .
+FROM docker.io/library/python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+COPY deploy/requirements.txt deploy/requirements.txt
+RUN pip install -r deploy/requirements.txt
+
+# only what the site needs (utils/en-cs.txt is import data, 7.5 MB)
+COPY manage.py ./
+COPY easydict ./easydict
+COPY web ./web
+COPY deploy ./deploy
+
+RUN useradd --uid 1000 --home-dir /app --no-create-home --shell /usr/sbin/nologin app \
+    && mkdir -p /data/static \
+    && chown app:app /data/static
+
+USER app
+ENV SYSTEM_ENV=PRODUCTION \
+    PGSERVICEFILE=/app/deploy/pg_service.conf
+EXPOSE 8000
+ENTRYPOINT ["/app/deploy/entrypoint.sh"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "easydict.wsgi"]

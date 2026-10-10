@@ -1,0 +1,5 @@
+# The old production server ran Django 4.2.3, gunicorn 21.2.0 and psycopg2-binary 2.9.6
+# on Python 3.11; stay on those release lines until the planned upgrade.
+django>=4.2,<4.3
+gunicorn>=21.2,<24
+psycopg2-binary>=2.9.6,<2.10
