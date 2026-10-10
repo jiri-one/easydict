@@ -1,5 +1,4 @@
-# The old production server ran Django 4.2.3, gunicorn 21.2.0 and psycopg2-binary 2.9.6
-# on Python 3.11; stay on those release lines until the planned upgrade.
-django>=4.2,<4.3
+# Django 6.1 needs Python 3.12+ (the image uses 3.13) and psycopg2 2.9.9+.
+django>=6.1,<6.2
 gunicorn>=21.2,<24
-psycopg2-binary>=2.9.6,<2.10
+psycopg2-binary>=2.9.9,<2.10
