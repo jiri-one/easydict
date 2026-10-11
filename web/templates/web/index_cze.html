@@ -15,7 +15,7 @@
 
 <body class="container">
 	<header>
-		<img align="left" src="{% static 'web/images/ed_icon.svg' %}" width="100" height="100" />
+		{% include "web/logo.svg" %}
 		<button class="theme-toggle" type="button" title="Barvy: barevné / světlé / tmavé" aria-label="Přepnout barvy: barevné, světlé, tmavé">
 			<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-linecap="round"><defs><g id="theme-sun"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></g></defs><use class="sun-edge" href="#theme-sun"/><use href="#theme-sun" stroke="currentColor" stroke-width="2"/></svg>
 		</button>

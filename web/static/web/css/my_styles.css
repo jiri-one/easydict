@@ -52,8 +52,7 @@ border-width: 1px;
 
 header {
 grid-column: span 3;
-position: relative;
-padding: 5px 64px 5px 5px;
+padding: 5px;
 text-align: center;
 #font-size: 1.4em;
 color: var(--fg);
@@ -123,15 +122,29 @@ fieldset {
 	margin: 3px
 }
 
-/* colour switch in the top right corner of the page: a sun on a rectangle in the
-   colours of the current theme, a rainbow for the original ones */
+/* the logo (templates/web/logo.svg): blue and white in the original colours, in the high
+   contrast ones a drawing in the text colour with a frame, like the colour switch */
+.logo {
+	float: left;
+	box-sizing: border-box;
+	width: 100px;
+	height: 100px;
+}
+
+.logo-tile { fill: #387ff2; }
+.logo-art { fill: #ffffff; }
+html:is([data-theme="light"], [data-theme="dark"]) .logo { border: 2px solid var(--fg); border-radius: 12px; }
+html:is([data-theme="light"], [data-theme="dark"]) .logo-tile { fill: none; }
+html:is([data-theme="light"], [data-theme="dark"]) .logo-art { fill: var(--fg); }
+
+/* colour switch in the top right corner, in line with the flags (same height and margin):
+   a sun on a rectangle in the colours of the current theme, a rainbow for the original ones */
 .theme-toggle {
-	position: absolute;
-	top: 10px;
-	right: 10px;
+	float: right;
 	box-sizing: border-box;
 	width: 52px;
-	height: 30px;
+	height: 20pt; /* as tall as the flag pictures */
+	margin: 3px;
 	padding: 0;
 	border: 2px solid var(--fg);
 	border-radius: 4px;
@@ -142,8 +155,8 @@ fieldset {
 
 .theme-toggle svg {
 	display: block;
-	width: 24px;
-	height: 24px;
+	width: 22px;
+	height: 22px;
 	margin: auto;
 }
 
