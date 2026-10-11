@@ -123,21 +123,33 @@ fieldset {
 	margin: 3px
 }
 
-/* colour switch in the top right corner of the page: a rectangle in the colours of
-   the current theme, a rainbow for the original ones */
+/* colour switch in the top right corner of the page: a sun on a rectangle in the
+   colours of the current theme, a rainbow for the original ones */
 .theme-toggle {
 	position: absolute;
-	top: 12px;
+	top: 10px;
 	right: 10px;
 	box-sizing: border-box;
-	width: 44px;
-	height: 26px;
+	width: 52px;
+	height: 30px;
 	padding: 0;
 	border: 2px solid var(--fg);
 	border-radius: 4px;
 	background: linear-gradient(to right, #e40303, #ff8c00, #ffed00, #008026, #004dff, #750787);
+	color: #ffffff;
 	cursor: pointer;
 }
 
-html[data-theme="light"] .theme-toggle { background: #ffffff; }
+.theme-toggle svg {
+	display: block;
+	width: 24px;
+	height: 24px;
+	margin: auto;
+}
+
+/* a black edge keeps the white sun readable on every colour of the rainbow */
+.theme-toggle .sun-edge { stroke: #000000; stroke-width: 4.5; }
+
+html[data-theme="light"] .theme-toggle { background: #ffffff; color: #000000; }
+html[data-theme="light"] .theme-toggle .sun-edge { stroke: none; }
 html[data-theme="dark"] .theme-toggle { background: #000000; }
