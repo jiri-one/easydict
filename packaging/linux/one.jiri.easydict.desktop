@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=EasyDict
+GenericName=Dictionary
+GenericName[cs]=Slovník
+Comment=English–Czech dictionary that is open, data included
+Comment[cs]=Anglicko-český slovník otevřený včetně slovníkových dat
+Icon=one.jiri.easydict
+Exec=easydict
+Terminal=false
+StartupNotify=true
+Categories=Office;Dictionary;Education;Languages;
+Keywords=dictionary;translate;translator;translation;English;Czech;
+Keywords[cs]=slovník;překlad;překladač;angličtina;čeština;

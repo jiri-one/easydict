@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>one.jiri.easydict</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only AND GFDL-1.1-or-later AND GPL-2.0-only AND CC-BY-SA-4.0</project_license>
+
+  <name>EasyDict</name>
+  <summary>English–Czech dictionary that is open, data included</summary>
+  <summary xml:lang="cs">Anglicko-český slovník otevřený včetně dat</summary>
+  <developer id="one.jiri">
+    <name>Jiří Němec</name>
+  </developer>
+
+  <description>
+    <p>
+      EasyDict is an offline English–Czech and Czech–English dictionary. It is the first
+      translator which is completely open, with the dictionary data too: more than 150,000
+      translations of the free dictionary of the Svobodné slovníky project, formerly the
+      GNU/FDL English-Czech Dictionary.
+    </p>
+    <p xml:lang="cs">
+      EasyDict je anglicko-český a česko-anglický slovník, který funguje bez internetu. Je to
+      první překladač, který je otevřený včetně slovníkových dat: přes 150 000 překladů ze
+      svobodného slovníku projektu Svobodné slovníky, dříve GNU/FDL Anglicko-Český slovník.
+    </p>
+    <ul>
+      <li>Results while you type, without an internet connection</li>
+      <li xml:lang="cs">Výsledky už během psaní a bez připojení k internetu</li>
+      <li>Search by the start of a word, by whole words or anywhere in the text</li>
+      <li xml:lang="cs">Hledání podle začátku slova, celých slov nebo kdekoli v textu</li>
+      <li>Czech words are found in any form: “psa” finds “pes”</li>
+      <li xml:lang="cs">Česká slova najde v jakémkoli tvaru: „psa“ najde „pes“</li>
+      <li>Diacritics and capital letters do not matter</li>
+      <li xml:lang="cs">Na diakritice a velkých písmenech nezáleží</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">one.jiri.easydict.desktop</launchable>
+  <provides>
+    <binary>easydict</binary>
+  </provides>
+
+  <url type="homepage">https://easydict.jiri.one</url>
+  <url type="bugtracker">https://github.com/jiri-one/easydict/issues</url>
+  <url type="vcs-browser">https://github.com/jiri-one/easydict</url>
+
+  <categories>
+    <category>Office</category>
+    <category>Dictionary</category>
+  </categories>
+  <keywords>
+    <keyword>dictionary</keyword>
+    <keyword>translator</keyword>
+    <keyword>English</keyword>
+    <keyword>Czech</keyword>
+    <keyword xml:lang="cs">slovník</keyword>
+    <keyword xml:lang="cs">překladač</keyword>
+  </keywords>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#a7c5f9</color>
+    <color type="primary" scheme_preference="dark">#1d4a94</color>
+  </branding>
+
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+    <control>touch</control>
+  </recommends>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="1.0.0" date="2026-10-20">
+      <description>
+        <p>The first release of the new EasyDict for Linux, Windows, macOS and Android.</p>
+        <ul>
+          <li>Dictionary data updated to the latest version of the free English–Czech dictionary</li>
+          <li>Czech words are found in any form</li>
+          <li>Search without diacritics</li>
+          <li>Czech and English user interface</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+</component>
