@@ -24,7 +24,7 @@ Tips:
 - `data/` – the dictionary data, a continuation of [Svobodné slovníky](https://github.com/lehrbuch/svobodneslovniky), and the tools that build the app database
 - `web/` – the website (Django)
 - `branding/` – the logo and the script that renders all icons from it
-- `packaging/` – the Linux desktop entry and AppStream metadata
+- `packaging/` – Linux metadata, the Flatpak and F-Droid recipes and how to make a release
 
 ## Building the app
 
