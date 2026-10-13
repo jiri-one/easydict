@@ -25,6 +25,11 @@ class DictionarySearch extends ChangeNotifier {
   bool _searching = false;
   Object? _error;
 
+  /// Searched again in this language when nothing is found (see [lookUpText]).
+  Language? _fallback;
+
+  static final _czechLetters = RegExp('[ěščřžýáíéůúňťď]', caseSensitive: false);
+
   String get query => _query;
   Language get language => _language;
   SearchMode get mode => _mode;
@@ -35,6 +40,7 @@ class DictionarySearch extends ChangeNotifier {
   set query(String value) {
     if (value == _query) return;
     _query = value;
+    _fallback = null;
     _timer?.cancel();
     if (value.trim().isEmpty) {
       _generation++;
@@ -62,7 +68,17 @@ class DictionarySearch extends ChangeNotifier {
   void lookUp(String text, Language language) {
     _query = text;
     _language = language;
+    _fallback = null;
     _restart();
+  }
+
+  /// Search text that comes from outside (selected in another app, from the
+  /// clipboard or the command line): Czech letters mean Czech, and when
+  /// nothing is found the other language is tried.
+  void lookUpText(String text) {
+    final language = _czechLetters.hasMatch(text) ? Language.cze : _language;
+    lookUp(text, language);
+    _fallback = language.other;
   }
 
   void _restart() {
@@ -79,8 +95,18 @@ class DictionarySearch extends ChangeNotifier {
     _searching = true;
     notifyListeners();
     try {
-      final result = await _dictionary.search(_query, _language, _mode);
+      var result = await _dictionary.search(_query, _language, _mode);
       if (generation != _generation) return;
+      final fallback = _fallback;
+      _fallback = null;
+      if (result.isEmpty && fallback != null) {
+        final other = await _dictionary.search(_query, fallback, _mode);
+        if (generation != _generation) return;
+        if (!other.isEmpty) {
+          _language = fallback;
+          result = other;
+        }
+      }
       _result = result;
       _error = null;
     } catch (error) {

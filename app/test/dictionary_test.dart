@@ -1,7 +1,10 @@
 import 'dart:io';
 
+import 'dart:async';
+
 import 'package:easydict/data/dictionary.dart';
 import 'package:easydict/data/open_dictionary.dart';
+import 'package:easydict/search_controller.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Builds a small database from test/fixtures with data/tools/build_db.py and
@@ -38,7 +41,7 @@ void main() {
 
   test('folding removes diacritics and case', () {
     expect(dictionary.fold('Žluťoučký KŮŇ'), 'zlutoucky kun');
-    expect(dictionary.entryCount, 12); // the untranslated row is left out
+    expect(dictionary.entryCount, 14); // the untranslated row is left out
   });
 
   test('translations are grouped by headword', () async {
@@ -63,6 +66,24 @@ void main() {
     );
     expect(result.baseForms, ['pes']);
     expect(headwords(result), ['pes', 'honicí pes']);
+  });
+
+  test('a headword is not taken for a form of another word', () async {
+    // The fixture lists "žena" also as a form of "hnát" (like an old
+    // transgressive); "žena" itself is a headword, so no base form is shown.
+    final result = await dictionary.search(
+      'žena',
+      Language.cze,
+      SearchMode.startsWith,
+    );
+    expect(result.baseForms, isEmpty);
+    expect(headwords(result), ['žena']);
+    final form = await dictionary.search(
+      'ženu',
+      Language.cze,
+      SearchMode.startsWith,
+    );
+    expect(form.baseForms, ['hnát']);
   });
 
   test('irregular forms and missing diacritics', () async {
@@ -138,5 +159,35 @@ void main() {
       )).groups,
       isEmpty,
     );
+  });
+
+  test('text from outside switches the language when needed', () async {
+    final search = DictionarySearch(
+      dictionary,
+      language: Language.eng,
+      mode: SearchMode.startsWith,
+    );
+    Future<void> settled() {
+      final done = Completer<void>();
+      void listener() {
+        if (!search.searching && !done.isCompleted) done.complete();
+      }
+
+      search.addListener(listener);
+      return done.future.whenComplete(() => search.removeListener(listener));
+    }
+
+    var finished = settled();
+    search.lookUpText('psa'); // no Czech letters, nothing in English
+    await finished;
+    expect(search.language, Language.cze);
+    expect(search.result.groups.first.headword, 'pes');
+
+    finished = settled();
+    search.lookUpText('čokl'); // Czech letters
+    await finished;
+    expect(search.language, Language.cze);
+    expect(search.result.groups.single.entries.single.eng, 'dog');
+    search.dispose();
   });
 }

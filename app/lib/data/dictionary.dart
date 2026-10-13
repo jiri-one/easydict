@@ -32,6 +32,8 @@ class Entry {
     this.notes,
     this.special,
     this.author,
+    this.engRank = 0,
+    this.czeRank = 0,
   });
 
   factory Entry.fromRow(Map<String, Object?> row) => Entry(
@@ -41,6 +43,8 @@ class Entry {
     notes: row['notes'] as String?,
     special: row['special'] as String?,
     author: row['author'] as String?,
+    engRank: row['eng_rank']! as int,
+    czeRank: row['cze_rank']! as int,
   );
 
   final int id;
@@ -50,7 +54,13 @@ class Entry {
   final String? special;
   final String? author;
 
+  /// How common the English and the Czech text are (word frequency).
+  final int engRank;
+  final int czeRank;
+
   String text(Language language) => language == Language.eng ? eng : cze;
+
+  int rank(Language language) => language == Language.eng ? engRank : czeRank;
 }
 
 /// The translations of one headword.
@@ -102,7 +112,8 @@ class Dictionary {
   static const rowLimit = 300;
 
   static final _wordPattern = RegExp(r'[\p{L}\p{N}]+', unicode: true);
-  static const _columns = 'e.id, e.eng, e.cze, e.notes, e.special, e.author';
+  static const _columns =
+      'e.id, e.eng, e.cze, e.notes, e.special, e.author, e.eng_rank, e.cze_rank';
 
   final SqlReader _db;
   final Map<String, String> _foldMap;
@@ -165,20 +176,23 @@ class Dictionary {
 
     final direct = switch (mode) {
       SearchMode.startsWith => await _startsWith(key, language),
-      SearchMode.wholeWord => await _wholeWord(tokens, language),
+      SearchMode.wholeWord => await _wholeWord(tokens, key, language),
       SearchMode.fulltext => await _fulltext(key, language),
     };
     var truncated = direct.length >= rowLimit;
 
     var baseForms = const <String>[];
     final viaBaseForm = <Entry>[];
-    if (language == Language.cze && tokens.length == 1) {
+    // A typed word that is a headword itself needs no base form: "žena" is
+    // also a rare form of "hnát", but nobody looking up "žena" means that.
+    final isHeadword = direct.any((entry) => fold(entry.text(language)) == key);
+    if (language == Language.cze && tokens.length == 1 && !isHeadword) {
       baseForms = [
         for (final lemma in await _baseForms(tokens.single))
           if (fold(lemma) != key) lemma,
       ];
       for (final lemma in baseForms) {
-        final rows = await _wholeWord([fold(lemma)], language);
+        final rows = await _wholeWord([fold(lemma)], fold(lemma), language);
         truncated |= rows.length >= rowLimit;
         // The folded lookup also finds words that differ in diacritics only
         // ("byt" for "být"), so keep the entries with the exact base form.
@@ -209,17 +223,27 @@ class Dictionary {
     for (final row in await _db.select(sql, arguments)) Entry.fromRow(row),
   ];
 
+  /// The exact match first, then the most common texts, then the shortest.
+  static String _order(Language language) {
+    final column = 'e.${language.name}_key';
+    return 'ORDER BY $column = ? DESC, e.${language.name}_rank DESC, '
+        'length($column), $column, e.id LIMIT $rowLimit';
+  }
+
   Future<List<Entry>> _startsWith(String key, Language language) {
     final column = '${language.name}_key';
     return _entries(
       'SELECT $_columns FROM entries e '
-      'WHERE e.$column >= ? AND e.$column < ? '
-      'ORDER BY length(e.$column), e.$column, e.id LIMIT $rowLimit',
-      [key, '$key\u{10FFFF}'],
+      'WHERE e.$column >= ? AND e.$column < ? ${_order(language)}',
+      [key, '$key\u{10FFFF}', key],
     );
   }
 
-  Future<List<Entry>> _wholeWord(List<String> tokens, Language language) async {
+  Future<List<Entry>> _wholeWord(
+    List<String> tokens,
+    String key,
+    Language language,
+  ) async {
     // Look the rarest word up, then keep the entries with the whole phrase.
     var rarest = tokens.first;
     if (tokens.length > 1) {
@@ -237,12 +261,10 @@ class Dictionary {
         }
       }
     }
-    final column = '${language.name}_key';
     final entries = await _entries(
       'SELECT $_columns FROM words w JOIN entries e ON e.id = w.entry_id '
-      'WHERE w.lang = ? AND w.word = ? '
-      'ORDER BY length(e.$column), e.$column, e.id LIMIT $rowLimit',
-      [language.code, rarest],
+      'WHERE w.lang = ? AND w.word = ? ${_order(language)}',
+      [language.code, rarest, key],
     );
     if (tokens.length == 1) return entries;
     return [
@@ -255,8 +277,8 @@ class Dictionary {
     final column = '${language.name}_key';
     return _entries(
       'SELECT $_columns FROM entries e WHERE e.$column LIKE ? ESCAPE ? '
-      'ORDER BY length(e.$column), e.$column, e.id LIMIT $rowLimit',
-      ['%${_escapeLike(key)}%', r'\'],
+      '${_order(language)}',
+      ['%${_escapeLike(key)}%', r'\', key],
     );
   }
 
@@ -312,7 +334,7 @@ class Dictionary {
   ) {
     final lowerText = text.toLowerCase();
     final baseKeys = {for (final lemma in baseForms) fold(lemma)};
-    final scored = <int, (int, int, int, String, Entry)>{};
+    final scored = <int, _Score>{};
 
     void add(Entry entry, {required bool fromBaseForm}) {
       final head = entry.text(language);
@@ -337,9 +359,9 @@ class Dictionary {
               baseForms.contains(head.toLowerCase())
           ? 0
           : 1;
-      final score = (tier, exact, headKey.length, headKey, entry);
+      final score = _Score(tier, exact, headKey, entry, language);
       final previous = scored[entry.id];
-      if (previous == null || _compare(score, previous) < 0) {
+      if (previous == null || score.compareTo(previous) < 0) {
         scored[entry.id] = score;
       }
     }
@@ -351,25 +373,13 @@ class Dictionary {
       add(entry, fromBaseForm: true);
     }
 
-    final sorted = scored.values.toList()..sort(_compare);
+    final sorted = scored.values.toList()..sort();
     final groups = <String, ResultGroup>{};
-    for (final (_, _, _, _, entry) in sorted) {
+    for (final _Score(:entry) in sorted) {
       final head = entry.text(language);
       groups.putIfAbsent(head, () => ResultGroup(head, [])).entries.add(entry);
     }
     return groups.values.toList();
-  }
-
-  static int _compare(
-    (int, int, int, String, Entry) a,
-    (int, int, int, String, Entry) b,
-  ) {
-    var result = a.$1.compareTo(b.$1);
-    if (result == 0) result = a.$2.compareTo(b.$2);
-    if (result == 0) result = a.$3.compareTo(b.$3);
-    if (result == 0) result = a.$4.compareTo(b.$4);
-    if (result == 0) result = a.$5.id.compareTo(b.$5.id);
-    return result;
   }
 
   static bool _containsPhrase(List<String> haystack, List<String> phrase) {
@@ -387,4 +397,32 @@ class Dictionary {
       .replaceAll(r'\', r'\\')
       .replaceAll('%', r'\%')
       .replaceAll('_', r'\_');
+}
+
+/// The order of results: how well the headword matches, how common it is,
+/// then (within a headword) how common the translation is.
+class _Score implements Comparable<_Score> {
+  _Score(this.tier, this.exact, this.headKey, this.entry, Language language)
+    : headRank = entry.rank(language),
+      translationRank = entry.rank(language.other);
+
+  final int tier;
+  final int exact;
+  final String headKey;
+  final Entry entry;
+  final int headRank;
+  final int translationRank;
+
+  @override
+  int compareTo(_Score other) {
+    var result = tier.compareTo(other.tier);
+    if (result == 0) result = exact.compareTo(other.exact);
+    if (result == 0) result = other.headRank.compareTo(headRank);
+    if (result == 0) result = headKey.length.compareTo(other.headKey.length);
+    if (result == 0) result = headKey.compareTo(other.headKey);
+    // Same headword: the most common translation first.
+    if (result == 0) result = other.translationRank.compareTo(translationRank);
+    if (result == 0) result = entry.id.compareTo(other.entry.id);
+    return result;
+  }
 }

@@ -1,7 +1,8 @@
 be	být	v:		
 bird dog	honicí pes	n:		
-dog	pes	n:		Milan Svoboda
 dog	čokl	n: [hovor.]		Pino; Milan Svoboda
+dog	pes	n:		Milan Svoboda
+drive	hnát	v:		
 flat	byt	n:		
 go	jít	v:		
 green	zelený	adj:		
@@ -11,3 +12,4 @@ untranslated		n:
 washer fluid	kapalina do ostřikovačů	n:		
 well-done	dobře propečený	adj:	o steaku	
 windshield washer fluid	kapalina do ostřikovačů	n: [amer.]		
+woman	žena	n:		

@@ -204,7 +204,7 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get dataCredits =>
-      'Anglicko-český slovník je svobodný slovník projektu Svobodné slovníky (GNU FDL 1.1 nebo pozdější), dříve GNU/FDL Anglicko-Český slovník. Tvary českých slov pocházejí z českého slovníku Hunspell (GNU GPL 2) a z Wikislovníku (CC BY-SA 4.0).';
+      'Anglicko-český slovník je svobodný slovník projektu Svobodné slovníky (GNU FDL 1.1 nebo pozdější), dříve GNU/FDL Anglicko-Český slovník. Tvary českých slov pocházejí z českého slovníku Hunspell (GNU GPL 2) a z Wikislovníku (CC BY-SA 4.0). Četnosti slov, podle kterých jsou běžné překlady první, pocházejí z wordfreq od Robyn Speer (CC BY-SA 4.0).';
 
   @override
   String get translators => 'Autoři překladů';

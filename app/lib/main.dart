@@ -40,4 +40,18 @@ wiktextract (https://kaikki.org). Licensed under the Creative Commons
 Attribution-ShareAlike 4.0 International licence,
 https://creativecommons.org/licenses/by-sa/4.0/''',
   );
+  yield const LicenseEntryWithLineBreaks(
+    ['wordfreq'],
+    '''
+Word frequencies from wordfreq by Robyn Speer (https://github.com/rspeer/wordfreq),
+licensed under the Creative Commons Attribution-ShareAlike 4.0 International
+licence, https://creativecommons.org/licenses/by-sa/4.0/
+
+wordfreq contains data from Wikipedia, from OPUS OpenSubtitles 2018 (data
+originating from the OpenSubtitles project, http://www.opensubtitles.org/),
+from the SUBTLEX word lists by Marc Brysbaert et al. (SUBTLEX is freely
+available data, http://crr.ugent.be/programs-data/subtitle-frequencies), from
+Google Books Ngrams (http://books.google.com/ngrams), the Leeds Internet
+Corpus and ParaCrawl, and statistics of words used on Twitter.''',
+  );
 }

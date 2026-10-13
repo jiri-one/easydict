@@ -34,6 +34,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  /// Android: text selected in other apps (see MainActivity.kt).
+  static const _selectedText = MethodChannel('one.jiri.easydict/text');
+
   final _text = TextEditingController();
   final _focus = FocusNode();
   late final DictionarySearch _search;
@@ -49,11 +52,33 @@ class _HomePageState extends State<HomePage> {
       mode: widget.settings.mode,
     );
     _lifecycle = AppLifecycleListener(onResume: _lookUpClipboard);
-    if (widget.initialQuery.isNotEmpty) _setQuery(widget.initialQuery);
+    if (widget.initialQuery.isNotEmpty) _lookUpText(widget.initialQuery);
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      _selectedText.setMethodCallHandler((call) async {
+        if (call.method == 'text') _lookUpText(call.arguments as String);
+      });
+      _selectedText.invokeMethod<String>('initialText').then((text) {
+        if (text != null && mounted) _lookUpText(text);
+      });
+    }
+  }
+
+  /// Look up text from outside the app, guessing its language.
+  void _lookUpText(String text) {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
+    _text.value = TextEditingValue(
+      text: trimmed,
+      selection: TextSelection.collapsed(offset: trimmed.length),
+    );
+    _search.lookUpText(trimmed);
   }
 
   @override
   void dispose() {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      _selectedText.setMethodCallHandler(null);
+    }
     _lifecycle.dispose();
     _search.dispose();
     _text.dispose();
@@ -73,7 +98,7 @@ class _HomePageState extends State<HomePage> {
       return;
     }
     _lastClipboard = text;
-    _setQuery(text);
+    _lookUpText(text);
   }
 
   void _setQuery(String text) {

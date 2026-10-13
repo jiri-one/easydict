@@ -425,7 +425,7 @@ abstract class AppLocalizations {
   /// No description provided for @dataCredits.
   ///
   /// In en, this message translates to:
-  /// **'The English–Czech dictionary is the free dictionary of the Svobodné slovníky project (GNU FDL 1.1 or later), formerly the GNU/FDL English-Czech Dictionary. Czech word forms come from the Czech Hunspell dictionary (GNU GPL 2) and from Wiktionary (CC BY-SA 4.0).'**
+  /// **'The English–Czech dictionary is the free dictionary of the Svobodné slovníky project (GNU FDL 1.1 or later), formerly the GNU/FDL English-Czech Dictionary. Czech word forms come from the Czech Hunspell dictionary (GNU GPL 2) and from Wiktionary (CC BY-SA 4.0). Word frequencies, which put the common translations first, come from wordfreq by Robyn Speer (CC BY-SA 4.0).'**
   String get dataCredits;
 
   /// No description provided for @translators.
