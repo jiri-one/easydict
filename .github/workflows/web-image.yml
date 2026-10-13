@@ -1,10 +1,14 @@
-name: Container image
+name: Website image
 
-# Build the arm64 production image (deploy/Containerfile) on every push to main
-# and push it to ghcr.io. The M1S picks it up with `podman auto-update`.
+# Build the arm64 production image of easydict.jiri.one (web/deploy/Containerfile)
+# when the website changes on main and push it to ghcr.io/<owner>/easydict-web.
+# The M1S picks it up with `podman auto-update`.
 on:
   push:
     branches: [main]
+    paths:
+      - "web/**"
+      - ".github/workflows/web-image.yml"
   workflow_dispatch:
 
 permissions:
@@ -24,13 +28,13 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v6
         with:
-          context: .
-          file: deploy/Containerfile
+          context: web
+          file: web/deploy/Containerfile
           platforms: linux/arm64
           push: true
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/easydict-web:latest
+            ghcr.io/${{ github.repository_owner }}/easydict-web:${{ github.sha }}

@@ -1,7 +1,15 @@
+"""Import the dictionary (data/en-cs/en-cs.txt of the EasyDict repository) into the database.
+
+Run from the web/ directory: python utils/from_txt_to_django.py
+"""
+
 from sys import path as sys_path
 from pathlib import Path
 from contextlib import contextmanager
 from os import environ
+
+DICTIONARY = Path(__file__).resolve().parents[2] / "data" / "en-cs" / "en-cs.txt"
+
 
 @contextmanager
 def django_context():
@@ -32,7 +40,7 @@ def remove_empty(line):
 
 with django_context():
     from web.models import Record
-    with open("utils/en-cs.txt", "rb") as file:
+    with open(DICTIONARY, "rb") as file:
         for line in file:
             dict_row = remove_empty(line.decode())
             record = Record(**dict_row)
