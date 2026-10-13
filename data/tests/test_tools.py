@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
-from build_db import Folder, build, build_fold_map  # noqa: E402
+from build_db import Folder, build, build_fold_map, rank  # noqa: E402
 from hunspell_forms import expand, forms_by_lemma, load_affixes  # noqa: E402
 
 AFF = """\
@@ -41,6 +41,11 @@ green\tzelený\tadj:\t\t
 untranslated\t\tn:\t\t
 Novák's\tNovákův\t\t\t
 """
+
+FREQUENCIES = {
+    "en": "# comment\ndog\t5.10\ngreen\t5.00\n",
+    "cs": "pes\t4.84\nzelený\t4.50\n",
+}
 
 WIKTIONARY = """\
 # Format: lemma<TAB>form|form|...
@@ -78,20 +83,34 @@ def test_fold_removes_diacritics_and_case():
     assert fold("Straße Øresund") == "strasse oresund"
 
 
+def test_rank_is_the_rarest_word_minus_a_penalty_per_word():
+    frequencies = {"pes": 4.84, "honicí": 2.0}
+    assert rank("Pes", frequencies) == 484
+    assert rank("honicí pes", frequencies) == 170
+    assert rank("neznámé slovo", frequencies) == 0
+    assert rank("pes", {}) == 0
+
+
 def test_build_database(tmp_path, hunspell_dir):
     en_cs = tmp_path / "en-cs.txt"
     en_cs.write_text(EN_CS, encoding="utf-8")
     wiktionary = tmp_path / "forms.tsv"
     wiktionary.write_text(WIKTIONARY, encoding="utf-8")
+    frequency_dir = tmp_path / "frequency"
+    frequency_dir.mkdir()
+    for code, text in FREQUENCIES.items():
+        (frequency_dir / f"{code}.tsv").write_text(text, encoding="utf-8")
     output = tmp_path / "out" / "easydict.sqlite"
 
-    stats = build(output, en_cs, hunspell_dir, wiktionary)
+    stats = build(output, en_cs, hunspell_dir, wiktionary, frequency_dir)
 
     db = sqlite3.connect(output)
     assert stats["entries"] == 3  # the untranslated row is skipped
     rows = db.execute("SELECT eng, cze, notes, special, author, eng_key, cze_key FROM entries ORDER BY id").fetchall()
     assert rows[0] == ("dog", "pes", "n:", None, "Milan Svoboda", "dog", "pes")
     assert rows[1][-1] == "zeleny"
+    ranks = db.execute("SELECT eng_rank, cze_rank FROM entries ORDER BY id").fetchall()
+    assert ranks[:2] == [(510, 484), (500, 450)]
 
     words = set(db.execute("SELECT lang, word FROM words"))
     assert {(0, "dog"), (1, "zeleny"), (0, "novak"), (0, "s"), (1, "novakuv")} <= words

@@ -43,7 +43,9 @@ CREATE TABLE entries (
     special TEXT,
     author TEXT,
     eng_key TEXT NOT NULL,
-    cze_key TEXT NOT NULL
+    cze_key TEXT NOT NULL,
+    eng_rank INTEGER NOT NULL,
+    cze_rank INTEGER NOT NULL
 );
 CREATE TABLE words (
     lang INTEGER NOT NULL,
@@ -84,6 +86,11 @@ SOURCES = [
         "name": "Wiktionary (via kaikki.org)",
         "license": "CC-BY-SA-4.0",
         "url": "https://kaikki.org/dictionary/Czech/",
+    },
+    {
+        "name": "wordfreq",
+        "license": "CC-BY-SA-4.0",
+        "url": "https://github.com/rspeer/wordfreq",
     },
 ]
 
@@ -139,6 +146,27 @@ def read_wiktionary_forms(path: Path) -> dict[str, set[str]]:
     return forms_of
 
 
+def read_frequencies(path: Path) -> dict[str, float]:
+    frequencies = {}
+    with path.open(encoding="utf-8") as source:
+        for line in source:
+            if line.startswith("#") or not line.strip():
+                continue
+            word, zipf = line.rstrip("\n").split("\t")
+            frequencies[word] = float(zipf)
+    return frequencies
+
+
+def rank(text: str, frequencies: dict[str, float]) -> int:
+    """How common a text is: the Zipf frequency of its rarest word, lowered for
+    every further word, times 100. 0 means unknown."""
+    words = WORD_RE.findall(text.lower())
+    if not words or not frequencies:
+        return 0
+    zipf = min(frequencies.get(word, 0.0) for word in words) - 0.3 * (len(words) - 1)
+    return max(0, round(zipf * 100))
+
+
 def form_rows(forms_of: dict[str, set[str]], czech_words: set[str], fold: Folder) -> set[tuple[str, str]]:
     """(folded form, lowercase lemma) pairs for lemmas used in the dictionary.
 
@@ -161,8 +189,16 @@ def form_rows(forms_of: dict[str, set[str]], czech_words: set[str], fold: Folder
     return rows
 
 
-def build(output: Path, en_cs: Path, hunspell_dir: Path | None, wiktionary: Path | None) -> dict[str, int]:
+def build(
+    output: Path,
+    en_cs: Path,
+    hunspell_dir: Path | None,
+    wiktionary: Path | None,
+    frequency_dir: Path | None = None,
+) -> dict[str, int]:
     rows = [columns for columns in read_en_cs(en_cs) if columns[1]]  # skip untranslated stubs
+    en_freq = read_frequencies(frequency_dir / "en.tsv") if frequency_dir else {}
+    cs_freq = read_frequencies(frequency_dir / "cs.tsv") if frequency_dir else {}
     chars = {ch for columns in rows for text in columns[:2] for ch in text.lower()}
     fold_map = build_fold_map(chars)
     fold = Folder(fold_map)
@@ -178,11 +214,14 @@ def build(output: Path, en_cs: Path, hunspell_dir: Path | None, wiktionary: Path
     czech_words = set()
     for entry_id, (eng, cze, notes, special, author) in enumerate(rows, 1):
         eng_key, cze_key = fold(eng), fold(cze)
-        entries.append((entry_id, eng, cze, notes or None, special or None, author or None, eng_key, cze_key))
+        entries.append((
+            entry_id, eng, cze, notes or None, special or None, author or None,
+            eng_key, cze_key, rank(eng, en_freq), rank(cze, cs_freq),
+        ))
         words.update((ENG, word, entry_id) for word in words_of(eng_key))
         words.update((CZE, word, entry_id) for word in words_of(cze_key))
         czech_words.update(words_of(cze.lower()))
-    db.executemany("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?)", entries)
+    db.executemany("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", entries)
     db.executemany("INSERT INTO words VALUES (?, ?, ?)", sorted(words))
 
     stats = {"entries": len(entries), "words": len(words), "forms_hunspell": 0, "forms_wiktionary": 0}
@@ -199,7 +238,7 @@ def build(output: Path, en_cs: Path, hunspell_dir: Path | None, wiktionary: Path
     db.executescript(INDEXES)
     # The GFDL asks for the list of authors; the app shows it.
     authors: dict[str, int] = {}
-    for *_, author, _, _ in entries:
+    for *_, author, _, _, _, _ in entries:
         for name in (author or "").split("; "):
             if name.strip():
                 authors[name.strip()] = authors.get(name.strip(), 0) + 1
@@ -228,6 +267,7 @@ def main() -> None:
     parser.add_argument("--en-cs", type=Path, default=DATA_DIR / "en-cs" / "en-cs.txt")
     parser.add_argument("--hunspell-dir", type=Path, default=DATA_DIR / "cs-forms" / "hunspell")
     parser.add_argument("--wiktionary", type=Path, default=DATA_DIR / "cs-forms" / "wiktionary" / "forms.tsv")
+    parser.add_argument("--frequency-dir", type=Path, default=DATA_DIR / "frequency")
     parser.add_argument("--no-forms", action="store_true", help="build without the Czech inflection tables")
     args = parser.parse_args()
 
@@ -236,6 +276,7 @@ def main() -> None:
         args.en_cs,
         None if args.no_forms else args.hunspell_dir,
         None if args.no_forms else args.wiktionary,
+        args.frequency_dir,
     )
     size = args.output.stat().st_size / 1e6
     print(f"{args.output}: {size:.1f} MB, " + ", ".join(f"{key} {value}" for key, value in stats.items()))

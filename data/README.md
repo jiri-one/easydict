@@ -8,7 +8,8 @@ Layout
 - `cs-forms/` – Czech word forms, so that a word typed in any form is found (*psa* → *pes*):
   - `hunspell/` – the Czech Hunspell dictionary from [LibreOffice](https://github.com/LibreOffice/dictionaries/tree/master/cs_CZ) (GNU GPL 2), commit `b3a1c0b` of 2021-07-28.
   - `wiktionary/forms.tsv` – inflected forms extracted from [Wiktionary](https://en.wiktionary.org) via [kaikki.org](https://kaikki.org/dictionary/Czech/) (CC BY-SA 4.0), dump of 2026-10-03.
-- `tools/` – `build_db.py` builds the database used by the EasyDict app; `extract_wiktionary_forms.py` refreshes `cs-forms/wiktionary/forms.tsv`.
+- `frequency/` – how common English and Czech words are, from [wordfreq](https://github.com/rspeer/wordfreq) 3.1.1 (CC BY-SA 4.0), so that the app shows the common translations first.
+- `tools/` – `build_db.py` builds the database used by the EasyDict app; `extract_wiktionary_forms.py` and `extract_frequencies.py` refresh `cs-forms/wiktionary/forms.tsv` and `frequency/`.
 - `tests/` – tests for the tools: `python3 -m pytest data/tests`.
 
 Contributing
@@ -36,7 +37,8 @@ Obsah
 - `cs-forms/` – tvary českých slov, aby se slovo našlo v jakémkoli tvaru (*psa* → *pes*):
   - `hunspell/` – český slovník Hunspell z [LibreOffice](https://github.com/LibreOffice/dictionaries/tree/master/cs_CZ) (GNU GPL 2), commit `b3a1c0b` z 28. 7. 2021.
   - `wiktionary/forms.tsv` – tvary z [Wikislovníku](https://en.wiktionary.org) přes [kaikki.org](https://kaikki.org/dictionary/Czech/) (CC BY-SA 4.0), export z 3. 10. 2026.
-- `tools/` – `build_db.py` sestaví databázi pro aplikaci EasyDict, `extract_wiktionary_forms.py` obnoví `cs-forms/wiktionary/forms.tsv`.
+- `frequency/` – jak častá jsou anglická a česká slova, z [wordfreq](https://github.com/rspeer/wordfreq) 3.1.1 (CC BY-SA 4.0), aby aplikace ukazovala běžné překlady jako první.
+- `tools/` – `build_db.py` sestaví databázi pro aplikaci EasyDict, `extract_wiktionary_forms.py` a `extract_frequencies.py` obnoví `cs-forms/wiktionary/forms.tsv` a `frequency/`.
 - `tests/` – testy nástrojů: `python3 -m pytest data/tests`.
 
 Jak přispívat
