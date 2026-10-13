@@ -1,0 +1,185 @@
+name: Release
+
+# Build the app for Linux, Windows, macOS and Android when a version tag
+# (v1.2.3) is pushed and attach the builds to a GitHub release. Run it by hand
+# to only build them (as workflow artifacts).
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: 3.47.7
+
+jobs:
+  dictionary:
+    name: Dictionary database
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: app/tool/build_dictionary.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dictionary
+          path: app/assets/dictionary/
+
+  linux:
+    name: Linux ${{ matrix.arch }}
+    needs: dictionary
+    runs-on: ${{ matrix.runner }}
+    # The ARM build is a bonus: do not hold the release back because of it.
+    continue-on-error: ${{ matrix.arch == 'aarch64' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: ubuntu-24.04, arch: x86_64, flutter_arch: x64 }
+          - { runner: ubuntu-24.04-arm, arch: aarch64, flutter_arch: arm64 }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dictionary
+          path: app/assets/dictionary/
+      - run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
+      # Flutter publishes SDK archives for x64 only; a git checkout works on both.
+      - run: |
+          git clone --depth 1 --branch "$FLUTTER_VERSION" https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - working-directory: app
+        run: flutter build linux --release
+      - name: Package
+        working-directory: app
+        run: |
+          name="easydict-${GITHUB_REF_NAME#v}-linux-${{ matrix.arch }}"
+          mkdir "$name"
+          cp -r build/linux/${{ matrix.flutter_arch }}/release/bundle/. "$name/"
+          cp ../packaging/linux/one.jiri.easydict.{desktop,svg,metainfo.xml} "$name/"
+          tar czf "$name.tar.gz" "$name"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ matrix.arch }}
+          path: app/easydict-*.tar.gz
+
+  windows:
+    name: Windows
+    needs: dictionary
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dictionary
+          path: app/assets/dictionary/
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+      - working-directory: app
+        run: flutter build windows --release
+      - name: Package
+        working-directory: app
+        shell: pwsh
+        run: |
+          $name = "easydict-$($env:GITHUB_REF_NAME -replace '^v')-windows-x64"
+          Copy-Item -Recurse build/windows/x64/runner/Release $name
+          Compress-Archive -Path $name -DestinationPath "$name.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: app/easydict-*.zip
+
+  macos:
+    name: macOS
+    needs: dictionary
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dictionary
+          path: app/assets/dictionary/
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+      - working-directory: app
+        run: flutter build macos --release
+      - name: Package
+        working-directory: app
+        run: |
+          name="easydict-${GITHUB_REF_NAME#v}-macos"
+          ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/EasyDict.app "$name.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: app/easydict-*.zip
+
+  android:
+    name: Android
+    needs: dictionary
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dictionary
+          path: app/assets/dictionary/
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+      - name: Signing key
+        working-directory: app/android
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE" ]; then
+            echo "::warning::No signing key in the repository secrets, the APKs are signed with a debug key."
+            exit 0
+          fi
+          echo "$KEYSTORE" | base64 -d > release.jks
+          printf 'storeFile=release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
+            "$STORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > key.properties
+      - working-directory: app
+        run: |
+          flutter build apk --release
+          flutter build apk --release --split-per-abi
+      - name: Package
+        working-directory: app
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          out=build/app/outputs/flutter-apk
+          cp "$out/app-release.apk" "easydict-$version-android.apk"
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            cp "$out/app-$abi-release.apk" "easydict-$version-android-$abi.apk"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: app/easydict-*.apk
+
+  release:
+    name: GitHub release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [linux, windows, macos, android]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

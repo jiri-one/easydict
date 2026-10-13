@@ -4,6 +4,20 @@ The first open source translator which is completely open with dictionary data t
 
 EasyDict is an English–Czech and Czech–English dictionary that works offline on Linux, Windows, macOS and Android, and a website at [easydict.jiri.one](https://easydict.jiri.one). It contains more than 150,000 translations of the free English–Czech dictionary of the Svobodné slovníky project and finds Czech words in any form (*psa* → *pes*).
 
+## Download
+
+The builds of every release are on the [releases page](https://github.com/jiri-one/easydict/releases):
+
+- **Linux** – `easydict-…-linux-x86_64.tar.gz` (or `aarch64`): unpack it and run `easydict`. The Flathub package is on its way.
+- **Android** – `easydict-…-android.apk`, or the smaller `…-android-arm64-v8a.apk` for most phones. The F-Droid package is on its way.
+- **Windows** – `easydict-…-windows-x64.zip`: unpack it and run `easydict.exe`.
+- **macOS** – `easydict-…-macos.zip`: the app is not notarized, so the first start has to be allowed in *System Settings → Privacy & Security*.
+
+Tips:
+
+- On Android, select a word in any app and choose *Look up in EasyDict* from the menu.
+- On the desktop, `easydict WORD` starts with WORD looked up. Bound to a keyboard shortcut, e.g. `sh -c 'easydict "$(wl-paste --primary)"'`, it translates the selected text.
+
 ## Repository
 
 - `app/` – the Flutter app for Linux, Windows, macOS and Android

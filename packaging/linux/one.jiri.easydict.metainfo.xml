@@ -40,6 +40,29 @@
     <binary>easydict</binary>
   </provides>
 
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/jiri-one/easydict/v1.0.0/packaging/screenshots/en-2.png</image>
+      <caption>Translations of an English word, the common ones first</caption>
+      <caption xml:lang="cs">Překlady anglického slova, běžné jako první</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/jiri-one/easydict/v1.0.0/packaging/screenshots/en-3.png</image>
+      <caption>A Czech word in another form finds its base form</caption>
+      <caption xml:lang="cs">České slovo v jiném tvaru najde svůj základní tvar</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/jiri-one/easydict/v1.0.0/packaging/screenshots/en-4.png</image>
+      <caption>Dark theme</caption>
+      <caption xml:lang="cs">Tmavý motiv</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/jiri-one/easydict/v1.0.0/packaging/screenshots/en-1.png</image>
+      <caption>Start page</caption>
+      <caption xml:lang="cs">Úvodní stránka</caption>
+    </screenshot>
+  </screenshots>
+
   <url type="homepage">https://easydict.jiri.one</url>
   <url type="bugtracker">https://github.com/jiri-one/easydict/issues</url>
   <url type="vcs-browser">https://github.com/jiri-one/easydict</url>
