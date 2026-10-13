@@ -158,12 +158,13 @@ def read_frequencies(path: Path) -> dict[str, float]:
 
 
 def rank(text: str, frequencies: dict[str, float]) -> int:
-    """How common a text is: the Zipf frequency of its rarest word, lowered for
-    every further word, times 100. 0 means unknown."""
+    """How common a text is: the Zipf frequency of its rarest word, lowered by
+    one for every further word (phrases are much rarer than their words),
+    times 100. 0 means unknown."""
     words = WORD_RE.findall(text.lower())
     if not words or not frequencies:
         return 0
-    zipf = min(frequencies.get(word, 0.0) for word in words) - 0.3 * (len(words) - 1)
+    zipf = min(frequencies.get(word, 0.0) for word in words) - (len(words) - 1)
     return max(0, round(zipf * 100))
 
 

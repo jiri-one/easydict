@@ -86,7 +86,7 @@ def test_fold_removes_diacritics_and_case():
 def test_rank_is_the_rarest_word_minus_a_penalty_per_word():
     frequencies = {"pes": 4.84, "honicí": 2.0}
     assert rank("Pes", frequencies) == 484
-    assert rank("honicí pes", frequencies) == 170
+    assert rank("honicí pes", frequencies) == 100
     assert rank("neznámé slovo", frequencies) == 0
     assert rank("pes", {}) == 0
 

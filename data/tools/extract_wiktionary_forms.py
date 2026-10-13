@@ -3,8 +3,9 @@
 
 Only real inflections are kept (cases, numbers, persons, tenses, degrees, ...);
 derived words such as diminutives, feminine counterparts, aspect partners or
-relational adjectives are dropped. Only lemmas that occur as a word on the
-Czech side of the dictionary are exported.
+relational adjectives are dropped, and so are archaic forms and transgressives.
+Only lemmas that occur as a word on the Czech side of the dictionary are
+exported.
 
 Usage:
     curl -LO https://kaikki.org/dictionary/Czech/kaikki.org-dictionary-Czech.jsonl
@@ -32,6 +33,9 @@ DERIVATION_TAGS = {
     "alternative", "adjective", "relational", "adverb", "diminutive", "augmentative",
     "demonym", "imperfective", "perfective", "noun-from-verb", "possessive", "abbreviation",
     "suffix", "uppercase", "lowercase", "error-unrecognized-form", "error-unknown-tag",
+    # forms nobody types today; they would only collide with common words
+    # (the transgressive "žena" of "hnát", "jsa" of "být")
+    "transgressive", "archaic", "obsolete", "dated",
 }
 WORD_RE = re.compile(r"[^\W_]+")
 
