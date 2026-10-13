@@ -1,11 +1,11 @@
 -fold	-násobný			Rostislav Svoboda
 -goer	pravidelný návštěvník	n:	čeho, např. churchgoer, theatregoer, partygoer, pubgoer ap.	Pino
-.22 caliber		adj:		
-.22 calibre		adj:		
-.38 caliber		adj:		
-.38 calibre		adj:		
-.45 caliber		adj:		
-.45 calibre		adj:		
+.22 caliber	ráže	adj:		Jiří Němec
+.22 calibre	ráže	adj:		Jiří Němec
+.38 caliber	kalibr	adj:		Jiří Němec
+.38 calibre	kalibr	adj:		Jiří Němec
+.45 caliber	formát	adj:		Jiří Němec
+.45 calibre	formát	adj:		Jiří Němec
 $0.02	Throwing in your two cents' worth	[zkr.]		
 10-4 = ten-four	dobře			jose
 10-4 = ten-four	v pořádku			jose
