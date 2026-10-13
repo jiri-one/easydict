@@ -1,0 +1,238 @@
+#!/usr/bin/env python3
+"""Build the EasyDict SQLite database from the dictionary sources.
+
+Only the Python standard library is used, so the script also runs inside the
+Flathub and F-Droid build environments. The database does not rely on any
+optional SQLite feature (no FTS), so every SQLite build can read it.
+
+    data/tools/build_db.py build/easydict.sqlite
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import sqlite3
+import sys
+import unicodedata
+from datetime import datetime, timezone
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from hunspell_forms import forms_by_lemma  # noqa: E402
+
+SCHEMA_VERSION = 1
+DATA_DIR = Path(__file__).resolve().parent.parent
+WORD_RE = re.compile(r"[^\W_]+")
+ENG, CZE = 0, 1
+# Longest first: the app tries them in this order when a word is not found.
+NEGATION_PREFIXES = ("nejne", "nej", "ne")
+
+# Letters that have no Unicode decomposition but should still fold to ASCII.
+EXTRA_FOLDS = {"ł": "l", "ø": "o", "đ": "d", "ħ": "h", "ı": "i", "ß": "ss", "æ": "ae", "œ": "oe", "þ": "th"}
+
+SCHEMA = """
+CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL) WITHOUT ROWID;
+CREATE TABLE entries (
+    id INTEGER PRIMARY KEY,
+    eng TEXT NOT NULL,
+    cze TEXT NOT NULL,
+    notes TEXT,
+    special TEXT,
+    author TEXT,
+    eng_key TEXT NOT NULL,
+    cze_key TEXT NOT NULL
+);
+CREATE TABLE words (
+    lang INTEGER NOT NULL,
+    word TEXT NOT NULL,
+    entry_id INTEGER NOT NULL,
+    PRIMARY KEY (lang, word, entry_id)
+) WITHOUT ROWID;
+CREATE TABLE cs_forms_hunspell (
+    form TEXT NOT NULL,
+    lemma TEXT NOT NULL,
+    PRIMARY KEY (form, lemma)
+) WITHOUT ROWID;
+CREATE TABLE cs_forms_wiktionary (
+    form TEXT NOT NULL,
+    lemma TEXT NOT NULL,
+    PRIMARY KEY (form, lemma)
+) WITHOUT ROWID;
+"""
+
+INDEXES = """
+CREATE INDEX entries_eng_key ON entries (eng_key);
+CREATE INDEX entries_cze_key ON entries (cze_key);
+"""
+
+SOURCES = [
+    {
+        "name": "Svobodný anglicko-český slovník",
+        "license": "GFDL-1.1-or-later",
+        "url": "https://github.com/lehrbuch/svobodneslovniky",
+        "notice": "Založeno na svobodném anglicko-českém slovníku, https://www.svobodneslovniky.cz/",
+    },
+    {
+        "name": "Czech Hunspell dictionary",
+        "license": "GPL-2.0",
+        "url": "https://github.com/LibreOffice/dictionaries/tree/master/cs_CZ",
+    },
+    {
+        "name": "Wiktionary (via kaikki.org)",
+        "license": "CC-BY-SA-4.0",
+        "url": "https://kaikki.org/dictionary/Czech/",
+    },
+]
+
+
+def build_fold_map(extra_chars: set[str]) -> dict[str, str]:
+    """Map lowercase characters to their form without diacritics.
+
+    The map is stored in the database, so the app folds search queries exactly
+    the way the keys were folded here.
+    """
+    chars = {chr(c) for c in range(0xC0, 0x250)} | {chr(c) for c in range(0x300, 0x370)} | extra_chars
+    fold_map = {}
+    for ch in sorted(chars):
+        if ch != ch.lower() or len(ch) != 1:
+            continue
+        base = EXTRA_FOLDS.get(ch) or "".join(c for c in unicodedata.normalize("NFD", ch) if not unicodedata.combining(c))
+        if base != ch:
+            fold_map[ch] = base
+    return fold_map
+
+
+class Folder:
+    def __init__(self, fold_map: dict[str, str]):
+        self.table = str.maketrans(fold_map)
+
+    def __call__(self, text: str) -> str:
+        return text.lower().translate(self.table)
+
+
+def words_of(text: str) -> set[str]:
+    return set(WORD_RE.findall(text))
+
+
+def read_en_cs(path: Path):
+    with path.open(encoding="utf-8") as source:
+        for number, line in enumerate(source, 1):
+            if line.startswith("#") or not line.strip():
+                continue
+            columns = line.rstrip("\n").split("\t")
+            if len(columns) != 5:
+                raise ValueError(f"{path}:{number}: expected 5 tab-separated columns, got {len(columns)}")
+            yield columns
+
+
+def read_wiktionary_forms(path: Path) -> dict[str, set[str]]:
+    forms_of: dict[str, set[str]] = {}
+    with path.open(encoding="utf-8") as source:
+        for line in source:
+            if line.startswith("#") or not line.strip():
+                continue
+            lemma, forms = line.rstrip("\n").split("\t")
+            forms_of[lemma] = set(forms.split("|"))
+    return forms_of
+
+
+def form_rows(forms_of: dict[str, set[str]], czech_words: set[str], fold: Folder) -> set[tuple[str, str]]:
+    """(folded form, lowercase lemma) pairs for lemmas used in the dictionary.
+
+    Negated and superlative forms ("nedobrý", "nejlepší" from "lepší") are left
+    out when the rest of the word is the lemma or another of its forms: the app
+    strips NEGATION_PREFIXES itself when a word is not found.
+    """
+    rows = set()
+    for lemma, forms in forms_of.items():
+        lemma = lemma.lower()
+        if lemma not in czech_words:
+            continue
+        lemma_key = fold(lemma)
+        keys = {fold(form) for form in forms} - {lemma_key}
+        for key in keys:
+            prefix = next((p for p in NEGATION_PREFIXES if key.startswith(p)), None)
+            rest = key[len(prefix):] if prefix else None
+            if rest is None or (rest != lemma_key and rest not in keys):
+                rows.add((key, lemma))
+    return rows
+
+
+def build(output: Path, en_cs: Path, hunspell_dir: Path | None, wiktionary: Path | None) -> dict[str, int]:
+    rows = [columns for columns in read_en_cs(en_cs) if columns[1]]  # skip untranslated stubs
+    chars = {ch for columns in rows for text in columns[:2] for ch in text.lower()}
+    fold_map = build_fold_map(chars)
+    fold = Folder(fold_map)
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.unlink(missing_ok=True)
+    db = sqlite3.connect(output)
+    db.executescript("PRAGMA journal_mode = OFF; PRAGMA synchronous = OFF; PRAGMA page_size = 4096;")
+    db.executescript(SCHEMA)
+
+    entries = []
+    words = set()
+    czech_words = set()
+    for entry_id, (eng, cze, notes, special, author) in enumerate(rows, 1):
+        eng_key, cze_key = fold(eng), fold(cze)
+        entries.append((entry_id, eng, cze, notes or None, special or None, author or None, eng_key, cze_key))
+        words.update((ENG, word, entry_id) for word in words_of(eng_key))
+        words.update((CZE, word, entry_id) for word in words_of(cze_key))
+        czech_words.update(words_of(cze.lower()))
+    db.executemany("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?)", entries)
+    db.executemany("INSERT INTO words VALUES (?, ?, ?)", sorted(words))
+
+    stats = {"entries": len(entries), "words": len(words), "forms_hunspell": 0, "forms_wiktionary": 0}
+    if hunspell_dir:
+        hunspell = forms_by_lemma(hunspell_dir / "cs_CZ.dic", hunspell_dir / "cs_CZ.aff", wanted=czech_words)
+        hunspell_rows = sorted(form_rows(hunspell, czech_words, fold))
+        db.executemany("INSERT INTO cs_forms_hunspell VALUES (?, ?)", hunspell_rows)
+        stats["forms_hunspell"] = len(hunspell_rows)
+    if wiktionary:
+        wiktionary_rows = sorted(form_rows(read_wiktionary_forms(wiktionary), czech_words, fold))
+        db.executemany("INSERT INTO cs_forms_wiktionary VALUES (?, ?)", wiktionary_rows)
+        stats["forms_wiktionary"] = len(wiktionary_rows)
+
+    db.executescript(INDEXES)
+    meta = {
+        "schema_version": str(SCHEMA_VERSION),
+        "fold_map": json.dumps(fold_map, ensure_ascii=False, sort_keys=True),
+        "negation_prefixes": json.dumps(NEGATION_PREFIXES),
+        "sources": json.dumps(SOURCES, ensure_ascii=False),
+        **{key: str(value) for key, value in stats.items()},
+    }
+    # Reproducible builds: only stamp a date when the build system provides one.
+    if "SOURCE_DATE_EPOCH" in os.environ:
+        built = datetime.fromtimestamp(int(os.environ["SOURCE_DATE_EPOCH"]), tz=timezone.utc)
+        meta["built"] = built.strftime("%Y-%m-%d")
+    db.executemany("INSERT INTO meta VALUES (?, ?)", sorted(meta.items()))
+    db.commit()
+    db.execute("VACUUM")
+    db.close()
+    return stats
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("output", type=Path, help="path of the SQLite database to create")
+    parser.add_argument("--en-cs", type=Path, default=DATA_DIR / "en-cs" / "en-cs.txt")
+    parser.add_argument("--hunspell-dir", type=Path, default=DATA_DIR / "cs-forms" / "hunspell")
+    parser.add_argument("--wiktionary", type=Path, default=DATA_DIR / "cs-forms" / "wiktionary" / "forms.tsv")
+    parser.add_argument("--no-forms", action="store_true", help="build without the Czech inflection tables")
+    args = parser.parse_args()
+
+    stats = build(
+        args.output,
+        args.en_cs,
+        None if args.no_forms else args.hunspell_dir,
+        None if args.no_forms else args.wiktionary,
+    )
+    size = args.output.stat().st_size / 1e6
+    print(f"{args.output}: {size:.1f} MB, " + ", ".join(f"{key} {value}" for key, value in stats.items()))
+
+
+if __name__ == "__main__":
+    main()

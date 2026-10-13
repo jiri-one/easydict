@@ -1,0 +1,121 @@
+import json
+import sqlite3
+import sys
+from pathlib import Path
+
+import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
+from build_db import Folder, build, build_fold_map  # noqa: E402
+from hunspell_forms import expand, forms_by_lemma, load_affixes  # noqa: E402
+
+AFF = """\
+SET UTF-8
+FORBIDDENWORD q
+PFX N Y 1
+PFX N   0     ne      .
+PFX E Y 1
+PFX E   0     nej     .
+SFX Y Y 3
+SFX Y   ý     á       ý
+SFX Y   ý     é       ý
+SFX Y   ův    ova     ův
+SFX y Y 1
+SFX y   ý     ější/E  [nv]ý
+SFX P Y 1
+SFX P   0     ův/Y    [^aeo]
+"""
+
+DIC = """\
+4
+zelený/YyN
+Novák/P
+zakázaný/q
+pes
+"""
+
+EN_CS = """\
+# comment line
+dog\tpes\tn:\t\tMilan Svoboda
+green\tzelený\tadj:\t\t
+untranslated\t\tn:\t\t
+Novák's\tNovákův\t\t\t
+"""
+
+WIKTIONARY = """\
+# Format: lemma<TAB>form|form|...
+pes\tpsa|psovi
+kočka\tkočky
+"""
+
+
+@pytest.fixture
+def hunspell_dir(tmp_path: Path) -> Path:
+    (tmp_path / "cs_CZ.aff").write_text(AFF, encoding="utf-8")
+    (tmp_path / "cs_CZ.dic").write_text(DIC, encoding="utf-8")
+    return tmp_path
+
+
+def test_expand_suffixes_prefixes_and_continuations(hunspell_dir):
+    aff = load_affixes(hunspell_dir / "cs_CZ.aff")
+    assert expand("zelený", "YyN", aff) >= {
+        "zelený", "zelená", "zelené",  # SFX Y
+        "zelenější", "nejzelenější",  # SFX y with the E prefix as continuation
+        "nezelený", "nezelená", "nezelenější",  # PFX N, cross product with suffixes
+    }
+    assert expand("Novák", "P", aff) == {"Novák", "Novákův", "Novákova"}  # two-level suffix
+
+
+def test_forms_by_lemma_skips_forbidden_and_unwanted(hunspell_dir):
+    forms = forms_by_lemma(hunspell_dir / "cs_CZ.dic", hunspell_dir / "cs_CZ.aff", wanted={"zelený", "zakázaný"})
+    assert set(forms) == {"zelený"}
+    assert "zelený" not in forms["zelený"]
+
+
+def test_fold_removes_diacritics_and_case():
+    fold = Folder(build_fold_map(set()))
+    assert fold("Žluťoučký KŮŇ úpěl ďábelské ódy") == "zlutoucky kun upel dabelske ody"
+    assert fold("Straße Øresund") == "strasse oresund"
+
+
+def test_build_database(tmp_path, hunspell_dir):
+    en_cs = tmp_path / "en-cs.txt"
+    en_cs.write_text(EN_CS, encoding="utf-8")
+    wiktionary = tmp_path / "forms.tsv"
+    wiktionary.write_text(WIKTIONARY, encoding="utf-8")
+    output = tmp_path / "out" / "easydict.sqlite"
+
+    stats = build(output, en_cs, hunspell_dir, wiktionary)
+
+    db = sqlite3.connect(output)
+    assert stats["entries"] == 3  # the untranslated row is skipped
+    rows = db.execute("SELECT eng, cze, notes, special, author, eng_key, cze_key FROM entries ORDER BY id").fetchall()
+    assert rows[0] == ("dog", "pes", "n:", None, "Milan Svoboda", "dog", "pes")
+    assert rows[1][-1] == "zeleny"
+
+    words = set(db.execute("SELECT lang, word FROM words"))
+    assert {(0, "dog"), (1, "zeleny"), (0, "novak"), (0, "s"), (1, "novakuv")} <= words
+
+    hunspell = set(db.execute("SELECT form, lemma FROM cs_forms_hunspell"))
+    assert ("zelena", "zelený") in hunspell
+    assert ("nejzelenejsi", "zelený") not in hunspell  # "nej" + another form: left to the app
+    assert ("nezelena", "zelený") not in hunspell  # "ne" + another form: left to the app
+
+    wiktionary_forms = set(db.execute("SELECT form, lemma FROM cs_forms_wiktionary"))
+    assert wiktionary_forms == {("psa", "pes"), ("psovi", "pes")}  # "kočka" is not in the dictionary
+
+    meta = dict(db.execute("SELECT key, value FROM meta"))
+    assert meta["schema_version"] == "1"
+    assert json.loads(meta["fold_map"])["ž"] == "z"
+    assert json.loads(meta["negation_prefixes"]) == ["nejne", "nej", "ne"]
+    assert "built" not in meta  # no SOURCE_DATE_EPOCH in the test environment
+
+
+def test_build_is_reproducible(tmp_path, hunspell_dir, monkeypatch):
+    en_cs = tmp_path / "en-cs.txt"
+    en_cs.write_text(EN_CS, encoding="utf-8")
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "1760000000")
+    first, second = tmp_path / "a.sqlite", tmp_path / "b.sqlite"
+    build(first, en_cs, hunspell_dir, None)
+    build(second, en_cs, hunspell_dir, None)
+    assert first.read_bytes() == second.read_bytes()
