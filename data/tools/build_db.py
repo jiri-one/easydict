@@ -197,7 +197,14 @@ def build(output: Path, en_cs: Path, hunspell_dir: Path | None, wiktionary: Path
         stats["forms_wiktionary"] = len(wiktionary_rows)
 
     db.executescript(INDEXES)
+    # The GFDL asks for the list of authors; the app shows it.
+    authors: dict[str, int] = {}
+    for *_, author, _, _ in entries:
+        for name in (author or "").split("; "):
+            if name.strip():
+                authors[name.strip()] = authors.get(name.strip(), 0) + 1
     meta = {
+        "authors": json.dumps(sorted(authors.items(), key=lambda item: (-item[1], item[0])), ensure_ascii=False),
         "schema_version": str(SCHEMA_VERSION),
         "fold_map": json.dumps(fold_map, ensure_ascii=False, sort_keys=True),
         "negation_prefixes": json.dumps(NEGATION_PREFIXES),
