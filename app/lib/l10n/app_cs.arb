@@ -49,6 +49,8 @@
   "helpForms": "Česká slova můžete psát v jakémkoli tvaru: „psa“ najde „pes“, „šel“ najde „jít“. Na diakritice a velkých písmenech nezáleží.",
   "helpTipsTitle": "Tipy",
   "helpTips": "Klepnutím na překlad ho vyhledáte v druhém jazyce nebo zkopírujete. Vlajka vedle vyhledávacího pole přepíná jazyk. EasyDict funguje i bez internetu.",
+  "helpTipsAndroid": "Označte slovo v libovolné aplikaci a v nabídce zvolte „Vyhledat v EasyDictu“.",
+  "helpTipsDesktop": "Spuštěním „easydict SLOVO“ rovnou vyhledáte SLOVO, třeba z klávesové zkratky. V nastavení můžete zapnout i vyhledávání slova ze schránky, kdykoli se okno EasyDictu aktivuje.",
   "helpLabelsTitle": "Značky",
   "version": "Verze {version}",
   "website": "Web",

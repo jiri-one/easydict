@@ -185,6 +185,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tap a translation to look it up in the other language or to copy it. The flag next to the search field switches the language. EasyDict works offline.';
 
   @override
+  String get helpTipsAndroid =>
+      'Select a word in any app and choose “Look up in EasyDict” from the menu.';
+
+  @override
+  String get helpTipsDesktop =>
+      'Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up the word copied to the clipboard whenever its window is activated.';
+
+  @override
   String get helpLabelsTitle => 'Labels';
 
   @override

@@ -186,6 +186,14 @@ class AppLocalizationsCs extends AppLocalizations {
       'Klepnutím na překlad ho vyhledáte v druhém jazyce nebo zkopírujete. Vlajka vedle vyhledávacího pole přepíná jazyk. EasyDict funguje i bez internetu.';
 
   @override
+  String get helpTipsAndroid =>
+      'Označte slovo v libovolné aplikaci a v nabídce zvolte „Vyhledat v EasyDictu“.';
+
+  @override
+  String get helpTipsDesktop =>
+      'Spuštěním „easydict SLOVO“ rovnou vyhledáte SLOVO, třeba z klávesové zkratky. V nastavení můžete zapnout i vyhledávání slova ze schránky, kdykoli se okno EasyDictu aktivuje.';
+
+  @override
   String get helpLabelsTitle => 'Značky';
 
   @override

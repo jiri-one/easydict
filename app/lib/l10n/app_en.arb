@@ -85,6 +85,8 @@
   "helpForms": "Czech words can be typed in any form: “psa” finds “pes”, “šel” finds “jít”. Diacritics and capital letters do not matter.",
   "helpTipsTitle": "Tips",
   "helpTips": "Tap a translation to look it up in the other language or to copy it. The flag next to the search field switches the language. EasyDict works offline.",
+  "helpTipsAndroid": "Select a word in any app and choose “Look up in EasyDict” from the menu.",
+  "helpTipsDesktop": "Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up the word copied to the clipboard whenever its window is activated.",
   "helpLabelsTitle": "Labels",
   "version": "Version {version}",
   "@version": {

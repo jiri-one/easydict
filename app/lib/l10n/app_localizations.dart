@@ -392,6 +392,18 @@ abstract class AppLocalizations {
   /// **'Tap a translation to look it up in the other language or to copy it. The flag next to the search field switches the language. EasyDict works offline.'**
   String get helpTips;
 
+  /// No description provided for @helpTipsAndroid.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a word in any app and choose “Look up in EasyDict” from the menu.'**
+  String get helpTipsAndroid;
+
+  /// No description provided for @helpTipsDesktop.
+  ///
+  /// In en, this message translates to:
+  /// **'Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up the word copied to the clipboard whenever its window is activated.'**
+  String get helpTipsDesktop;
+
   /// No description provided for @helpLabelsTitle.
   ///
   /// In en, this message translates to:

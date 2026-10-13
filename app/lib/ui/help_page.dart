@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../data/notes.dart';
@@ -29,7 +30,16 @@ class HelpPage extends StatelessWidget {
         children: [
           section(l10n.helpModesTitle, l10n.helpModes),
           section(l10n.helpFormsTitle, l10n.helpForms),
-          section(l10n.helpTipsTitle, l10n.helpTips),
+          section(
+            l10n.helpTipsTitle,
+            [
+              l10n.helpTips,
+              if (defaultTargetPlatform == TargetPlatform.android)
+                l10n.helpTipsAndroid
+              else
+                l10n.helpTipsDesktop,
+            ].join('\n\n'),
+          ),
           Text(l10n.helpLabelsTitle, style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
           for (final (label, (cs, en)) in noteExplanations)
