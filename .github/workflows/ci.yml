@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  data:
+    name: Dictionary data
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y python3-icu python3-pytest
+      - name: The dictionary is sorted
+        run: data/en-cs/test.sh
+      - name: Tests of the tools
+        run: python3 -m pytest data/tests
+      - name: Build the database
+        run: python3 data/tools/build_db.py data/build/easydict.sqlite
+
+  app:
+    name: App
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+      - run: ./tool/build_dictionary.sh
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
