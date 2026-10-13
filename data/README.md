@@ -1,27 +1,53 @@
 Free Dictionaries
 =================
-This is a working repository for contributions into free *-Czech dictionaries. Ready-to-distribute version of dictionaries is on the website [Svobodné slovníky.cz](https://www.svobodneslovniky.cz/).
+This directory continues the working repository of [Svobodné slovníky](https://github.com/lehrbuch/svobodneslovniky), the free English–Czech dictionary formerly known as the *GNU/FDL Anglicko-Český slovník* (http://slovnik.zcu.cz). The svobodneslovniky.cz website is offline and the original repository has been quiet since October 2021, so the dictionary is now maintained here as part of EasyDict. The full history of the original repository is preserved.
+
+Layout
+------
+- `en-cs/` – the English–Czech dictionary (GNU FDL 1.1 or later). The format is described in `en-cs/format.en.md`.
+- `cs-forms/` – Czech word forms, so that a word typed in any form is found (*psa* → *pes*):
+  - `hunspell/` – the Czech Hunspell dictionary from [LibreOffice](https://github.com/LibreOffice/dictionaries/tree/master/cs_CZ) (GNU GPL 2), commit `b3a1c0b` of 2021-07-28.
+  - `wiktionary/forms.tsv` – inflected forms extracted from [Wiktionary](https://en.wiktionary.org) via [kaikki.org](https://kaikki.org/dictionary/Czech/) (CC BY-SA 4.0), dump of 2026-10-03.
+- `tools/` – `build_db.py` builds the database used by the EasyDict app; `extract_wiktionary_forms.py` refreshes `cs-forms/wiktionary/forms.tsv`.
+- `tests/` – tests for the tools: `python3 -m pytest data/tests`.
 
 Contributing
 ------------
-1. Fork this repository.
-2. Make your modifications in the particular dictionary. Please, keep the format of the dictionary (which is typically found in `format.en.md` file in the same directory as the dictionary).
-3. Execute the dictionary’s script `sort.sh`. This ensures that all records are in correct order. Unsorted records fail to pass later automatic check.
-4. Create a *Pull Request* for your contribution from your repository. Most times it is best to separate your contributions to individual dictionaries into independent commits with appropriate commit messages.
+1. Fork the EasyDict repository.
+2. Edit `en-cs/en-cs.txt`, keeping its format (see `en-cs/format.en.md`).
+3. Run `en-cs/sort.sh`, which keeps the records in the correct order (it needs [PyICU](https://pypi.org/project/PyICU/)). Unsorted records fail the automatic check.
+4. Open a pull request.
 
-In case of any issues, get in touch via IRC (see [our website](https://www.svobodneslovniky.cz/)).
+Building the database
+---------------------
+The build needs only Python 3.9+ and its standard library:
+
+    python3 data/tools/build_db.py data/build/easydict.sqlite
 
 ---
 
 Svobodné slovníky
 =================
-Toto je pracovní repozitář pro příspěvky do svobodných *-českých slovníků. Distribuovatelná podoba slovníků je na webu [Svobodné slovníky.cz](https://www.svobodneslovniky.cz/).
+Tento adresář pokračuje v pracovním repozitáři [Svobodných slovníků](https://github.com/lehrbuch/svobodneslovniky), svobodného anglicko-českého slovníku, dříve známého jako *GNU/FDL Anglicko-Český slovník* (http://slovnik.zcu.cz). Web svobodneslovniky.cz už neběží a původní repozitář se od října 2021 nezměnil, proto slovník nyní spravujeme zde jako součást EasyDictu. Celá historie původního repozitáře je zachována.
+
+Obsah
+-----
+- `en-cs/` – anglicko-český slovník (GNU FDL 1.1 nebo pozdější). Formát popisuje `en-cs/format.cs.md`.
+- `cs-forms/` – tvary českých slov, aby se slovo našlo v jakémkoli tvaru (*psa* → *pes*):
+  - `hunspell/` – český slovník Hunspell z [LibreOffice](https://github.com/LibreOffice/dictionaries/tree/master/cs_CZ) (GNU GPL 2), commit `b3a1c0b` z 28. 7. 2021.
+  - `wiktionary/forms.tsv` – tvary z [Wikislovníku](https://en.wiktionary.org) přes [kaikki.org](https://kaikki.org/dictionary/Czech/) (CC BY-SA 4.0), export z 3. 10. 2026.
+- `tools/` – `build_db.py` sestaví databázi pro aplikaci EasyDict, `extract_wiktionary_forms.py` obnoví `cs-forms/wiktionary/forms.tsv`.
+- `tests/` – testy nástrojů: `python3 -m pytest data/tests`.
 
 Jak přispívat
 -------------
-1. Založte fork.
-2. Proveďte zamýšlenou úpravu v příslušném slovníku. Držte se, prosím, formátu daného slovníku (ten typicky najdete v souboru `format.cs.md` u slovníku).
-3. Spusťte pro daný slovník skript `sort.sh`, který zaručí, že záznamy budou vždy ve správném pořadí. Nesetříděné záznamy neprojdou pozdější automatickou kontrolou.
-4. Požádejte o začlenění (*Pull Request*) svého příspěvku ze svého repozitáře. Zpravidla je nejlepší rozdělovat své příspěvky do jednotlivých slovníků do samostatných commitů s patřičnými commit zprávami.
+1. Založte fork repozitáře EasyDict.
+2. Upravte `en-cs/en-cs.txt` a držte se jeho formátu (viz `en-cs/format.cs.md`).
+3. Spusťte `en-cs/sort.sh`, který zaručí správné pořadí záznamů (potřebuje [PyICU](https://pypi.org/project/PyICU/)). Nesetříděné záznamy neprojdou automatickou kontrolou.
+4. Pošlete pull request.
 
-V případě potíží pište na IRC (vizte [web](https://www.svobodneslovniky.cz/)).
+Sestavení databáze
+------------------
+Stačí Python 3.9+ a jeho standardní knihovna:
+
+    python3 data/tools/build_db.py data/build/easydict.sqlite
