@@ -1,0 +1,44 @@
+# Production image of easydict.jiri.one (rootless Podman + Quadlet on the M1S).
+# Build: podman build -f deploy/Containerfile .
+#
+# Runtime: Google's distroless Python (no shell, no package manager, user nonroot = 65532).
+# Its Python is Debian's, so the virtualenv is built with the same Debian release's python3.
+
+FROM docker.io/library/debian:13-slim AS build
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+RUN python3 -m venv /venv
+# pip itself is not needed at runtime
+COPY deploy/requirements.txt /tmp/requirements.txt
+RUN /venv/bin/pip install -r /tmp/requirements.txt \
+    && /venv/bin/pip uninstall -y pip
+
+WORKDIR /app
+# only what the site needs (utils/en-cs.txt is import data, 7.5 MB)
+COPY manage.py ./
+COPY easydict ./easydict
+COPY web ./web
+COPY deploy ./deploy
+# bytecode now, the runtime cannot write it
+RUN /venv/bin/python -m compileall -q easydict web deploy \
+    && mkdir -p /data/static
+
+
+FROM gcr.io/distroless/python3-debian13:nonroot
+COPY --from=build /venv /venv
+COPY --from=build /app /app
+COPY --from=build --chown=65532:65532 /data /data
+
+WORKDIR /app
+ENV PATH=/venv/bin:/usr/bin:/bin \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    SYSTEM_ENV=PRODUCTION \
+    DJANGO_SETTINGS_MODULE=easydict.settings \
+    PGSERVICEFILE=/app/deploy/pg_service.conf
+EXPOSE 8000
+ENTRYPOINT ["/venv/bin/python", "/app/deploy/entrypoint.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "easydict.wsgi"]

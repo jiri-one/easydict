@@ -1,0 +1,168 @@
+/* Three themes: the original colours (white on slate), and plain black on white
+   ("light") or white on black ("dark") with high contrast, for a black-and-white
+   monitor; js/theme.js switches them. */
+:root {
+	color-scheme: light;
+	--fg: #ffffff;
+	--bg: #47516d;
+	--accent: auto;
+}
+
+html[data-theme="light"] {
+	--fg: #000000;
+	--bg: #ffffff;
+	--accent: #000000;
+}
+
+html[data-theme="dark"] {
+	color-scheme: dark;
+	--fg: #ffffff;
+	--bg: #000000;
+	--accent: #ffffff;
+}
+
+body {
+	font-size: 24px;
+	color: var(--fg) !important;
+	font-family: Arial !important;
+	background-color: var(--bg);
+	accent-color: var(--accent);
+}
+
+a:link, a:visited {
+	color: var(--fg);
+}
+
+.container {
+display: flex;
+flex-direction: column;
+min-height: 100vh;
+border-style: solid;
+border-width: 1px;
+}
+
+
+@media (min-width: 768px) {
+.container {
+	display: grid;
+	grid-template-columns: auto 360px;
+	grid-template-rows: auto 1fr auto;
+}
+}
+
+header {
+grid-column: span 3;
+padding: 5px;
+text-align: center;
+#font-size: 1.4em;
+color: var(--fg);
+}
+
+main {
+flex: 1;
+padding: 20px;
+border-style: solid;
+border-width: 1px;
+}
+
+side_bar {
+padding: 20px;
+border-style: solid;
+border-width: 1px;
+}
+
+footer {
+grid-column: span 3;
+padding: 10px;
+text-align: center;
+font-size: 1.0em;
+color: var(--fg);
+}
+
+h1 {
+margin-bottom: 1em;
+font-size: 1.3em;
+font-weight: bold;
+}
+
+fieldset {
+	border: 0;
+	text-align: center;
+}
+
+#searched_text {
+	width: 90%;
+}
+
+#button_search {
+	width: 45%;
+}
+
+#language {
+	width: 45%;
+}
+
+#results {
+	overflow-y: scroll;
+	overflow-x: hidden;
+	height: 640px;
+}
+
+.hover_img { text-align: center; overflow-wrap: break-word; }
+.hover_img a { position:relative; }
+.hover_img a span { position:absolute; display:none; z-index:99; }
+.hover_img a:hover span { position: relative; display: block; }
+
+.bold {
+	text-align: center;
+	font-weight: bold;
+}
+
+.img_flag {
+	margin: 3px
+}
+
+/* the logo (templates/web/logo.svg): blue and white in the original colours, in the high
+   contrast ones a drawing in the text colour with a frame, like the colour switch */
+.logo {
+	float: left;
+	box-sizing: border-box;
+	width: 100px;
+	height: 100px;
+}
+
+.logo-tile { fill: #387ff2; }
+.logo-art { fill: #ffffff; }
+html:is([data-theme="light"], [data-theme="dark"]) .logo { border: 2px solid var(--fg); border-radius: 12px; }
+html:is([data-theme="light"], [data-theme="dark"]) .logo-tile { fill: none; }
+html:is([data-theme="light"], [data-theme="dark"]) .logo-art { fill: var(--fg); }
+
+/* colour switch in the top right corner, in line with the flags (same height and margin):
+   a sun on a rectangle in the colours of the current theme, a rainbow for the original ones */
+.theme-toggle {
+	float: right;
+	box-sizing: border-box;
+	width: 52px;
+	height: 20pt; /* as tall as the flag pictures */
+	margin: 3px;
+	padding: 0;
+	border: 2px solid var(--fg);
+	border-radius: 4px;
+	background: linear-gradient(to right, #e40303, #ff8c00, #ffed00, #008026, #004dff, #750787);
+	color: #ffffff;
+	cursor: pointer;
+}
+
+.theme-toggle svg {
+	display: block;
+	width: 22px;
+	height: 22px;
+	margin: auto;
+}
+
+/* a black edge keeps the white sun readable on every colour of the rainbow */
+.theme-toggle .sun-edge { stroke: #000000; stroke-width: 4.5; }
+
+html[data-theme="light"] .theme-toggle { background: #ffffff; color: #000000; }
+html[data-theme="light"] .theme-toggle .sun-edge { stroke: none; }
+html[data-theme="dark"] .theme-toggle { background: #000000; }

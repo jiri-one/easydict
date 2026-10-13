@@ -1,0 +1,5 @@
+__pycache__/
+logfile
+venv
+secret_key.txt
+.vscode

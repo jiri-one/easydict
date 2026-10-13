@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "easydict"
+version = "0.1.0"
+description = "Main site for EasyDict project with Django (Python) like a backend."
+authors = ["jiri.one <nemec@jiri.one>"]
+license = "GPLv3"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg version="1.1" viewBox="0 0 278.9 279.9" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><metadata><rdf:RDF><cc:Work rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/></cc:Work></rdf:RDF></metadata>
+<style type="text/css">
+	.st0{fill:#387FF2;enable-background:new    ;}
+	.st1{fill:#FFFFFF;}
+</style>
+<path class="st0" d="m249.6 279.9h-220.3c-16.2 0-29.3-13.1-29.3-29.3v-221.3c0-16.2 13.1-29.3 29.3-29.3h220.3c16.2 0 29.3 13.1 29.3 29.3v221.3c0 16.2-13.1 29.3-29.3 29.3z"/>
+<path class="st1" d="m15.4 150.4v84h126v-84zm119 44h-54.2l-51.1 34h-4.9l54.2-36-52.6-35h108.6z"/>
+<polygon class="st1" transform="translate(-158.2,-281)" points="304.3 405.4 294.6 405.4 339 378.1 345.6 378.1 345.6 380.1"/>
+<polygon class="st1" transform="translate(-158.2,-281)" points="365.6 373.4 365.6 405.4 350.6 405.4 350.6 373.4 294.6 373.4 294.6 359.4 350.6 359.4 350.6 327.4 365.6 327.4 365.6 359.4 421.6 359.4 421.6 373.4"/>
+<polygon class="st1" transform="translate(-158.2,-281)" points="294.6 378.1 324.6 378.1 294.6 396.6"/>
+<polygon class="st1" transform="translate(-158.2,-281)" points="309 405.4 345.6 383 345.6 405.4"/>
+<polygon class="st1" transform="translate(-158.2,-281)" points="294.6 333.4 294.6 327.4 339 354.7 329.3 354.7"/>
+<polygon class="st1" transform="translate(-158.2,-281)" points="294.6 336.3 324.6 354.7 294.6 354.7"/>
+<polygon class="st1" transform="translate(-158.2,-281)" points="309 327.4 345.6 327.4 345.6 349.9"/>
+<polygon class="st1" transform="translate(-158.2,-281)" points="377.2 378.1 386.9 378.1 421.6 399.5 421.6 405.4"/>
+<polygon class="st1" transform="translate(-158.2,-281)" points="391.6 378.1 421.6 378.1 421.6 396.6"/>
+<polygon class="st1" transform="translate(-158.2,-281)" points="370.6 383 407.2 405.4 370.6 405.4"/>
+<polygon class="st1" transform="translate(-158.2,-281)" points="370.6 354.7 370.6 352.7 411.9 327.4 421.6 327.4 377.2 354.7"/>
+<polygon class="st1" transform="translate(-158.2,-281)" points="391.6 354.7 421.6 336.3 421.6 354.7"/>
+<polygon class="st1" transform="translate(-158.2,-281)" points="370.6 327.4 407.2 327.4 370.6 349.9"/>
+<path class="st1" d="m67 87.4h28.2l-39.9 37-39.9-37h26.9c0-37.8 35.2-68.5 78.6-68.5v22.5c-29.8 0-53.9 20.6-53.9 46z"/>
+<path class="st1" d="m210.7 193.8h-28.2l39.9-37 39.9 37h-26.9c0 37.9-35.2 68.5-78.5 68.5v-22.5c29.7 0 53.8-20.6 53.8-46z"/>
+</svg>
