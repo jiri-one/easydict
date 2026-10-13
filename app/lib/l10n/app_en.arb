@@ -1,0 +1,106 @@
+{
+  "@@locale": "en",
+  "appTitle": "EasyDict",
+  "appSubtitle": "Completely open translator",
+  "searchHint": "Type a word…",
+  "clear": "Clear",
+  "english": "English",
+  "czech": "Czech",
+  "searchingEnglish": "Searching English words, tap to switch to Czech",
+  "searchingCzech": "Searching Czech words, tap to switch to English",
+  "modeStartsWith": "Starts with",
+  "modeWholeWord": "Whole word",
+  "modeFulltext": "Anywhere",
+  "welcomeTitle": "Welcome to EasyDict",
+  "welcomeHint": "Just start typing to see results.",
+  "slogan": "The first translator which is completely open with dictionary data too.",
+  "entryCount": "{count, plural, =1{1 translation} other{{count} translations}} in the dictionary",
+  "@entryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "noResults": "Nothing found for “{query}”.",
+  "@noResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "searchAnywhere": "Search anywhere in the text",
+  "searchInEnglish": "Search in English",
+  "searchInCzech": "Search in Czech",
+  "baseForms": "Base form: {forms}",
+  "@baseForms": {
+    "placeholders": {
+      "forms": {
+        "type": "String"
+      }
+    }
+  },
+  "truncated": "Only the best matches are shown. Type more to narrow the search.",
+  "showMore": "Show {count} more",
+  "@showMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settings": "Settings",
+  "help": "Help",
+  "about": "About",
+  "notes": "Labels",
+  "special": "Note",
+  "author": "Translated by",
+  "lookUp": "Look up “{word}”",
+  "@lookUp": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "copy": "Copy",
+  "copied": "Copied to the clipboard",
+  "settingsSearch": "Search",
+  "defaultLanguage": "Search in",
+  "defaultMode": "Search mode",
+  "settingsAppearance": "Appearance",
+  "theme": "Theme",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "appLanguage": "App language",
+  "systemLanguage": "System",
+  "clipboardLookup": "Look up the clipboard",
+  "clipboardLookupHint": "When the window is activated, search the word copied to the clipboard.",
+  "helpModesTitle": "Search modes",
+  "helpModes": "Starts with – headwords beginning with the typed text.\nWhole word – headwords containing the typed word.\nAnywhere – the typed text anywhere in the headword.",
+  "helpFormsTitle": "Word forms",
+  "helpForms": "Czech words can be typed in any form: “psa” finds “pes”, “šel” finds “jít”. Diacritics and capital letters do not matter.",
+  "helpTipsTitle": "Tips",
+  "helpTips": "Tap a translation to look it up in the other language or to copy it. The flag next to the search field switches the language. EasyDict works offline.",
+  "helpLabelsTitle": "Labels",
+  "version": "Version {version}",
+  "@version": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "website": "Website",
+  "sourceCode": "Source code",
+  "dictionaryData": "Dictionary data",
+  "dataCredits": "The English–Czech dictionary is the free dictionary of the Svobodné slovníky project (GNU FDL 1.1 or later), formerly the GNU/FDL English-Czech Dictionary. Czech word forms come from the Czech Hunspell dictionary (GNU GPL 2) and from Wiktionary (CC BY-SA 4.0).",
+  "translators": "Translators",
+  "licenses": "Licenses",
+  "loading": "Preparing the dictionary…",
+  "openError": "The dictionary could not be opened.",
+  "searchError": "Searching failed."
+}

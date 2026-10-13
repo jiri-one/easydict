@@ -1,0 +1,7 @@
+SET UTF-8
+PFX N Y 1
+PFX N   0     ne      .
+SFX Y Y 3
+SFX Y   ý     á       ý
+SFX Y   ý     é       ý
+SFX Y   ý     ého     ý

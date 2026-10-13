@@ -1,0 +1,36 @@
+name: easydict
+description: "The first open source translator which is completely open with dictionary data too."
+publish_to: 'none'
+
+# Keep lib/version.dart in step (a test checks it).
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.5
+
+# Only plugins without build hooks or prebuilt binaries, so that F-Droid and
+# Flathub can build everything from source and offline.
+dependencies:
+  ffi: ^2.2.0
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  shared_preferences: ^2.5.6
+  sqflite: ^2.4.4+2
+  url_launcher: ^6.3.3
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/images/
+    - assets/licenses/
+    # built by tool/build_dictionary.sh
+    - assets/dictionary/
