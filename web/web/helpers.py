@@ -1,64 +1,64 @@
-import difflib
-import re
+from django.utils.html import format_html, format_html_join
 
-from django.db.models.functions import Length
-from django.utils.html import format_html
+from .dictionary import SearchResult, other
 
-from .models import Record
-
-LANGUAGES = ("cze", "eng")
 MAX_RESULTS = 100
 
+TEXTS = {
+    "cze": {
+        "nothing": "Nic nenalezeno.",
+        "base_form": "Nalezeno jako tvar slova {}.",
+        "base_forms": "Nalezeno jako tvar slov {}.",
+        "quotes": "„{}“",
+        "more": "… (zobrazeno prvních {} překladů)",
+        "updating": "Slovník se právě aktualizuje, zkuste to prosím za chvíli.",
+    },
+    "eng": {
+        "nothing": "Nothing found.",
+        "base_form": "Found as a form of {}.",
+        "base_forms": "Found as a form of {}.",
+        "quotes": "“{}”",
+        "more": "… (the first {} translations are shown)",
+        "updating": "The dictionary is being updated, please try again in a moment.",
+    },
+}
 
-def db_search(language, text, fulltext):
-    if fulltext == "whole_word":
-        # the searched text is literal, only \y (word boundary) is regex
-        filter_value = rf"\y{re.escape(text)}\y"
-        search_type = "iregex"
-    else:
-        filter_value = text
-        search_type = "icontains"
-    filter_key = f"{language}__{search_type}"
-    filter_dict = {filter_key: filter_value}
-    # Shortest matches first: they are also the most similar ones below, so the limit
-    # keeps the best results. One more than the limit tells that some were left out.
-    results = list(
-        Record.objects.filter(**filter_dict)
-        .order_by(Length(language), language)
-        .values()[: MAX_RESULTS + 1]
-    )
-    truncated = len(results) > MAX_RESULTS
-    del results[MAX_RESULTS:]
 
-    results_with_matchratio = []
-    for result in results:
-        ratio = difflib.SequenceMatcher(None, result[language], text).ratio()
-        results_with_matchratio.append([result, ratio])
-    sorted_results = sorted(results_with_matchratio, key=lambda x: x[1], reverse=True)
-    html = CreateHtml(sorted_results, language)()
-    if truncated:
-        html += f"<p>… (zobrazeno prvních {MAX_RESULTS} výsledků / first {MAX_RESULTS} results shown)</p>"
-    return html
-
-class CreateHtml:
-    def __init__(self, results, language):
-        self.lng1 = language
-        self.lng2 = [lang for lang in LANGUAGES if lang != language][0]
-        self.html_string = ""
-        for row in results:
-            self.html_string = self.html_string + self.create_html(row[0]) # zero is here bacause index 1 is matchratio
-
-    def __call__(self):
-        return self.html_string
-
-    def create_html(self, row):
-        notes = f" | {note}" if (note := row[f"notes_{self.lng2}"]) else ""
-        special = f" | {spec}" if (spec := row[f"special_{self.lng2}"]) else ""
+def results_html(result: SearchResult, page_language: str) -> str:
+    texts = TEXTS[page_language]
+    if not result.groups:
+        return format_html("<p>{}</p>", texts["nothing"])
+    html = ""
+    if result.base_forms:
+        quoted = ", ".join(texts["quotes"].format(form) for form in result.base_forms)
+        sentence = texts["base_form" if len(result.base_forms) == 1 else "base_forms"]
+        html += format_html("<p>{}</p><hr>\n", sentence.format(quoted))
+    translation_language = other(result.language)
+    shown = 0
+    truncated = result.truncated
+    for group in result.groups:
+        entries = group.entries[: MAX_RESULTS - shown]
+        if not entries:
+            truncated = True
+            break
+        truncated |= len(entries) < len(group.entries)
+        shown += len(entries)
         # format_html escapes the dictionary data
-        return format_html(
-            "<p>{}<br>&emsp;{}{}{}</p><hr>\n",
-            row[self.lng1],
-            row[self.lng2],
-            notes,
-            special,
+        html += format_html(
+            "<p><b>{}</b>{}</p><hr>\n",
+            group.headword,
+            format_html_join(
+                "",
+                "<br>&emsp;{}{}",
+                (
+                    (
+                        entry.text(translation_language),
+                        " | ".join(["", *filter(None, (entry.notes, entry.special))]),
+                    )
+                    for entry in entries
+                ),
+            ),
         )
+    if truncated:
+        html += format_html("<p>{}</p>", texts["more"].format(shown))
+    return html

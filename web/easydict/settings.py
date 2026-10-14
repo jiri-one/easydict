@@ -129,6 +129,16 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# deploy/Containerfile builds it into the image
+DICTIONARY_DATABASE = os.environ.get("DICTIONARY_DATABASE", BASE_DIR / "dictionary" / "easydict.sqlite.gz")
+
+# app/tool/build_web.sh; in production the proxy serves it from STATIC_ROOT/app (copied there by
+# deploy/entrypoint.py), only index.html goes through the view /app
+WEBAPP_DIR = Path(os.environ.get("WEBAPP_DIR", BASE_DIR / "webapp"))
+if os.environ.get("SYSTEM_ENV") != "PRODUCTION" and WEBAPP_DIR.is_dir():
+    # runserver has no proxy in front of it
+    STATICFILES_DIRS = [("app", WEBAPP_DIR)]
+
 
 # Production (container on the M1S, see deploy/); the same values the old server had
 if os.environ.get("SYSTEM_ENV") == "PRODUCTION":
