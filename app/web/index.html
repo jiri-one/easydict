@@ -34,7 +34,7 @@
     a { color: inherit; }
     #phone { position: fixed; inset: 0; background: #ffffff; }
     #screen { position: absolute; inset: 0; overflow: hidden; }
-    #about, #theme { display: none; }
+    #about, #theme, #bezel { display: none; }
     #loading {
       position: absolute; inset: 0;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -47,13 +47,19 @@
         box-sizing: border-box; min-height: 100%; padding: 24px;
       }
       #phone {
-        position: relative; inset: auto; flex: none;
-        width: 390px; height: min(844px, calc(100vh - 48px));
-        border: 12px solid #16181d; border-radius: 52px;
+        position: relative; inset: auto; flex: none; box-sizing: border-box;
+        width: 422px; height: min(876px, calc(100vh - 48px));
+        border-radius: 52px;
+      }
+      #screen { inset: 16px; }
+      /* Some browsers clip Flutter's canvases neither with overflow nor with clip-path,
+         so the frame is drawn over the app. A frame of 16 px still covers the square
+         corners of the screen under a radius of 52 px (up to 16 × 3.41). */
+      #bezel {
+        display: block; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+        border: 16px solid #16181d; border-radius: 52px;
         box-shadow: 0 0 0 2px #5a5f6e, 0 24px 64px rgba(0, 0, 0, 0.45);
       }
-      /* overflow does not clip the canvas layers of Flutter in every browser */
-      #screen { border-radius: 40px; clip-path: inset(0 round 40px); }
       #about { display: block; max-width: 340px; }
       #theme { display: block; position: fixed; top: 16px; right: 16px; }
     }
@@ -120,6 +126,7 @@
         <span lang="en">Loading EasyDict…</span>
       </div>
     </div>
+    <div id="bezel"></div>
   </main>
   <script src="flutter_bootstrap.js" async></script>
 </body>
