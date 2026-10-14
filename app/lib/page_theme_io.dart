@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-ValueListenable<ThemeMode>? pageTheme() => null;
+ValueNotifier<ThemeMode>? pageTheme() => null;

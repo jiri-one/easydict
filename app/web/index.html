@@ -99,7 +99,7 @@
         try {
           localStorage.setItem("theme", theme);
         } catch (error) {}
-        // the app takes the colours too (lib/page_theme_web.dart)
+        // the app takes them too (lib/page_theme_web.dart)
         window.dispatchEvent(new Event("easydict-theme"));
       });
     })();

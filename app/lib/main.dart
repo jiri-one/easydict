@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'app.dart';
-import 'page_theme.dart';
 import 'settings.dart';
 
 /// Desktop: `easydict WORD` starts with WORD looked up; the web app does the
@@ -15,11 +14,7 @@ Future<void> main(List<String> arguments) async {
       ? Uri.base.queryParameters['q'] ?? ''
       : arguments.join(' ');
   runApp(
-    EasyDictApp(
-      settings: await Settings.load(),
-      initialQuery: query.trim(),
-      pageTheme: pageTheme(),
-    ),
+    EasyDictApp(settings: await Settings.load(), initialQuery: query.trim()),
   );
 }
 
