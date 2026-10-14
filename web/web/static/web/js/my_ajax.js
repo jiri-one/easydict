@@ -1,21 +1,21 @@
+// the texts are in the form's data attributes, in the language of the page
 var form = document.getElementById('main_search_form');
+var results = document.getElementById('results');
 form.onsubmit = function (event) {
-    var formData = new FormData(form);
-    document.getElementById('results').innerText = "Loading..."
-    fetch("/search",
-        {
-            body: formData,
-            method: "post"
-        }).then(async function (response) {
-            let data = await response.text();
-            if (response.ok == true) {
-                document.getElementById('results').innerHTML = data;
-            } else {
-                document.getElementById('results').innerText = "There is some error: " + data
-            }
+    results.innerText = form.dataset.loading;
+    fetch("/search", {
+        body: new FormData(form),
+        method: "post"
+    }).then(async function (response) {
+        var data = await response.text();
+        if (response.ok) {
+            results.innerHTML = data;
+        } else {
+            results.innerText = form.dataset.error + " " + data;
         }
-        );
-
-    //Dont submit the form.
+    }).catch(function (error) {
+        results.innerText = form.dataset.error + " " + error.message;
+    });
+    // no page reload
     return false;
-}
+};

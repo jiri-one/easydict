@@ -1,16 +1,16 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>EasyDict - open source translator</title>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="{% static 'web/css/reset.css' %}">
-    <link rel="stylesheet" href="{% static 'web/css/my_styles.css' %}">
-    <script src="{% static 'web/js/theme.js' %}"></script>
-    <link rel="shortcut icon" href="{% static 'web/images/ed_tray_icon.svg' %}" />
+	<title>EasyDict – open English–Czech dictionary</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="EasyDict is an English–Czech and Czech–English dictionary that is open, dictionary data included.">
+	<link rel="stylesheet" href="{% static 'web/css/reset.css' %}">
+	<link rel="stylesheet" href="{% static 'web/css/my_styles.css' %}">
+	<script src="{% static 'web/js/theme.js' %}"></script>
+	<link rel="shortcut icon" href="{% static 'web/images/ed_tray_icon.svg' %}" />
 </head>
 
 <body class="container">
@@ -19,73 +19,67 @@
 		<button class="theme-toggle" type="button" title="Colours: colourful / light / dark" aria-label="Switch colours: colourful, light, dark">
 			<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-linecap="round"><defs><g id="theme-sun"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></g></defs><use class="sun-edge" href="#theme-sun"/><use href="#theme-sun" stroke="currentColor" stroke-width="2"/></svg>
 		</button>
-		<a title="Přepnout stránku na český jazyk" href="/cze"><img align="right" class="img_flag" src="{% static 'web/images/flag_cze.svg' %}"/></a>
-		<a title="Switch site to english language" href="/eng"><img align="right" class="img_flag" src="{% static 'web/images/flag_eng.svg' %}"/></a>
+		<a title="Přepnout stránku na český jazyk" href="/cze"><img align="right" class="img_flag" src="{% static 'web/images/flag_cze.svg' %}" alt="Česky"/></a>
+		<a title="Switch the page to English" href="/eng"><img align="right" class="img_flag" src="{% static 'web/images/flag_eng.svg' %}" alt="English"/></a>
 		<h1>Welcome to EasyDict</h1>
-		<p class="tagline">The first open source translator which is completely open with dictionary data too.</p>
+		<p class="tagline">The first open-source translator that is completely open, dictionary data included.</p>
 	</header>
 	<main>
-		<p>
-The goal of the EasyDict project is to provide users with tools for translation between different languages. All tools have to be completely open source (licenced by <a title="GPL3.0" href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GPL3.0</a>) and all dictionary entries have to be open too (licenced by <a title="GNU/FDL" href="https://www.gnu.org/licenses/fdl-1.3.html" target="_blank" rel="noopener">GNU/FDL</a>).<br />
-Dictionaries are currently available for translation from english to czech language (and the other way round), which come from this project <a title="http://svobodneslovniky.cz" href="http://svobodneslovniky.cz" target="_blank" rel="noopener">http://svobodneslovniky.cz</a>. There are also the first two applications that allow the use of dictionaries (see below).</p><br />
-<p><div class="bold">Current state - first phase:</div>
-In this first phase of the project, there are two applications available that can be used for translation (indeed only between English and Czech, for now). Firstly you can use this site, on which you can use EasyDict in its web version (on the right side of the page). The web version is written in Python and Django, PostgreSQL is like database and some pure JavaScript for HTML frontend.
-<br />
-There is also a desktop version written in Python, PyGObject and GTK3 available for download, which can translate just like this web version, but has some more user friendly features (for example: translation directly from system clipboard, so just copy the text anywhere in the system - for example with Control+C - and if the EasyDict application window is open, the translation will take place automatically).<br />
-Both applications are in the alpha version stage and will need some more tunning and of course addition of some functions,
-but they work well for the translation itself (if you find a bug, do not hesitate to report it).
-</p><br /><p><div class="bold">Future state - second phase:</div>
-Creating the simplest and most user-friendly possible <a title="CMS" href="https://cs.wikipedia.org/wiki/CMS" target="_blank" rel="noopener">CMS</a>, which will allow users to edit existing or insert new translations. At this stage, I would still like to limit testing to the English-Czech dictionary. A volunteer or volunteers must also be found to authorize new submitted translations, (however, I can do it alone with my friend Alex from England, who will practice Czech and ensure the maximum quality of English translation), which would then be added to the dictionary.
-</p><br />
-		<p><div class="bold">Future state - third phase:</div>Both the application and the CMS for use with other dictionaries will be prepared, and EasyDict will start to be promoted anywhere in the world to create more open dictionaries and the community around them.
-		</p>
+		<p>EasyDict is an English–Czech and Czech–English dictionary with more than 150,000 translations. All of it is open: the apps and the website are free software under the <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GNU GPL 3</a>, and anyone may use and change the dictionary data under the <a href="https://www.gnu.org/licenses/fdl-1.3.html" target="_blank" rel="noopener">GNU FDL</a>. The dictionary continues the <a href="https://github.com/lehrbuch/svobodneslovniky" target="_blank" rel="noopener">Svobodné slovníky</a> project, and it also finds Czech words typed in other forms: “psa” finds “pes” (dog), “očima” finds “oko” (eye).</p>
+
+		<div class="bold">Where to find EasyDict</div>
+		<ul>
+			<li><b>Here on the website:</b> the search is on the right (at the very bottom on a phone).</li>
+			<li><b><a href="/app">The web app</a>:</b> EasyDict in the browser, on a computer or a phone. It searches the same dictionary as this page.</li>
+			<li><b>Apps for Linux, Windows, macOS and Android:</b> they work offline too. On Android, select a word in any app and choose “Look up in EasyDict”; on a computer, EasyDict can also look up text copied to the clipboard. The first release is on its way, on <a href="https://github.com/jiri-one/easydict/releases" target="_blank" rel="noopener">GitHub</a>, Flathub and F-Droid.</li>
+		</ul>
+
+		<div class="bold">History</div>
+		<p>EasyDict started in 2020 as a desktop app in Python and GTK 3, which was also on Flathub. A version for GTK 4 and libadwaita followed in 2023–2024. Both live on in the archived <a href="https://github.com/jiri-one/easydict-gtk" target="_blank" rel="noopener">easydict-gtk</a> repository. The website went from CherryPy to Django. In 2026 the whole project moved into one repository, <a href="https://github.com/jiri-one/easydict" target="_blank" rel="noopener">jiri-one/easydict</a>. The dictionary data have a new home there, since the svobodneslovniky.cz website is gone, and the app was rewritten in Flutter to run on phones too.</p>
+
+		<div class="bold">What comes next</div>
+		<p>A simple way for users to suggest new translations and corrections. Volunteers will approve the suggestions (for now, my friend Alex from England and I can do it; Alex practises Czech that way and makes sure the English is right), and approved translations will show up on the website and in the web app right away. Later, more dictionaries and, hopefully, a community around them.</p>
 		<hr />
 		<h1 style="text-align: center;">Donate to EasyDict!</h1>
-		<p style="text-align: center;">This open project is created in one person's free time (whose name you can find in footer). I will be happy if you decide to support me financially in any way you can. Below are some of the ways you can do that. If I could see that there is interest in the project and its vision, then other support options may be added in the future (eg via Startovac or Patreon).
-		</p>
-		<p>
-			<br />
-			<div class="bold"><a name="bank">Bank account number:</a></div>
-			<div class="hover_img"><a href="#bank">100337997/2250<span><img src="{% static 'web/images/qrcode_bank.svg' %}" alt="Bank account QRCode"/></span></a></div>
-			<br />
-			<div class="bold"><a name="iban">IBAN:</a></div>
-			<div class="hover_img"><a href="#iban">CZ71 2250 0000 0001 0033 7997<span><img src="{% static 'web/images/qrcode_iban.svg' %}" alt="IBAN QRCode"/></span></a></div>
-			<br />
-			<div class="bold"><a name="btc">Bitcoin adress:</a></div>
-			<div class="hover_img"><a href="#btc">16tpbHNWghAgovpxxN63sHsf7P1tyH4vyd<span><img src="{% static 'web/images/qrcode_bt.svg' %}" alt="Bitcoin QRCode"/></span></a></div>
-			<br />
-			<div class="bold"><a name="ltc">Litecoin adress:</a></div>
-			<div class="hover_img"><a href="#ltc">LMhUwNiTDqA9WKE3SuboEdddzK2Eo93gKe<span><img src="{% static 'web/images/qrcode_lt.svg' %}" alt="Litecoin QRCode"/></span></a></div>
-			<br />
-			<p style="text-align: center;">(If you are interested, I can add addresses to other cryptocurrencies. In which case, feel free to let me know.)
-			</p>
-		</p>
+		<p style="text-align: center;">EasyDict is an open project made by one person in their free time (you will find the name in the footer). I will be glad if you decide to support my work financially in any way. Below are the ways you can do it. If I see that there is interest in the project and its vision, more ways of support may come later (for example Startovač or Patreon).</p>
+		<div class="bold"><a name="bank">Bank account number:</a></div>
+		<div class="hover_img"><a href="#bank">100337997/2250<span><img src="{% static 'web/images/qrcode_bank.svg' %}" alt="QR code of the bank account"/></span></a></div>
+		<br />
+		<div class="bold"><a name="iban">IBAN:</a></div>
+		<div class="hover_img"><a href="#iban">CZ71 2250 0000 0001 0033 7997<span><img src="{% static 'web/images/qrcode_iban.svg' %}" alt="QR code of the IBAN"/></span></a></div>
+		<br />
+		<div class="bold"><a name="btc">Bitcoin address:</a></div>
+		<div class="hover_img"><a href="#btc">16tpbHNWghAgovpxxN63sHsf7P1tyH4vyd<span><img src="{% static 'web/images/qrcode_bt.svg' %}" alt="QR code of the Bitcoin address"/></span></a></div>
+		<br />
+		<div class="bold"><a name="ltc">Litecoin address:</a></div>
+		<div class="hover_img"><a href="#ltc">LMhUwNiTDqA9WKE3SuboEdddzK2Eo93gKe<span><img src="{% static 'web/images/qrcode_lt.svg' %}" alt="QR code of the Litecoin address"/></span></a></div>
+		<br />
+		<p style="text-align: center;">(If you would like to send another cryptocurrency, just let me know and I will add its address.)</p>
 	</main>
 	<side_bar>
-        <form id="main_search_form">
-        {% csrf_token %}
-		<div class="search_form">
+		<a class="app-link" href="/app">Open the web app</a>
+		<form id="main_search_form" data-loading="Searching…" data-error="The search failed:">
+			{% csrf_token %}
+			<input type="hidden" name="page_language" value="eng">
 			<fieldset>
-				<input type="text" name="searched_text" size="10" maxlength="20" id="searched_text" required/>
+				<input type="text" name="searched_text" size="10" maxlength="50" id="searched_text" aria-label="Text to look up" required/>
 				<button type="submit" id="button_search">Search</button>
-				<select name="language" id="language">
+				<select name="language" id="language" aria-label="Language of the text">
 					<option value="eng">English</option>
 					<option value="cze">Czech</option>
 				</select>
 			</fieldset>
 			<fieldset>
-				<label>
-					<input type="radio" id="whole_word" name="optionsRadios" value="whole_word" checked>Whole word</label>
-				<label>
-					<input type="radio" id="fulltext" name="optionsRadios" value="fulltext"/>Fulltext</label>
+				<label><input type="radio" name="optionsRadios" value="starts_with">Start</label>
+				<label><input type="radio" name="optionsRadios" value="whole_word" checked>Whole word</label>
+				<label><input type="radio" name="optionsRadios" value="fulltext">Anywhere</label>
 			</fieldset>
 			<hr />
-        </form>
-		</div>
-		<script type="text/javascript" src="{% static 'web/js/my_ajax.js' %}"></script>
-		<div id="results">The results of search will be here.</div>
+		</form>
+		<script src="{% static 'web/js/my_ajax.js' %}"></script>
+		<div id="results">The results of the search will be here.</div>
 		<div class="rest">
-			<hr />News: TBA</div>
+			<hr />News: EasyDict is now also a <a href="/app">web app</a>.</div>
 	</side_bar>
 	<footer>Jiří Němec, {% now "Y" %}</footer>
 </body>

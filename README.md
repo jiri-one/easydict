@@ -2,7 +2,7 @@
 
 The first open-source translator that is completely open, dictionary data included.
 
-EasyDict is an English–Czech and Czech–English dictionary that works offline on Linux, Windows, macOS and Android, and a website at [easydict.jiri.one](https://easydict.jiri.one). It contains more than 150,000 translations of the free English–Czech dictionary of the Svobodné slovníky project and also finds Czech words typed in other forms (*psa* → *pes*).
+EasyDict is an English–Czech and Czech–English dictionary that works offline on Linux, Windows, macOS and Android, and a website at [easydict.jiri.one](https://easydict.jiri.one), where it also runs in the browser as a [web app](https://easydict.jiri.one/app). It contains more than 150,000 translations of the free English–Czech dictionary of the Svobodné slovníky project and also finds Czech words typed in other forms (*psa* → *pes*).
 
 ## Download
 
@@ -22,7 +22,7 @@ Tips:
 
 - `app/` – the Flutter app for Linux, Windows, macOS and Android
 - `data/` – the dictionary data, a continuation of [Svobodné slovníky](https://github.com/lehrbuch/svobodneslovniky), and the tools that build the app database
-- `web/` – the website (Django)
+- `web/` – the website (Django), which also serves the web app and searches for it
 - `branding/` – the logo and the script that renders all icons from it
 - `packaging/` – Linux metadata, the Flatpak and F-Droid recipes and how to make a release
 
@@ -33,6 +33,8 @@ You need [Flutter](https://docs.flutter.dev/get-started/install) 3.47 and Python
     cd app
     ./tool/build_dictionary.sh   # builds assets/dictionary/easydict.sqlite from data/
     flutter run
+
+The web app is built with `./tool/build_web.sh`; it searches through the website, see [web/README.md](web/README.md).
 
 ## Licences
 
@@ -47,4 +49,4 @@ EasyDict started in 2020 as a desktop app in Python and GTK 3, published on PyPI
 
 ---
 
-**Česky:** EasyDict je anglicko-český a česko-anglický slovník pro Linux, Windows, macOS a Android, který funguje bez internetu, a web [easydict.jiri.one](https://easydict.jiri.one). Obsahuje přes 150 000 překladů ze svobodného slovníku projektu Svobodné slovníky, jehož data se nyní spravují tady v adresáři `data/`, a česká slova najde i v jiných tvarech. Začínal v roce 2020 jako aplikace v Pythonu a GTK, jejíž poslední verze s GTK 4 zůstává v repozitáři [easydict-gtk](https://github.com/jiri-one/easydict-gtk).
+**Česky:** EasyDict je anglicko-český a česko-anglický slovník pro Linux, Windows, macOS a Android, který funguje bez internetu, a web [easydict.jiri.one](https://easydict.jiri.one), kde běží i jako [webová aplikace](https://easydict.jiri.one/app). Obsahuje přes 150 000 překladů ze svobodného slovníku projektu Svobodné slovníky, jehož data se nyní spravují tady v adresáři `data/`, a česká slova najde i v jiných tvarech. Začínal v roce 2020 jako aplikace v Pythonu a GTK, jejíž poslední verze s GTK 4 zůstává v repozitáři [easydict-gtk](https://github.com/jiri-one/easydict-gtk).
