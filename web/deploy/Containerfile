@@ -17,7 +17,7 @@ RUN /venv/bin/pip install -r /tmp/requirements.txt \
     && /venv/bin/pip uninstall -y pip
 
 WORKDIR /app
-# only what the site needs (utils/en-cs.txt is import data, 7.5 MB)
+# only what the site needs (utils/ only imports the dictionary data)
 COPY manage.py ./
 COPY easydict ./easydict
 COPY web ./web

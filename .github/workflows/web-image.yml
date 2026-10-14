@@ -2,7 +2,8 @@ name: Website image
 
 # Build the arm64 production image of easydict.jiri.one (web/deploy/Containerfile)
 # when the website changes on main and push it to ghcr.io/<owner>/easydict-web.
-# The M1S picks it up with `podman auto-update`.
+# The M1S still builds its own image; once it runs this one, `podman auto-update`
+# can pick it up.
 on:
   push:
     branches: [main]

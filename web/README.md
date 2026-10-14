@@ -6,4 +6,4 @@ The dictionary data come from `data/en-cs/en-cs.txt` of this repository. To load
     python manage.py shell -c "from web.models import Record; Record.objects.all().delete()"
     python utils/from_txt_to_django.py
 
-The production image is built from `deploy/Containerfile` by the `Website image` workflow on every change of `web/` on `main` and published as `ghcr.io/jiri-one/easydict-web`.
+The production image is built from `deploy/Containerfile`. For now the server builds it itself from `main`, so a change is live only after a rebuild there. The `Website image` workflow builds the same image on every change of `web/` on `main` and publishes it as `ghcr.io/jiri-one/easydict-web`, for the server to switch to later.
