@@ -17,6 +17,7 @@ _flutter.loader.load({
   onEntrypointLoaded: async (engineInitializer) => {
     const appRunner = await engineInitializer.initializeEngine(config);
     await appRunner.runApp();
-    document.getElementById(framed ? "loading" : "phone").remove();
+    // in the phone the engine has emptied its host element itself
+    if (!framed) document.getElementById("phone").remove();
   },
 });
