@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   FLUTTER_VERSION: 3.47.7
@@ -19,9 +19,9 @@ jobs:
     name: Dictionary database
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: app/tool/build_dictionary.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dictionary
           path: app/assets/dictionary/
@@ -39,8 +39,8 @@ jobs:
           - { runner: ubuntu-24.04, arch: x86_64, flutter_arch: x64 }
           - { runner: ubuntu-24.04-arm, arch: aarch64, flutter_arch: arm64 }
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: dictionary
           path: app/assets/dictionary/
@@ -59,7 +59,7 @@ jobs:
           cp -r build/linux/${{ matrix.flutter_arch }}/release/bundle/. "$name/"
           cp ../packaging/linux/one.jiri.easydict.{desktop,svg,metainfo.xml} "$name/"
           tar czf "$name.tar.gz" "$name"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: linux-${{ matrix.arch }}
           path: app/easydict-*.tar.gz
@@ -69,12 +69,12 @@ jobs:
     needs: dictionary
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: dictionary
           path: app/assets/dictionary/
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
@@ -87,7 +87,7 @@ jobs:
           $name = "easydict-$($env:GITHUB_REF_NAME -replace '^v')-windows-x64"
           Copy-Item -Recurse build/windows/x64/runner/Release $name
           Compress-Archive -Path $name -DestinationPath "$name.zip"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: windows
           path: app/easydict-*.zip
@@ -97,12 +97,12 @@ jobs:
     needs: dictionary
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: dictionary
           path: app/assets/dictionary/
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
@@ -113,7 +113,7 @@ jobs:
         run: |
           name="easydict-${GITHUB_REF_NAME#v}-macos"
           ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/EasyDict.app "$name.zip"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: macos
           path: app/easydict-*.zip
@@ -123,16 +123,16 @@ jobs:
     needs: dictionary
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: dictionary
           path: app/assets/dictionary/
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
           java-version: 17
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
@@ -145,6 +145,11 @@ jobs:
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           if [ -z "$KEYSTORE" ]; then
+            # A release signed with a throwaway debug key could never be updated.
+            if [ "$GITHUB_REF_TYPE" = tag ]; then
+              echo "::error::No signing key in the repository secrets."
+              exit 1
+            fi
             echo "::warning::No signing key in the repository secrets, the APKs are signed with a debug key."
             exit 0
           fi
@@ -164,7 +169,7 @@ jobs:
           for abi in arm64-v8a armeabi-v7a x86_64; do
             cp "$out/app-$abi-release.apk" "easydict-$version-android-$abi.apk"
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: android
           path: app/easydict-*.apk
@@ -174,12 +179,15 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [linux, windows, macos, android]
     runs-on: ubuntu-24.04
+    # the only job that writes to the repository
+    permissions:
+      contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: dist
           merge-multiple: true
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           files: dist/*
           generate_release_notes: true
