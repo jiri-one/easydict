@@ -33,11 +33,16 @@ class HelpPage extends StatelessWidget {
           section(
             l10n.helpTipsTitle,
             [
-              l10n.helpTips,
-              if (defaultTargetPlatform == TargetPlatform.android)
-                l10n.helpTipsAndroid
-              else
-                l10n.helpTipsDesktop,
+              if (kIsWeb) ...[
+                l10n.helpTips,
+                l10n.helpTipsWeb,
+              ] else ...[
+                '${l10n.helpTips} ${l10n.helpTipsOffline}',
+                if (defaultTargetPlatform == TargetPlatform.android)
+                  l10n.helpTipsAndroid
+                else
+                  l10n.helpTipsDesktop,
+              ],
             ].join('\n\n'),
           ),
           Text(l10n.helpLabelsTitle, style: theme.textTheme.titleMedium),

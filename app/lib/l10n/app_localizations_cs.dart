@@ -189,11 +189,18 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get helpTips =>
-      'Klepnutím na překlad ho vyhledáte v druhém jazyce nebo zkopírujete. Vlajka vedle vyhledávacího pole přepíná jazyk. EasyDict funguje i bez internetu.';
+      'Klepnutím na překlad ho vyhledáte v druhém jazyce nebo zkopírujete. Vlajka vedle vyhledávacího pole přepíná jazyk.';
+
+  @override
+  String get helpTipsOffline => 'EasyDict funguje i bez internetu.';
 
   @override
   String get helpTipsAndroid =>
       'Označte slovo v libovolné aplikaci a v nabídce zvolte „Vyhledat v EasyDictu“.';
+
+  @override
+  String get helpTipsWeb =>
+      'Odkaz easydict.jiri.one/app?q=SLOVO rovnou vyhledá SLOVO. EasyDict je i aplikace pro Linux, Windows, macOS a Android, která funguje bez internetu.';
 
   @override
   String get helpTipsDesktop =>
@@ -231,6 +238,9 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get openError => 'Slovník se nepodařilo otevřít.';
+
+  @override
+  String get retry => 'Zkusit znovu';
 
   @override
   String get searchError => 'Hledání selhalo.';

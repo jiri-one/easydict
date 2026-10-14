@@ -188,11 +188,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTips =>
-      'Tap a translation to look it up in the other language or to copy it. The flag next to the search field switches the language. EasyDict works offline.';
+      'Tap a translation to look it up in the other language or to copy it. The flag next to the search field switches the language.';
+
+  @override
+  String get helpTipsOffline => 'EasyDict works offline.';
 
   @override
   String get helpTipsAndroid =>
       'Select a word in any app and choose “Look up in EasyDict” from the menu.';
+
+  @override
+  String get helpTipsWeb =>
+      'The address easydict.jiri.one/app?q=WORD looks WORD up right away. EasyDict is also an app for Linux, Windows, macOS and Android, which works offline.';
 
   @override
   String get helpTipsDesktop =>
@@ -230,6 +237,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openError => 'The dictionary could not be opened.';
+
+  @override
+  String get retry => 'Try again';
 
   @override
   String get searchError => 'Searching failed.';

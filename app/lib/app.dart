@@ -48,7 +48,6 @@ class EasyDictApp extends StatelessWidget {
   );
 }
 
-/// Opens the dictionary database, then shows the search.
 class _DictionaryLoader extends StatefulWidget {
   const _DictionaryLoader({required this.settings, required this.initialQuery});
 
@@ -60,7 +59,8 @@ class _DictionaryLoader extends StatefulWidget {
 }
 
 class _DictionaryLoaderState extends State<_DictionaryLoader> {
-  final Future<Dictionary> _dictionary = openDictionary();
+  // the web app may not reach the server
+  late Future<Dictionary> _dictionary = openDictionary();
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
@@ -89,6 +89,12 @@ class _DictionaryLoaderState extends State<_DictionaryLoader> {
                   SelectableText(
                     '${snapshot.error}',
                     style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton.tonal(
+                    onPressed: () =>
+                        setState(() => _dictionary = openDictionary()),
+                    child: Text(l10n.retry),
                   ),
                 ] else ...[
                   Text(l10n.loading),

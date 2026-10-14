@@ -87,8 +87,10 @@
   "helpFormsTitle": "Word forms",
   "helpForms": "You can also type Czech words in other forms: “psa” finds “pes”, “očima” finds “oko”. Diacritics and capital letters do not matter.",
   "helpTipsTitle": "Tips",
-  "helpTips": "Tap a translation to look it up in the other language or to copy it. The flag next to the search field switches the language. EasyDict works offline.",
+  "helpTips": "Tap a translation to look it up in the other language or to copy it. The flag next to the search field switches the language.",
+  "helpTipsOffline": "EasyDict works offline.",
   "helpTipsAndroid": "Select a word in any app and choose “Look up in EasyDict” from the menu.",
+  "helpTipsWeb": "The address easydict.jiri.one/app?q=WORD looks WORD up right away. EasyDict is also an app for Linux, Windows, macOS and Android, which works offline.",
   "helpTipsDesktop": "Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up new single-line text (up to 60 characters) copied to the clipboard when its window is activated.",
   "helpLabelsTitle": "Labels",
   "version": "Version {version}",
@@ -107,5 +109,6 @@
   "licenses": "Licenses",
   "loading": "Preparing the dictionary…",
   "openError": "The dictionary could not be opened.",
+  "retry": "Try again",
   "searchError": "Searching failed."
 }

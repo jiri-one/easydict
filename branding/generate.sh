@@ -59,6 +59,14 @@ for size in 16 32 64 128 256 512 1024; do
     png icon.svg "$inner" "$inner" "$tmp/mac.png"
     magick "$tmp/mac.png" -background none -gravity center -extent "${size}x${size}" "$iconset/app_icon_$size.png"
 done
+# maskable web icons: the foreground on the blue background, like Android's adaptive icon
+web=$APP/web
+png icon.svg 32 32 "$web/favicon.png"
+for size in 192 512; do
+    png icon.svg "$size" "$size" "$web/icons/Icon-$size.png"
+    png icon-foreground.svg "$size" "$size" "$tmp/foreground.png"
+    magick "$tmp/foreground.png" -background '#387FF2' -flatten "$web/icons/Icon-maskable-$size.png"
+done
 rm -r "$tmp"
 
 # Linux (Flatpak) and F-Droid store icon

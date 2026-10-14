@@ -389,14 +389,26 @@ abstract class AppLocalizations {
   /// No description provided for @helpTips.
   ///
   /// In en, this message translates to:
-  /// **'Tap a translation to look it up in the other language or to copy it. The flag next to the search field switches the language. EasyDict works offline.'**
+  /// **'Tap a translation to look it up in the other language or to copy it. The flag next to the search field switches the language.'**
   String get helpTips;
+
+  /// No description provided for @helpTipsOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'EasyDict works offline.'**
+  String get helpTipsOffline;
 
   /// No description provided for @helpTipsAndroid.
   ///
   /// In en, this message translates to:
   /// **'Select a word in any app and choose “Look up in EasyDict” from the menu.'**
   String get helpTipsAndroid;
+
+  /// No description provided for @helpTipsWeb.
+  ///
+  /// In en, this message translates to:
+  /// **'The address easydict.jiri.one/app?q=WORD looks WORD up right away. EasyDict is also an app for Linux, Windows, macOS and Android, which works offline.'**
+  String get helpTipsWeb;
 
   /// No description provided for @helpTipsDesktop.
   ///
@@ -463,6 +475,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The dictionary could not be opened.'**
   String get openError;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get retry;
 
   /// No description provided for @searchError.
   ///

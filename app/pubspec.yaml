@@ -16,6 +16,7 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  http: ^1.6.0
   intl: any
   shared_preferences: ^2.5.6
   sqflite: ^2.4.4+2
@@ -32,5 +33,9 @@ flutter:
   assets:
     - assets/images/
     - assets/licenses/
-    # built by tool/build_dictionary.sh
-    - assets/dictionary/
+    # built by tool/build_dictionary.sh; the web app searches on the server
+    - assets/dictionary/easydict.sqlite.NOTICE.txt
+    - path: assets/dictionary/easydict.sqlite
+      platforms: [android, ios, linux, macos, windows]
+    - path: assets/dictionary/easydict.sha256
+      platforms: [android, ios, linux, macos, windows]

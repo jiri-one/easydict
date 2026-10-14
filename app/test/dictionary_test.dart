@@ -11,7 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// searches it through the desktop SQLite binding.
 void main() {
   late Directory tmp;
-  late Dictionary dictionary;
+  late SqlDictionary dictionary;
 
   setUpAll(() async {
     tmp = await Directory.systemTemp.createTemp('easydict_test');
@@ -27,7 +27,7 @@ void main() {
       'test/fixtures/forms.tsv',
     ]);
     expect(build.exitCode, 0, reason: '${build.stdout}${build.stderr}');
-    dictionary = await Dictionary.open(await IsolateSqlReader.open(db));
+    dictionary = await SqlDictionary.open(await IsolateSqlReader.open(db));
   });
 
   tearDownAll(() async {
@@ -288,7 +288,7 @@ void main() {
   );
 
   group('many matches', () {
-    late Dictionary big;
+    late SqlDictionary big;
     late Directory bigTmp;
 
     setUpAll(() async {
@@ -321,7 +321,7 @@ void main() {
         '--no-forms',
       ]);
       expect(build.exitCode, 0, reason: '${build.stdout}${build.stderr}');
-      big = await Dictionary.open(await IsolateSqlReader.open(db));
+      big = await SqlDictionary.open(await IsolateSqlReader.open(db));
     });
 
     tearDownAll(() async {

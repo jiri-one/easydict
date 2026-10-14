@@ -5,15 +5,16 @@ import 'package:flutter/widgets.dart';
 import 'app.dart';
 import 'settings.dart';
 
-/// Desktop: `easydict WORD` starts with WORD looked up.
+/// Desktop: `easydict WORD` starts with WORD looked up; the web app does the
+/// same for the address /app?q=WORD.
 Future<void> main(List<String> arguments) async {
   WidgetsFlutterBinding.ensureInitialized();
   LicenseRegistry.addLicense(_licenses);
+  final query = kIsWeb
+      ? Uri.base.queryParameters['q'] ?? ''
+      : arguments.join(' ');
   runApp(
-    EasyDictApp(
-      settings: await Settings.load(),
-      initialQuery: arguments.join(' ').trim(),
-    ),
+    EasyDictApp(settings: await Settings.load(), initialQuery: query.trim()),
   );
 }
 

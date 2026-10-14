@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <!-- filled in by `flutter build web --base-href` (tool/build_web.sh) -->
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="EasyDict – anglicko-český a česko-anglický slovník, zcela otevřený včetně slovníkových dat.">
+  <meta name="theme-color" content="#387FF2">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="EasyDict">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="manifest" href="manifest.json">
+  <title>EasyDict</title>
+  <script>
+    // the colours chosen on the website (web/web/static/web/js/theme.js)
+    try {
+      document.documentElement.dataset.theme = localStorage.getItem("theme") || "auto";
+    } catch (error) {}
+    if (!/^cs\b/.test(navigator.language)) document.documentElement.lang = "en";
+  </script>
+  <style>
+    :root { --fg: #ffffff; --bg: #47516d; color-scheme: dark; }
+    [data-theme="light"] { --fg: #000000; --bg: #ffffff; color-scheme: light; }
+    [data-theme="dark"] { --fg: #ffffff; --bg: #000000; }
+    [lang="cs"] [lang="en"], [lang="en"] [lang="cs"] { display: none; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font: 18px/1.4 Arial, sans-serif;
+    }
+    a { color: inherit; }
+    #phone { position: fixed; inset: 0; background: #ffffff; }
+    #screen { position: absolute; inset: 0; overflow: hidden; }
+    #about { display: none; }
+    #loading {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; color: #47516d;
+    }
+    #loading img { width: 96px; height: 96px; }
+    @media (min-width: 760px) and (min-height: 600px) and (pointer: fine) {
+      body {
+        display: flex; align-items: center; justify-content: center; gap: 56px;
+        box-sizing: border-box; min-height: 100%; padding: 24px;
+      }
+      #phone {
+        position: relative; inset: auto; flex: none;
+        width: 390px; height: min(844px, calc(100vh - 48px));
+        border: 12px solid #16181d; border-radius: 52px;
+        box-shadow: 0 0 0 2px #5a5f6e, 0 24px 64px rgba(0, 0, 0, 0.45);
+      }
+      #screen { border-radius: 40px; }
+      #about { display: block; max-width: 340px; }
+    }
+    #about h1 { margin: 12px 0; font-size: 40px; }
+    #about .logo { display: block; width: 96px; height: 96px; }
+    #about ul { padding-left: 20px; }
+    #about li { margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <aside id="about">
+    <a href="/"><img class="logo" src="icons/Icon-192.png" alt="EasyDict"></a>
+    <h1>EasyDict</h1>
+    <p lang="cs">Anglicko-český a česko-anglický slovník, který je otevřený včetně slovníkových dat. Tady je jako webová aplikace, se stejnými daty jako vyhledávání na webu.</p>
+    <p lang="en">An English–Czech and Czech–English dictionary that is open, dictionary data included. Here it is as a web app, with the same data as the search on the website.</p>
+    <ul lang="cs">
+      <li><a href="/cze">Úvodní stránka</a></li>
+      <li><a href="https://github.com/jiri-one/easydict/releases">Aplikace pro Linux, Windows, macOS a&nbsp;Android</a> (první vydání připravujeme)</li>
+      <li><a href="https://github.com/jiri-one/easydict">Zdrojový kód</a></li>
+    </ul>
+    <ul lang="en">
+      <li><a href="/eng">Home page</a></li>
+      <li><a href="https://github.com/jiri-one/easydict/releases">Apps for Linux, Windows, macOS and Android</a> (the first release is on its way)</li>
+      <li><a href="https://github.com/jiri-one/easydict">Source code</a></li>
+    </ul>
+  </aside>
+  <main id="phone">
+    <div id="screen">
+      <div id="loading">
+        <img src="icons/Icon-192.png" alt="">
+        <span lang="cs">Načítám EasyDict…</span>
+        <span lang="en">Loading EasyDict…</span>
+      </div>
+    </div>
+  </main>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

@@ -13,6 +13,21 @@ enum Language {
 
 enum SearchMode { startsWith, wholeWord, fulltext }
 
+/// The web app has no database: it searches on the website (RemoteDictionary).
+abstract interface class Dictionary {
+  /// Longer queries are cut: nobody types them, and SQLite rejects too long
+  /// LIKE patterns.
+  static const maxQueryLength = 100;
+
+  int get entryCount;
+
+  Map<String, String> get meta;
+
+  Future<SearchResult> search(String query, Language language, SearchMode mode);
+
+  Future<void> close();
+}
+
 /// Read access to the dictionary database.
 abstract interface class SqlReader {
   Future<List<Map<String, Object?>>> select(
@@ -96,15 +111,16 @@ class SearchResult {
   /// Base forms of a Czech word typed in another form ("psa" -> "pes").
   final List<String> baseForms;
 
-  /// Some matches were left out because of [Dictionary.rowLimit].
+  /// Some matches were left out because of [SqlDictionary.rowLimit].
   final bool truncated;
 
   bool get isEmpty => groups.isEmpty;
 }
 
-/// Searches the database built by data/tools/build_db.py.
-class Dictionary {
-  Dictionary._(this._db, this._foldMap, this._negationPrefixes, this.meta);
+/// The website searches the same way (web/web/dictionary.py): a change belongs
+/// to both.
+class SqlDictionary implements Dictionary {
+  SqlDictionary._(this._db, this._foldMap, this._negationPrefixes, this.meta);
 
   static const schemaVersion = '2';
 
@@ -118,9 +134,10 @@ class Dictionary {
   final SqlReader _db;
   final Map<String, String> _foldMap;
   final List<String> _negationPrefixes;
+  @override
   final Map<String, String> meta;
 
-  static Future<Dictionary> open(SqlReader db) async {
+  static Future<SqlDictionary> open(SqlReader db) async {
     final meta = {
       for (final row in await db.select('SELECT key, value FROM meta'))
         row['key']! as String: row['value']! as String,
@@ -135,11 +152,13 @@ class Dictionary {
         .cast<String, String>();
     final prefixes = (jsonDecode(meta['negation_prefixes']!) as List<Object?>)
         .cast<String>();
-    return Dictionary._(db, foldMap, prefixes, meta);
+    return SqlDictionary._(db, foldMap, prefixes, meta);
   }
 
+  @override
   int get entryCount => int.parse(meta['entries'] ?? '0');
 
+  @override
   Future<void> close() => _db.close();
 
   /// Lowercase [text] and remove diacritics, the same way the database keys
@@ -156,10 +175,6 @@ class Dictionary {
   static List<String> words(String text) => [
     for (final match in _wordPattern.allMatches(text)) match[0]!,
   ];
-
-  /// Longer queries are cut: nobody types them, and SQLite rejects too long
-  /// LIKE patterns.
-  static const maxQueryLength = 100;
 
   static final _unsafeCharacters = RegExp(r'[\u0000-\u001F\u007F]');
   static final _combiningMarks = RegExp(r'[\u0300-\u036F]');
@@ -205,14 +220,15 @@ class Dictionary {
     (match) => _compositions[match[0]!] ?? match[0]!,
   );
 
+  @override
   Future<SearchResult> search(
     String query,
     Language language,
     SearchMode mode,
   ) async {
     var text = _composeCzech(query.replaceAll(_unsafeCharacters, ' ')).trim();
-    if (text.length > maxQueryLength) {
-      text = text.substring(0, maxQueryLength).trim();
+    if (text.length > Dictionary.maxQueryLength) {
+      text = text.substring(0, Dictionary.maxQueryLength).trim();
     }
     final key = fold(text);
     final tokens = words(key);
