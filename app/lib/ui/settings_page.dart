@@ -93,7 +93,6 @@ class _Section extends StatelessWidget {
   );
 }
 
-/// A setting with a few options, shown as a segmented button.
 class _Choice<T> extends StatelessWidget {
   const _Choice({
     required this.title,

@@ -63,7 +63,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  /// Look up text from outside the app, guessing its language.
   void _lookUpText(String text) {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
@@ -86,7 +85,6 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  /// Desktop: search the copied word when the window is activated.
   Future<void> _lookUpClipboard() async {
     if (!_isDesktop || !widget.settings.clipboardLookup) return;
     final text = (await Clipboard.getData(Clipboard.kTextPlain))?.text?.trim();

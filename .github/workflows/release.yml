@@ -1,8 +1,5 @@
 name: Release
 
-# Build the app for Linux, Windows, macOS and Android when a version tag
-# (v1.2.3) is pushed and attach the builds to a GitHub release. Run it by hand
-# to only build them (as workflow artifacts).
 on:
   push:
     tags: ["v*"]

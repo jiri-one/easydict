@@ -1,8 +1,6 @@
-// Colour themes: the original colours, high contrast white ("light") and high contrast
-// black ("dark"); the switch goes through them in this order. Loaded in <head>, so the
-// theme is set before the page is drawn. The choice is stored in localStorage under
-// "theme", the key the Django admin uses too, so the site and its admin share it; the
-// original colours are stored as the admin's "auto" (the admin then follows the system).
+// Loaded in <head>, so that the theme is set before the page is drawn. "theme" in localStorage
+// is the key of the Django admin too, so both share the choice; the original colours are its
+// "auto" (the admin then follows the system).
 (function () {
     var themes = ["auto", "light", "dark"];
     var root = document.documentElement;

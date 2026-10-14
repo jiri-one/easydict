@@ -1,24 +1,22 @@
-/// The labels in the notes column of the dictionary (data/en-cs/format.en.md).
+/// data/en-cs/format.en.md describes the labels.
 library;
 
-/// One label of a translation, e.g. "n:" or "[med.]".
 class NoteLabel {
   const NoteLabel(this.text, this.explanation);
 
   final String text;
 
-  /// (Czech, English) explanation, null for labels without one.
+  /// (Czech, English); null for unknown labels.
   final (String, String)? explanation;
 }
 
 final _token = RegExp(r'\[[^\]]*\]|\([^)]*\)|\S+');
 
-/// All known labels with their (Czech, English) explanations, for the help.
 Iterable<(String, (String, String))> get noteExplanations =>
     _explanations.entries.map((entry) => (entry.key, entry.value));
 
-/// Split [notes] into labels. Translation priorities (numbers 1-10) are left
-/// out, they are meant for ordering only.
+/// Translation priorities (numbers 1-10) are left out: they are only for
+/// ordering.
 List<NoteLabel> parseNotes(String? notes) {
   if (notes == null || notes.isEmpty) return const [];
   return [
@@ -29,7 +27,6 @@ List<NoteLabel> parseNotes(String? notes) {
 }
 
 const _explanations = <String, (String, String)>{
-  // word classes
   'n:': ('podstatné jméno', 'noun'),
   'adj:': ('přídavné jméno', 'adjective'),
   'pron:': ('zájmeno', 'pronoun'),
@@ -42,7 +39,6 @@ const _explanations = <String, (String, String)>{
   'pl.': ('množné číslo', 'plural'),
   '[female]': ('o ženě', 'about a woman'),
   '[male]': ('o muži', 'about a man'),
-  // style and kind
   '[bás.]': ('básnicky', 'poetic'),
   '[dět.]': ('dětský výraz', "children's language"),
   '[form.]': ('formálně', 'formal'),
@@ -62,7 +58,6 @@ const _explanations = <String, (String, String)>{
   '[zast.]': ('zastarale', 'archaic'),
   '[zkr.]': ('zkratka', 'abbreviation'),
   '[žert.]': ('žertovně', 'jocular'),
-  // humanities and social sciences
   '[ekon.]': ('ekonomie', 'economics'),
   '[fin.]': ('finance', 'finance'),
   '[hist.]': ('historie', 'history'),
@@ -76,7 +71,6 @@ const _explanations = <String, (String, String)>{
   '[psych.]': ('psychologie', 'psychology'),
   '[sex.]': ('sexuální výraz', 'sexual'),
   '[sport.]': ('sport', 'sport'),
-  // natural sciences
   '[astr.]': ('astronomie', 'astronomy'),
   '[astro.]': ('astrologie', 'astrology'),
   '[bio.]': ('biologie', 'biology'),
@@ -93,7 +87,6 @@ const _explanations = <String, (String, String)>{
   '[zem.]': ('zeměpis', 'geography'),
   '[zoo.]': ('zoologie', 'zoology'),
   '[zool.]': ('zoologie', 'zoology'),
-  // agriculture, industry and technology
   '[cukr.]': ('cukrovarnictví', 'sugar industry'),
   '[dřev.]': ('dřevozpracující průmysl', 'timber industry'),
   '[el.]': ('elektrotechnika', 'electrical engineering'),
@@ -111,12 +104,10 @@ const _explanations = <String, (String, String)>{
   '[typo.]': ('typografie', 'typography'),
   '[voj.]': ('vojenství', 'military'),
   '[zeměděl.]': ('zemědělství', 'agriculture'),
-  // transport
   '[aut.]': ('automobilismus', 'automotive'),
   '[let.]': ('letectví', 'aviation'),
   '[lod.]': ('lodní doprava', 'shipping'),
   '[žel.]': ('železnice', 'railway'),
-  // regions
   '[amer.]': ('americky', 'American'),
   '[aus.]': ('australsky', 'Australian'),
   '[brit.]': ('britsky', 'British'),

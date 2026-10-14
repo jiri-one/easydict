@@ -106,11 +106,7 @@ SOURCES = [
 
 
 def build_fold_map(extra_chars: set[str]) -> dict[str, str]:
-    """Map lowercase characters to their form without diacritics.
-
-    The map is stored in the database, so the app folds search queries exactly
-    the way the keys were folded here.
-    """
+    """Stored in the database, so that the app folds queries exactly like the keys."""
     chars = {chr(c) for c in range(0xC0, 0x250)} | {chr(c) for c in range(0x300, 0x370)} | extra_chars
     fold_map = {}
     for ch in sorted(chars):
@@ -157,18 +153,15 @@ def read_wiktionary_forms(path: Path) -> dict[str, set[str]]:
 
 
 def build_date() -> datetime:
-    """The build date: SOURCE_DATE_EPOCH for reproducible builds, otherwise now."""
+    """SOURCE_DATE_EPOCH first, for reproducible builds."""
     if "SOURCE_DATE_EPOCH" in os.environ:
         return datetime.fromtimestamp(int(os.environ["SOURCE_DATE_EPOCH"]), tz=timezone.utc)
     return datetime.now(tz=timezone.utc)
 
 
 def dictionary_notice(header: Path, authors: list[str]) -> str:
-    """The licence notice of the dictionary, filled in like the upstream releases.
-
-    The GNU FDL asks to keep the notice with its cover texts and the list of
-    authors, and to add a copyright notice for the modifications.
-    """
+    """The GNU FDL asks to keep the notice with its cover texts and the list of
+    authors, and to add a copyright notice for the modifications."""
     date = build_date()
     author_list = "\n".join(textwrap.wrap(", ".join(authors), width=72))
     text = "\n".join(line[1:].strip() if line.startswith("#") else line for line in header.read_text(encoding="utf-8").splitlines())
@@ -195,9 +188,8 @@ def read_frequencies(path: Path) -> dict[str, float]:
 
 
 def rank(text: str, frequencies: dict[str, float]) -> int:
-    """How common a text is: the Zipf frequency of its rarest word, lowered by
-    one for every further word (phrases are much rarer than their words),
-    times 100. 0 means unknown."""
+    """Phrases are much rarer than their words: every further word lowers the Zipf
+    frequency of the rarest one by one. 0 means unknown."""
     words = WORD_RE.findall(text.lower())
     if not words or not frequencies:
         return 0

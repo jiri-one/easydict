@@ -5,7 +5,6 @@ import '../data/dictionary.dart';
 import '../data/notes.dart';
 import '../l10n/app_localizations.dart';
 
-/// The search results: one block per headword with its translations.
 class ResultsView extends StatelessWidget {
   const ResultsView({
     super.key,
@@ -17,7 +16,6 @@ class ResultsView extends StatelessWidget {
 
   final SearchResult result;
 
-  /// Look [text] up in [language] (a tapped translation).
   final void Function(String text, Language language) onLookUp;
   final ValueChanged<SearchMode> onModeChange;
   final ValueChanged<Language> onLanguageChange;
@@ -197,7 +195,6 @@ class _TranslationRow extends StatelessWidget {
   }
 }
 
-/// A bottom sheet with everything about one translation.
 Future<void> showEntryDetails(
   BuildContext context,
   Entry entry,

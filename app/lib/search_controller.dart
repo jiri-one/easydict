@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 
 import 'data/dictionary.dart';
 
-/// The state of the search screen: query, language, mode and results.
 class DictionarySearch extends ChangeNotifier {
   DictionarySearch(
     this._dictionary, {
@@ -25,10 +24,9 @@ class DictionarySearch extends ChangeNotifier {
   bool _searching = false;
   Object? _error;
 
-  /// Searched again in this language when nothing is found (see [lookUpText]).
   Language? _fallback;
 
-  /// Czech letters, also written with combining marks (decomposed text).
+  /// also the combining marks of decomposed text
   static final _czechLetters = RegExp(
     '[ěščřžýáíéůúňťď\u030C\u0301\u030A]',
     caseSensitive: false,
@@ -70,12 +68,11 @@ class DictionarySearch extends ChangeNotifier {
     _restart();
   }
 
-  /// Search [text] in [language] right away, e.g. a tapped translation.
   void lookUp(String text, Language language) => _start(text, language);
 
-  /// Search text that comes from outside (selected in another app, from the
-  /// clipboard or the command line): Czech letters mean Czech, and when
-  /// nothing is found the other language is tried.
+  /// Text from outside (another app, the clipboard, the command line) has no
+  /// language: Czech letters mean Czech, and when nothing is found, the other
+  /// language is tried.
   void lookUpText(String text) {
     final language = _czechLetters.hasMatch(text) ? Language.cze : _language;
     _start(text, language, fallback: language.other);

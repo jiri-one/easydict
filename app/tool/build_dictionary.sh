@@ -1,5 +1,4 @@
 #!/bin/sh
-# Build the dictionary database bundled with the app (assets/dictionary/).
 # Run it before `flutter run` or `flutter build`; it needs only python3.
 set -eu
 

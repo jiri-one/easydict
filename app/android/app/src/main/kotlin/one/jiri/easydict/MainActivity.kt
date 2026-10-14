@@ -6,8 +6,8 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 /**
- * Passes text selected in other apps ("EasyDict" in the text selection menu,
- * Intent.ACTION_PROCESS_TEXT) to the Flutter side to look it up.
+ * Android hands text selected in other apps (Intent.ACTION_PROCESS_TEXT) to the
+ * activity, not to Flutter.
  */
 class MainActivity : FlutterActivity() {
     private var channel: MethodChannel? = null

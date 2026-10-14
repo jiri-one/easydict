@@ -1,13 +1,12 @@
 import 'dart:convert';
 
-/// The side of the dictionary that is searched.
 enum Language {
   eng,
   cze;
 
   Language get other => this == eng ? cze : eng;
 
-  /// Value of `words.lang` in the database.
+  /// as words.lang in the database
   int get code => index;
 }
 
@@ -28,7 +27,6 @@ abstract interface class Dictionary {
   Future<void> close();
 }
 
-/// Read access to the dictionary database.
 abstract interface class SqlReader {
   Future<List<Map<String, Object?>>> select(
     String sql, [
@@ -38,7 +36,6 @@ abstract interface class SqlReader {
   Future<void> close();
 }
 
-/// One translation: a row of the dictionary.
 class Entry {
   const Entry({
     required this.id,
@@ -69,7 +66,6 @@ class Entry {
   final String? special;
   final String? author;
 
-  /// How common the English and the Czech text are (word frequency).
   final int engRank;
   final int czeRank;
 
@@ -78,7 +74,6 @@ class Entry {
   int rank(Language language) => language == Language.eng ? engRank : czeRank;
 }
 
-/// The translations of one headword.
 class ResultGroup {
   ResultGroup(this.headword, this.entries);
 
@@ -108,10 +103,7 @@ class SearchResult {
   final SearchMode mode;
   final List<ResultGroup> groups;
 
-  /// Base forms of a Czech word typed in another form ("psa" -> "pes").
   final List<String> baseForms;
-
-  /// Some matches were left out because of [SqlDictionary.rowLimit].
   final bool truncated;
 
   bool get isEmpty => groups.isEmpty;
@@ -124,7 +116,6 @@ class SqlDictionary implements Dictionary {
 
   static const schemaVersion = '2';
 
-  /// Maximum number of rows taken from one query.
   static const rowLimit = 300;
 
   static final _wordPattern = RegExp(r'[\p{L}\p{N}]+', unicode: true);
@@ -161,8 +152,6 @@ class SqlDictionary implements Dictionary {
   @override
   Future<void> close() => _db.close();
 
-  /// Lowercase [text] and remove diacritics, the same way the database keys
-  /// were made.
   String fold(String text) {
     final buffer = StringBuffer();
     for (final rune in text.toLowerCase().runes) {
@@ -180,8 +169,8 @@ class SqlDictionary implements Dictionary {
   static final _combiningMarks = RegExp(r'[\u0300-\u036F]');
   static final _decomposed = RegExp(r'[A-Za-z][\u0301\u030A\u030C]');
 
-  /// Czech letters written as a base letter and a combining mark (text from
-  /// some macOS apps): composed, so that they compare equal to typed ones.
+  /// Some macOS apps write Czech letters decomposed; typed text and the
+  /// dictionary are composed.
   static const _compositions = {
     'a\u0301': 'á',
     'e\u0301': 'é',
@@ -308,11 +297,10 @@ class SqlDictionary implements Dictionary {
     );
   }
 
-  /// The typed word in lowercase, when it is one word typed with diacritics;
-  /// null otherwise (without diacritics, any diacritics may be meant).
   String? _exactWord(String text) {
     if (_combiningMarks.hasMatch(text)) return null;
     final exact = words(text.toLowerCase());
+    // without diacritics typed, any diacritics may be meant
     if (exact.length != 1 || fold(exact.single) == exact.single) return null;
     return exact.single;
   }
@@ -321,14 +309,12 @@ class SqlDictionary implements Dictionary {
     for (final row in await _db.select(sql, arguments)) Entry.fromRow(row),
   ];
 
-  /// The exact match first, then the most common texts, then the shortest.
   static String _order(Language language, int limit, [int offset = 0]) {
     final column = 'e.${language.name}_key';
     return 'ORDER BY $column = ? DESC, e.${language.name}_rank DESC, '
         'length($column), $column, e.id LIMIT $limit OFFSET $offset';
   }
 
-  /// Entries whose headword starts with [key]; true when more were left out.
   Future<(List<Entry>, bool)> _startsWith(String key, Language language) async {
     final column = '${language.name}_key';
     final entries = await _entries(
@@ -339,7 +325,6 @@ class SqlDictionary implements Dictionary {
     return _limited(entries);
   }
 
-  /// Entries whose headword starts with the whole words of [tokens].
   Future<(List<Entry>, bool)> _startsWithWords(
     List<String> tokens,
     String key,
@@ -361,7 +346,6 @@ class SqlDictionary implements Dictionary {
     ]);
   }
 
-  /// Entries containing the words of [tokens] next to each other.
   Future<(List<Entry>, bool)> _wholeWord(
     List<String> tokens,
     String key,
@@ -376,8 +360,7 @@ class SqlDictionary implements Dictionary {
       );
       return _limited(entries);
     }
-    // A phrase: look the rarest word up, let SQLite keep the entries that
-    // have all the words in this order, then check the word boundaries.
+    // the rarest word of a phrase gives the fewest candidates
     var rarest = tokens.first;
     var fewest = -1;
     for (final token in tokens.toSet()) {
@@ -392,7 +375,8 @@ class SqlDictionary implements Dictionary {
         rarest = token;
       }
     }
-    // Page through the candidates until there are enough real matches.
+    // One LIMIT could end before the real matches: many candidates fail the
+    // boundary check.
     const page = 2000;
     final matches = <Entry>[];
     for (var offset = 0; matches.length <= rowLimit; offset += page) {
@@ -418,7 +402,6 @@ class SqlDictionary implements Dictionary {
     return _limited(matches);
   }
 
-  /// Entries containing [key] anywhere.
   Future<(List<Entry>, bool)> _fulltext(String key, Language language) async {
     final column = '${language.name}_key';
     final entries = await _entries(
@@ -434,28 +417,24 @@ class SqlDictionary implements Dictionary {
       ? (entries.sublist(0, rowLimit), true)
       : (entries, false);
 
-  /// Base forms of a Czech word ([key] folded, [exact] as typed with its
-  /// diacritics); empty when the word is a base form itself.
-  ///
-  /// With diacritics typed, forms with the same diacritics win, so "nedělá"
-  /// finds "dělat" and not "neděle" (whose form "neděla" folds the same).
   Future<List<String>> _baseForms(String key, String? exact) async {
+    // Typed diacritics pick the form: "nedělá" is "dělat", not "neděle", whose
+    // form "neděla" folds the same.
     final found = await _baseFormsMatching(key, exact);
     if (found != null && found.isEmpty && exact != null) {
-      // Nothing with the typed diacritics: they may be wrong, try any.
+      // the typed diacritics may be wrong
       return await _baseFormsMatching(key, null) ?? const [];
     }
     return found ?? const [];
   }
 
-  /// Base forms of forms equal to [exact] (any form with the folded [key]
-  /// when null); null when the word is a base form itself.
+  /// Null when the word is a base form itself.
   Future<List<String>?> _baseFormsMatching(String key, String? exact) async {
     final lemmas = _lemmasOf(await _formRows(key), exact);
     if (lemmas.isNotEmpty) return lemmas;
     final word = await _czechWord(key);
     if (word != null && (exact == null || word == exact)) return null;
-    // Negated and superlative forms are not stored: try without the prefix.
+    // negated and superlative forms are not stored
     for (final prefix in _negationPrefixes) {
       if (key.length <= prefix.length + 1 ||
           !key.startsWith(prefix) ||
@@ -484,13 +463,11 @@ class SqlDictionary implements Dictionary {
       (row['form']! as String, row['lemma']! as String),
   ];
 
-  /// The lemmas of the rows whose form is [exact] (any form when null).
   static List<String> _lemmasOf(List<(String, String)> rows, String? exact) => {
     for (final (form, lemma) in rows)
       if (exact == null || form == exact) lemma,
   }.toList();
 
-  /// The word with diacritics as it is written in the dictionary, or null.
   Future<String?> _czechWord(String key) async {
     final rows = await _db.select(
       'SELECT e.cze FROM words w JOIN entries e ON e.id = w.entry_id '
@@ -534,7 +511,7 @@ class SqlDictionary implements Dictionary {
       } else {
         tier = 5;
       }
-      // Exact spelling (with diacritics) first: "být" before "byt".
+      // "být" before "byt" when "být" was typed
       final exact =
           head.toLowerCase() == lowerText ||
               baseForms.contains(head.toLowerCase())
@@ -584,8 +561,6 @@ class SqlDictionary implements Dictionary {
       .replaceAll('_', r'\_');
 }
 
-/// The order of results: how well the headword matches, how common it is,
-/// then (within a headword) how common the translation is.
 class _Score implements Comparable<_Score> {
   _Score(this.tier, this.exact, this.headKey, this.entry, Language language)
     : headRank = entry.rank(language),
@@ -605,7 +580,6 @@ class _Score implements Comparable<_Score> {
     if (result == 0) result = other.headRank.compareTo(headRank);
     if (result == 0) result = headKey.length.compareTo(other.headKey.length);
     if (result == 0) result = headKey.compareTo(other.headKey);
-    // Same headword: the most common translation first.
     if (result == 0) result = other.translationRank.compareTo(translationRank);
     if (result == 0) result = entry.id.compareTo(other.entry.id);
     return result;

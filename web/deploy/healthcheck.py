@@ -1,4 +1,5 @@
-"""Container healthcheck: GET / the way the reverse proxy forwards it.
+"""GET / the way the reverse proxy forwards it, so that ALLOWED_HOSTS and the HTTPS redirect
+let it through.
 
 usage: python healthcheck.py <host name>
 """

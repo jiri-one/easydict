@@ -1,6 +1,4 @@
-/* Three themes: the original colours (white on slate), and plain black on white
-   ("light") or white on black ("dark") with high contrast, for a black-and-white
-   monitor; js/theme.js switches them. */
+/* "light" and "dark" have high contrast, for a black-and-white monitor */
 :root {
 	color-scheme: light;
 	--fg: #ffffff;
@@ -153,8 +151,7 @@ main li {
 	margin: 3px
 }
 
-/* the logo (templates/web/logo.svg): blue and white in the original colours, in the high
-   contrast ones a drawing in the text colour with a frame, like the colour switch */
+/* in the high contrast themes the logo is drawn in the text colour, framed like the colour switch */
 .logo {
 	float: left;
 	box-sizing: border-box;
@@ -168,8 +165,7 @@ html:is([data-theme="light"], [data-theme="dark"]) .logo { border: 2px solid var
 html:is([data-theme="light"], [data-theme="dark"]) .logo-tile { fill: none; }
 html:is([data-theme="light"], [data-theme="dark"]) .logo-art { fill: var(--fg); }
 
-/* colour switch in the top right corner, in line with the flags (same height and margin):
-   a sun on a rectangle in the colours of the current theme, a rainbow for the original ones */
+/* in line with the flags: the same height and margin */
 .theme-toggle {
 	float: right;
 	box-sizing: border-box;
@@ -198,8 +194,7 @@ html[data-theme="light"] .theme-toggle { background: #ffffff; color: #000000; }
 html[data-theme="light"] .theme-toggle .sun-edge { stroke: none; }
 html[data-theme="dark"] .theme-toggle { background: #000000; }
 
-/* on a phone: the logo, the title and the colour switch in the first row, the flags centred
-   below them, then the tagline; floating beside the title they did not fit */
+/* on a phone, floating beside the title, the flags and the colour switch did not fit */
 @media (max-width: 767px) {
 header {
 	display: flex;

@@ -4,15 +4,13 @@ import 'dart:io';
 
 import 'package:ffi/ffi.dart';
 
-/// A minimal read-only binding to the SQLite library of the operating system.
-///
-/// Desktop builds use it instead of a bundled SQLite: Linux distributions and
-/// the Flatpak runtime ship libsqlite3.so.0, Windows 10+ ships winsqlite3.dll
-/// and macOS ships libsqlite3.dylib.
+/// Desktop builds use the SQLite of the system instead of a bundled one: Linux
+/// distributions and the Flatpak runtime ship libsqlite3.so.0, Windows 10+
+/// ships winsqlite3.dll and macOS libsqlite3.dylib.
 class SqliteDatabase {
   SqliteDatabase._(this._api, this._db);
 
-  /// Open the database at [path] read-only. It must not change while open.
+  /// The file must not change while it is open (it is opened as immutable).
   factory SqliteDatabase.openImmutable(String path) {
     final api = _SqliteApi.instance;
     final uri = '${Uri.file(path)}?immutable=1';
@@ -260,7 +258,7 @@ class _SqliteApi {
       try {
         return DynamicLibrary.open(name);
       } on ArgumentError {
-        // try the next name
+        // the names differ between distributions and Windows versions
       }
     }
     throw SqliteException(

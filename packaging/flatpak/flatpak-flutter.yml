@@ -33,7 +33,7 @@ modules:
       env:
         PUB_CACHE: /run/build/easydict/.pub-cache
     build-commands:
-      # the dictionary database, built from data/ with the SDK's python3
+      # needs only the SDK's python3
       - ./tool/build_dictionary.sh
       - flutter build linux --release --no-pub
       - cp -r $BUNDLE_PATH /app/easydict

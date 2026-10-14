@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'data/dictionary.dart';
 
-/// User preferences, stored with shared_preferences.
 class Settings extends ChangeNotifier {
   Settings._(this._prefs);
 
@@ -37,7 +36,6 @@ class Settings extends ChangeNotifier {
   };
   set locale(Locale? value) => _set('locale', value?.languageCode);
 
-  /// Desktop: look the clipboard text up when the window gets focus.
   bool get clipboardLookup => _prefs.getBool('clipboard_lookup') ?? false;
   set clipboardLookup(bool value) {
     _prefs.setBool('clipboard_lookup', value);

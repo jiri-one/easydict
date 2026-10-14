@@ -10,7 +10,7 @@ RES=$APP/android/app/src/main/res
 
 png() { rsvg-convert -w "$2" -h "$3" "$1" -o "$4"; }
 
-# In-app images (1x, 2x and 3x for Flutter's resolution-aware assets)
+# 1x, 2x and 3x for Flutter's resolution-aware assets
 for scale in 1 2 3; do
     dir=$APP/assets/images
     [ "$scale" = 1 ] || dir=$dir/$scale.0x
@@ -20,7 +20,6 @@ for scale in 1 2 3; do
     png flag_en.svg $((32 * scale)) $((16 * scale)) "$dir/flag_en.png"
 done
 
-# Android: legacy launcher icons, adaptive and monochrome (themed) icons
 for density in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
     name=${density%%:*}
     size=${density##*:}
@@ -44,7 +43,6 @@ cat > "$RES/values/ic_launcher_background.xml" <<'EOF'
 </resources>
 EOF
 
-# Windows
 tmp=$(mktemp -d)
 for size in 16 24 32 48 64 128 256; do
     png icon.svg "$size" "$size" "$tmp/$size.png"
@@ -69,7 +67,6 @@ for size in 192 512; do
 done
 rm -r "$tmp"
 
-# Linux (Flatpak) and F-Droid store icon
 mkdir -p ../packaging/linux "$APP/fastlane/metadata/android/en-US/images"
 cp icon.svg ../packaging/linux/one.jiri.easydict.svg
 png icon.svg 512 512 "$APP/fastlane/metadata/android/en-US/images/icon.png"

@@ -11,8 +11,6 @@ import 'sqlite_ffi.dart';
 const _asset = 'assets/dictionary/easydict.sqlite';
 const _checksumAsset = 'assets/dictionary/easydict.sha256';
 
-/// Open the dictionary database bundled with the app.
-///
 /// Android cannot open assets as files, so the database is copied out once
 /// and opened with sqflite (the SQLite of the system). Desktop builds open the
 /// bundled file in place through [SqliteDatabase].
@@ -39,7 +37,6 @@ Future<String> _desktopDatabasePath() async {
   return _copyAsset(Directory.systemTemp.path);
 }
 
-/// Copy the bundled database to [directory] unless this version is there.
 Future<String> _copyAsset(String directory) async {
   final checksum = (await rootBundle.loadString(_checksumAsset)).trim();
   final name = 'easydict-${checksum.substring(0, 16)}.sqlite';
@@ -63,7 +60,7 @@ Future<String> _copyAsset(String directory) async {
     if (!target.existsSync()) rethrow;
     await partial.delete();
   }
-  // Remove the databases (and unfinished copies) of older versions.
+  // databases (and unfinished copies) of older versions
   await for (final file in Directory(directory).list()) {
     final fileName = file.uri.pathSegments.last;
     if (file is File &&
@@ -120,10 +117,9 @@ class IsolateSqlReader implements SqlReader {
   final _pending = <int, Completer<List<Map<String, Object?>>>>{};
   int _nextId = 0;
 
-  /// The whole closing, shared by all callers of [close].
+  /// shared by all callers of [close]
   Future<void>? _closing;
 
-  /// Completed when the worker has closed the database.
   final _workerClosed = Completer<void>();
 
   void _onResponse(Object? message) {
@@ -156,8 +152,8 @@ class IsolateSqlReader implements SqlReader {
     return completer.future;
   }
 
-  /// Close the database. Queries sent before are still answered (the worker
-  /// handles messages in order); later ones fail.
+  /// Queries sent before are still answered (the worker handles messages in
+  /// order); later ones fail.
   @override
   Future<void> close() => _closing ??= _close();
 

@@ -18,14 +18,11 @@ Future<void> main(List<String> arguments) async {
   );
 }
 
-/// Licences of the app and its data, shown on the licence page next to the
-/// licences of the Flutter packages.
 Stream<LicenseEntry> _licenses() async* {
   Future<String> text(String name) =>
       rootBundle.loadString('assets/licenses/$name');
   yield LicenseEntryWithLineBreaks(['EasyDict'], await text('GPL-3.0.txt'));
-  // The complete notice with the cover texts and authors, as the GNU FDL asks;
-  // built with the database by data/tools/build_db.py.
+  // the complete notice with the cover texts and authors, as the GNU FDL asks
   final notice = await rootBundle.loadString(
     'assets/dictionary/easydict.sqlite.NOTICE.txt',
   );
