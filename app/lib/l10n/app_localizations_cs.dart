@@ -45,7 +45,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get modeFulltext => 'Kdekoli';
 
   @override
-  String get welcomeTitle => 'Vítejte v EasyDictu';
+  String get welcomeTitle => 'Vítejte v EasyDictu';
 
   @override
   String get welcomeHint => 'Stačí začít psát.';
@@ -63,11 +63,11 @@ class AppLocalizationsCs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString překladů',
-      few: '$countString překlady',
-      one: '1 překlad',
+      other: 'Ve slovníku je $countString překladů',
+      few: 'Ve slovníku jsou $countString překlady',
+      one: 'Ve slovníku je 1 překlad',
     );
-    return 'Ve slovníku je $_temp0';
+    return '$_temp0';
   }
 
   @override
@@ -76,17 +76,23 @@ class AppLocalizationsCs extends AppLocalizations {
   }
 
   @override
-  String get searchAnywhere => 'Hledat kdekoli v textu';
+  String get searchAnywhere => 'Hledat kdekoli v textu';
 
   @override
-  String get searchInEnglish => 'Hledat v angličtině';
+  String get searchInEnglish => 'Hledat v angličtině';
 
   @override
-  String get searchInCzech => 'Hledat v češtině';
+  String get searchInCzech => 'Hledat v češtině';
 
   @override
-  String baseForms(String forms) {
-    return 'Základní tvar: $forms';
+  String baseForms(int count, String forms) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Základní tvary: $forms',
+      one: 'Základní tvar: $forms',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -131,7 +137,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get settingsSearch => 'Hledání';
 
   @override
-  String get defaultLanguage => 'Hledat v jazyce';
+  String get defaultLanguage => 'Hledat v jazyce';
 
   @override
   String get defaultMode => 'Režim hledání';
@@ -162,36 +168,36 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get clipboardLookupHint =>
-      'Po aktivaci okna vyhledá slovo zkopírované do schránky.';
+      'Po aktivaci okna vyhledá nový text zkopírovaný do schránky.';
 
   @override
   String get helpModesTitle => 'Režimy hledání';
 
   @override
   String get helpModes =>
-      'Začátek – hesla začínající napsaným textem.\nCelé slovo – hesla obsahující napsané slovo.\nKdekoli – napsaný text kdekoli v hesle.';
+      'Začátek – hesla začínající napsaným textem.\nCelé slovo – hesla obsahující napsané slovo.\nKdekoli – napsaný text kdekoli v hesle.';
 
   @override
   String get helpFormsTitle => 'Tvary slov';
 
   @override
   String get helpForms =>
-      'Česká slova můžete psát v jakémkoli tvaru: „psa“ najde „pes“, „šel“ najde „jít“. Na diakritice a velkých písmenech nezáleží.';
+      'Česká slova můžete psát i v jiných tvarech: „psa“ najde „pes“, „očima“ najde „oko“. Na diakritice a velkých písmenech nezáleží.';
 
   @override
   String get helpTipsTitle => 'Tipy';
 
   @override
   String get helpTips =>
-      'Klepnutím na překlad ho vyhledáte v druhém jazyce nebo zkopírujete. Vlajka vedle vyhledávacího pole přepíná jazyk. EasyDict funguje i bez internetu.';
+      'Klepnutím na překlad ho vyhledáte v druhém jazyce nebo zkopírujete. Vlajka vedle vyhledávacího pole přepíná jazyk. EasyDict funguje i bez internetu.';
 
   @override
   String get helpTipsAndroid =>
-      'Označte slovo v libovolné aplikaci a v nabídce zvolte „Vyhledat v EasyDictu“.';
+      'Označte slovo v libovolné aplikaci a v nabídce zvolte „Vyhledat v EasyDictu“.';
 
   @override
   String get helpTipsDesktop =>
-      'Spuštěním „easydict SLOVO“ rovnou vyhledáte SLOVO, třeba z klávesové zkratky. V nastavení můžete zapnout i vyhledávání slova ze schránky, kdykoli se okno EasyDictu aktivuje.';
+      'Spuštěním „easydict SLOVO“ rovnou vyhledáte SLOVO, třeba z klávesové zkratky. V nastavení můžete zapnout i vyhledávání nového textu ze schránky, když se okno EasyDictu aktivuje.';
 
   @override
   String get helpLabelsTitle => 'Značky';
@@ -212,7 +218,7 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get dataCredits =>
-      'Anglicko-český slovník je svobodný slovník projektu Svobodné slovníky (GNU FDL 1.1 nebo pozdější), dříve GNU/FDL Anglicko-Český slovník. Tvary českých slov pocházejí z českého slovníku Hunspell (GNU GPL 2) a z Wikislovníku (CC BY-SA 4.0). Četnosti slov, podle kterých jsou běžné překlady první, pocházejí z wordfreq od Robyn Speer (CC BY-SA 4.0).';
+      'Anglicko-český slovník je svobodný slovník projektu Svobodné slovníky (GNU FDL 1.1 nebo pozdější), dříve GNU/FDL Anglicko-Český slovník. Tvary českých slov pocházejí z českého slovníku Hunspell (GNU GPL 2) a z Wikislovníku (CC BY-SA 4.0). Četnosti slov, podle kterých jsou běžné překlady první, pocházejí z wordfreq od Robyn Speer (CC BY-SA 4.0).';
 
   @override
   String get translators => 'Autoři překladů';

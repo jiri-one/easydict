@@ -106,7 +106,7 @@ class SearchResult {
 class Dictionary {
   Dictionary._(this._db, this._foldMap, this._negationPrefixes, this.meta);
 
-  static const schemaVersion = '1';
+  static const schemaVersion = '2';
 
   /// Maximum number of rows taken from one query.
   static const rowLimit = 300;
@@ -157,12 +157,22 @@ class Dictionary {
     for (final match in _wordPattern.allMatches(text)) match[0]!,
   ];
 
+  /// Longer queries are cut: nobody types them, and SQLite rejects too long
+  /// LIKE patterns.
+  static const maxQueryLength = 100;
+
+  static final _unsafeCharacters = RegExp(r'[\u0000-\u001F\u007F]');
+  static final _combiningMarks = RegExp(r'[̀-ͯ]');
+
   Future<SearchResult> search(
     String query,
     Language language,
     SearchMode mode,
   ) async {
-    final text = query.trim();
+    var text = query.replaceAll(_unsafeCharacters, ' ').trim();
+    if (text.length > maxQueryLength) {
+      text = text.substring(0, maxQueryLength).trim();
+    }
     final key = fold(text);
     final tokens = words(key);
     if (tokens.isEmpty) {
@@ -174,12 +184,23 @@ class Dictionary {
       );
     }
 
-    final direct = switch (mode) {
-      SearchMode.startsWith => await _startsWith(key, language),
-      SearchMode.wholeWord => await _wholeWord(tokens, key, language),
-      SearchMode.fulltext => await _fulltext(key, language),
+    // Each mode also takes the better kinds of matches (the start of the
+    // headword, whole words), so that the row limit of the broad query cannot
+    // push them out before the final ranking.
+    final parts = switch (mode) {
+      SearchMode.startsWith => [await _startsWith(key, language)],
+      SearchMode.wholeWord => [
+        await _startsWithWords(tokens, key, language),
+        await _wholeWord(tokens, key, language),
+      ],
+      SearchMode.fulltext => [
+        await _startsWith(key, language),
+        await _wholeWord(tokens, key, language),
+        await _fulltext(key, language),
+      ],
     };
-    var truncated = direct.length >= rowLimit;
+    final direct = [for (final (entries, _) in parts) ...entries];
+    var truncated = parts.any((part) => part.$2);
 
     var baseForms = const <String>[];
     final viaBaseForm = <Entry>[];
@@ -188,12 +209,16 @@ class Dictionary {
     final isHeadword = direct.any((entry) => fold(entry.text(language)) == key);
     if (language == Language.cze && tokens.length == 1 && !isHeadword) {
       baseForms = [
-        for (final lemma in await _baseForms(tokens.single))
+        for (final lemma in await _baseForms(tokens.single, _exactWord(text)))
           if (fold(lemma) != key) lemma,
       ];
       for (final lemma in baseForms) {
-        final rows = await _wholeWord([fold(lemma)], fold(lemma), language);
-        truncated |= rows.length >= rowLimit;
+        final (rows, more) = await _wholeWord(
+          [fold(lemma)],
+          fold(lemma),
+          language,
+        );
+        truncated |= more;
         // The folded lookup also finds words that differ in diacritics only
         // ("byt" for "být"), so keep the entries with the exact base form.
         viaBaseForm.addAll(
@@ -219,95 +244,166 @@ class Dictionary {
     );
   }
 
+  /// The typed word in lowercase with its diacritics, when it is one word
+  /// written with composed letters; null otherwise.
+  String? _exactWord(String text) {
+    if (_combiningMarks.hasMatch(text)) return null;
+    final exact = words(text.toLowerCase());
+    return exact.length == 1 ? exact.single : null;
+  }
+
   Future<List<Entry>> _entries(String sql, List<Object?> arguments) async => [
     for (final row in await _db.select(sql, arguments)) Entry.fromRow(row),
   ];
 
   /// The exact match first, then the most common texts, then the shortest.
-  static String _order(Language language) {
+  static String _order(Language language, int limit) {
     final column = 'e.${language.name}_key';
     return 'ORDER BY $column = ? DESC, e.${language.name}_rank DESC, '
-        'length($column), $column, e.id LIMIT $rowLimit';
+        'length($column), $column, e.id LIMIT $limit';
   }
 
-  Future<List<Entry>> _startsWith(String key, Language language) {
+  /// Entries whose headword starts with [key]; true when more were left out.
+  Future<(List<Entry>, bool)> _startsWith(String key, Language language) async {
     final column = '${language.name}_key';
-    return _entries(
+    final entries = await _entries(
       'SELECT $_columns FROM entries e '
-      'WHERE e.$column >= ? AND e.$column < ? ${_order(language)}',
+      'WHERE e.$column >= ? AND e.$column < ? ${_order(language, rowLimit + 1)}',
       [key, '$key\u{10FFFF}', key],
     );
+    return _limited(entries);
   }
 
-  Future<List<Entry>> _wholeWord(
+  /// Entries whose headword starts with the whole words of [tokens].
+  Future<(List<Entry>, bool)> _startsWithWords(
     List<String> tokens,
     String key,
     Language language,
   ) async {
-    // Look the rarest word up, then keep the entries with the whole phrase.
-    var rarest = tokens.first;
-    if (tokens.length > 1) {
-      var fewest = -1;
-      for (final token in tokens.toSet()) {
-        final rows = await _db.select(
-          'SELECT count(*) AS n FROM words WHERE lang = ? AND word = ?',
-          [language.code, token],
-        );
-        final count = rows.single['n']! as int;
-        if (count == 0) return const [];
-        if (fewest < 0 || count < fewest) {
-          fewest = count;
-          rarest = token;
-        }
-      }
-    }
-    final entries = await _entries(
-      'SELECT $_columns FROM words w JOIN entries e ON e.id = w.entry_id '
-      'WHERE w.lang = ? AND w.word = ? ${_order(language)}',
-      [language.code, rarest, key],
+    final (entries, more) = await _startsWith(key, language);
+    return (
+      [
+        for (final entry in entries)
+          if (_startsWithPhrase(words(fold(entry.text(language))), tokens))
+            entry,
+      ],
+      more,
     );
-    if (tokens.length == 1) return entries;
-    return [
-      for (final entry in entries)
-        if (_containsPhrase(words(fold(entry.text(language))), tokens)) entry,
-    ];
   }
 
-  Future<List<Entry>> _fulltext(String key, Language language) {
+  /// Entries containing the words of [tokens] next to each other.
+  Future<(List<Entry>, bool)> _wholeWord(
+    List<String> tokens,
+    String key,
+    Language language,
+  ) async {
     final column = '${language.name}_key';
-    return _entries(
+    if (tokens.length == 1) {
+      final entries = await _entries(
+        'SELECT $_columns FROM words w JOIN entries e ON e.id = w.entry_id '
+        'WHERE w.lang = ? AND w.word = ? ${_order(language, rowLimit + 1)}',
+        [language.code, tokens.single, key],
+      );
+      return _limited(entries);
+    }
+    // A phrase: look the rarest word up, let SQLite keep the entries that
+    // have all the words in this order, then check the word boundaries.
+    var rarest = tokens.first;
+    var fewest = -1;
+    for (final token in tokens.toSet()) {
+      final rows = await _db.select(
+        'SELECT count(*) AS n FROM words WHERE lang = ? AND word = ?',
+        [language.code, token],
+      );
+      final count = rows.single['n']! as int;
+      if (count == 0) return (const <Entry>[], false);
+      if (fewest < 0 || count < fewest) {
+        fewest = count;
+        rarest = token;
+      }
+    }
+    const candidateLimit = 5000;
+    final candidates = await _entries(
+      'SELECT $_columns FROM words w JOIN entries e ON e.id = w.entry_id '
+      'WHERE w.lang = ? AND w.word = ? AND e.$column LIKE ? ESCAPE ? '
+      '${_order(language, candidateLimit)}',
+      [
+        language.code,
+        rarest,
+        '%${tokens.map(_escapeLike).join('%')}%',
+        r'\',
+        key,
+      ],
+    );
+    final (entries, more) = _limited([
+      for (final entry in candidates)
+        if (_containsPhrase(words(fold(entry.text(language))), tokens)) entry,
+    ]);
+    return (entries, more || candidates.length >= candidateLimit);
+  }
+
+  /// Entries containing [key] anywhere.
+  Future<(List<Entry>, bool)> _fulltext(String key, Language language) async {
+    final column = '${language.name}_key';
+    final entries = await _entries(
       'SELECT $_columns FROM entries e WHERE e.$column LIKE ? ESCAPE ? '
-      '${_order(language)}',
+      '${_order(language, rowLimit + 1)}',
       ['%${_escapeLike(key)}%', r'\', key],
     );
+    return _limited(entries);
   }
 
-  /// Base forms of a folded Czech word; empty when the word is a base form.
-  Future<List<String>> _baseForms(String token) async {
-    final lemmas = await _lemmasOf(token);
-    if (lemmas.isNotEmpty || await _czechWord(token) != null) return lemmas;
+  static (List<Entry>, bool) _limited(List<Entry> entries) =>
+      entries.length > rowLimit
+      ? (entries.sublist(0, rowLimit), true)
+      : (entries, false);
+
+  /// Base forms of a Czech word ([key] folded, [exact] as typed with its
+  /// diacritics); empty when the word is a base form itself.
+  ///
+  /// With diacritics typed, forms with the same diacritics win, so "nedělá"
+  /// finds "dělat" and not "neděle" (whose form "neděla" folds the same).
+  Future<List<String>> _baseForms(String key, String? exact) async {
+    final rows = await _formRows(key);
+    final lemmas = _lemmasOf(rows, exact);
+    if (lemmas.isNotEmpty) return lemmas;
+    final word = await _czechWord(key);
+    if (word != null && (exact == null || word == exact)) return const [];
     // Negated and superlative forms are not stored: try without the prefix.
     for (final prefix in _negationPrefixes) {
-      if (token.length <= prefix.length + 1 || !token.startsWith(prefix)) {
+      if (key.length <= prefix.length + 1 ||
+          !key.startsWith(prefix) ||
+          // "něco" folds to "neco" but has no "ne-" to strip
+          (exact != null && !exact.startsWith(prefix))) {
         continue;
       }
-      final rest = token.substring(prefix.length);
-      final restLemmas = await _lemmasOf(rest);
+      final restKey = key.substring(prefix.length);
+      final restExact = exact?.substring(prefix.length);
+      final restLemmas = _lemmasOf(await _formRows(restKey), restExact);
       if (restLemmas.isNotEmpty) return restLemmas;
-      final word = await _czechWord(rest);
-      if (word != null) return [word];
+      final restWord = await _czechWord(restKey);
+      if (restWord != null && (restExact == null || restWord == restExact)) {
+        return [restWord];
+      }
     }
-    return const [];
+    // Nothing with these diacritics: they may be wrong, take any.
+    return exact == null ? const [] : _lemmasOf(rows, null);
   }
 
-  Future<List<String>> _lemmasOf(String key) async => [
+  Future<List<(String, String)>> _formRows(String key) async => [
     for (final row in await _db.select(
-      'SELECT lemma FROM cs_forms_hunspell WHERE form = ? '
-      'UNION SELECT lemma FROM cs_forms_wiktionary WHERE form = ?',
+      'SELECT form, lemma FROM cs_forms_hunspell WHERE form_key = ? '
+      'UNION SELECT form, lemma FROM cs_forms_wiktionary WHERE form_key = ?',
       [key, key],
     ))
-      row['lemma']! as String,
+      (row['form']! as String, row['lemma']! as String),
   ];
+
+  /// The lemmas of the rows whose form is [exact] (any form when null).
+  static List<String> _lemmasOf(List<(String, String)> rows, String? exact) => {
+    for (final (form, lemma) in rows)
+      if (exact == null || form == exact) lemma,
+  }.toList();
 
   /// The word with diacritics as it is written in the dictionary, or null.
   Future<String?> _czechWord(String key) async {
@@ -381,6 +477,10 @@ class Dictionary {
     }
     return groups.values.toList();
   }
+
+  static bool _startsWithPhrase(List<String> haystack, List<String> phrase) =>
+      haystack.length >= phrase.length &&
+      _containsPhrase(haystack.sublist(0, phrase.length), phrase);
 
   static bool _containsPhrase(List<String> haystack, List<String> phrase) {
     for (var start = 0; start + phrase.length <= haystack.length; start++) {

@@ -42,27 +42,34 @@ Future<String> _desktopDatabasePath() async {
 /// Copy the bundled database to [directory] unless this version is there.
 Future<String> _copyAsset(String directory) async {
   final checksum = (await rootBundle.loadString(_checksumAsset)).trim();
-  final target = File(
-    '$directory/easydict-${checksum.substring(0, 16)}.sqlite',
+  final name = 'easydict-${checksum.substring(0, 16)}.sqlite';
+  final target = File('$directory/$name');
+  if (target.existsSync()) return target.path;
+  await Directory(directory).create(recursive: true);
+  final data = await rootBundle.load(_asset);
+  // Two engines can copy at the same time (text selected in another app
+  // during the first start), so each writes its own file and the rename
+  // publishes a complete copy atomically.
+  final partial = File(
+    '${target.path}.$pid-${DateTime.now().microsecondsSinceEpoch}.partial',
   );
-  if (!target.existsSync()) {
-    await Directory(directory).create(recursive: true);
-    final data = await rootBundle.load(_asset);
-    final partial = File('${target.path}.partial');
-    await partial.writeAsBytes(
-      data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
-      flush: true,
-    );
+  await partial.writeAsBytes(
+    data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+    flush: true,
+  );
+  try {
     await partial.rename(target.path);
-    // Remove the databases of older versions.
-    await for (final file in Directory(directory).list()) {
-      final name = file.uri.pathSegments.last;
-      if (file is File &&
-          name.startsWith('easydict-') &&
-          name.endsWith('.sqlite') &&
-          file.path != target.path) {
-        await file.delete();
-      }
+  } on FileSystemException {
+    if (!target.existsSync()) rethrow;
+    await partial.delete();
+  }
+  // Remove the databases (and unfinished copies) of older versions.
+  await for (final file in Directory(directory).list()) {
+    final fileName = file.uri.pathSegments.last;
+    if (file is File &&
+        fileName.startsWith('easydict-') &&
+        !fileName.startsWith(name)) {
+      await file.delete();
     }
   }
   return target.path;
@@ -113,7 +120,14 @@ class IsolateSqlReader implements SqlReader {
   final _pending = <int, Completer<List<Map<String, Object?>>>>{};
   int _nextId = 0;
 
+  /// Set by [close]; completed when the worker has closed the database.
+  Completer<void>? _closed;
+
   void _onResponse(Object? message) {
+    if (message == _closedMessage) {
+      _closed?.complete();
+      return;
+    }
     final (id, rows, error) =
         message! as (int, List<Map<String, Object?>>?, String?);
     final completer = _pending.remove(id)!;
@@ -129,6 +143,9 @@ class IsolateSqlReader implements SqlReader {
     String sql, [
     List<Object?> arguments = const [],
   ]) {
+    if (_closed != null) {
+      return Future.error(StateError('The dictionary database is closed.'));
+    }
     final id = _nextId++;
     final completer = Completer<List<Map<String, Object?>>>();
     _pending[id] = completer;
@@ -136,13 +153,24 @@ class IsolateSqlReader implements SqlReader {
     return completer.future;
   }
 
+  /// Close the database. Queries sent before are still answered (the worker
+  /// handles messages in order); later ones fail.
   @override
   Future<void> close() async {
+    if (_closed case final closed?) return closed.future;
+    final closed = _closed = Completer<void>();
     _commands.send(null);
+    await closed.future.timeout(const Duration(seconds: 5), onTimeout: () {});
+    for (final completer in _pending.values) {
+      completer.completeError(StateError('The dictionary database is closed.'));
+    }
+    _pending.clear();
     _responses.close();
     _isolate.kill();
   }
 }
+
+const _closedMessage = 'closed';
 
 void _serve((SendPort, String) init) {
   final (responses, path) = init;
@@ -159,6 +187,7 @@ void _serve((SendPort, String) init) {
     if (message == null) {
       db.close();
       commands.close();
+      responses.send(_closedMessage);
       return;
     }
     final (id, sql, arguments) = message as (int, String, List<Object?>);

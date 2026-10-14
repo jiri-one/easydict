@@ -38,7 +38,10 @@ class ResultsView extends StatelessWidget {
         : Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: Text(
-              l10n.baseForms(result.baseForms.join(', ')),
+              l10n.baseForms(
+                result.baseForms.length,
+                result.baseForms.join(', '),
+              ),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.primary,
               ),
@@ -56,6 +59,8 @@ class ResultsView extends StatelessWidget {
         : null;
     final offset = header == null ? 0 : 1;
     return ListView.separated(
+      // A new result starts at the top, not where the old one was scrolled.
+      key: ObjectKey(result),
       padding: const EdgeInsets.only(bottom: 24),
       itemCount: result.groups.length + offset + (footer == null ? 0 : 1),
       separatorBuilder: (context, index) =>

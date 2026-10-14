@@ -52,7 +52,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get slogan =>
-      'The first translator which is completely open with dictionary data too.';
+      'The first open-source translator that is completely open, dictionary data included.';
 
   @override
   String entryCount(int count) {
@@ -84,8 +84,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchInCzech => 'Search in Czech';
 
   @override
-  String baseForms(String forms) {
-    return 'Base form: $forms';
+  String baseForms(int count, String forms) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Base forms: $forms',
+      one: 'Base form: $forms',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -157,11 +163,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get systemLanguage => 'System';
 
   @override
-  String get clipboardLookup => 'Look up the clipboard';
+  String get clipboardLookup => 'Look up clipboard text';
 
   @override
   String get clipboardLookupHint =>
-      'When the window is activated, search the word copied to the clipboard.';
+      'When the window is activated, look up new text copied to the clipboard.';
 
   @override
   String get helpModesTitle => 'Search modes';
@@ -175,7 +181,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpForms =>
-      'Czech words can be typed in any form: “psa” finds “pes”, “šel” finds “jít”. Diacritics and capital letters do not matter.';
+      'You can also type Czech words in other forms: “psa” finds “pes”, “očima” finds “oko”. Diacritics and capital letters do not matter.';
 
   @override
   String get helpTipsTitle => 'Tips';
@@ -190,7 +196,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTipsDesktop =>
-      'Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up the word copied to the clipboard whenever its window is activated.';
+      'Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up new text copied to the clipboard when its window is activated.';
 
   @override
   String get helpLabelsTitle => 'Labels';

@@ -28,7 +28,11 @@ class DictionarySearch extends ChangeNotifier {
   /// Searched again in this language when nothing is found (see [lookUpText]).
   Language? _fallback;
 
-  static final _czechLetters = RegExp('[ěščřžýáíéůúňťď]', caseSensitive: false);
+  /// Czech letters, also written with combining marks (decomposed text).
+  static final _czechLetters = RegExp(
+    '[ěščřžýáíéůúňťď\u030C\u0301\u030A]',
+    caseSensitive: false,
+  );
 
   String get query => _query;
   Language get language => _language;
@@ -42,10 +46,12 @@ class DictionarySearch extends ChangeNotifier {
     _query = value;
     _fallback = null;
     _timer?.cancel();
+    // A search of the previous text must not land (or switch the language).
+    _generation++;
     if (value.trim().isEmpty) {
-      _generation++;
       _result = SearchResult.empty;
       _searching = false;
+      _error = null;
       notifyListeners();
     } else {
       _timer = Timer(_debounce, _run);
@@ -65,20 +71,21 @@ class DictionarySearch extends ChangeNotifier {
   }
 
   /// Search [text] in [language] right away, e.g. a tapped translation.
-  void lookUp(String text, Language language) {
-    _query = text;
-    _language = language;
-    _fallback = null;
-    _restart();
-  }
+  void lookUp(String text, Language language) => _start(text, language);
 
   /// Search text that comes from outside (selected in another app, from the
   /// clipboard or the command line): Czech letters mean Czech, and when
   /// nothing is found the other language is tried.
   void lookUpText(String text) {
     final language = _czechLetters.hasMatch(text) ? Language.cze : _language;
-    lookUp(text, language);
-    _fallback = language.other;
+    _start(text, language, fallback: language.other);
+  }
+
+  void _start(String text, Language language, {Language? fallback}) {
+    _query = text;
+    _language = language;
+    _fallback = fallback;
+    _restart();
   }
 
   void _restart() {
@@ -92,15 +99,20 @@ class DictionarySearch extends ChangeNotifier {
 
   Future<void> _run() async {
     final generation = ++_generation;
+    final (query, language, mode, fallback) = (
+      _query,
+      _language,
+      _mode,
+      _fallback,
+    );
+    _fallback = null;
     _searching = true;
     notifyListeners();
     try {
-      var result = await _dictionary.search(_query, _language, _mode);
+      var result = await _dictionary.search(query, language, mode);
       if (generation != _generation) return;
-      final fallback = _fallback;
-      _fallback = null;
       if (result.isEmpty && fallback != null) {
-        final other = await _dictionary.search(_query, fallback, _mode);
+        final other = await _dictionary.search(query, fallback, mode);
         if (generation != _generation) return;
         if (!other.isEmpty) {
           _language = fallback;

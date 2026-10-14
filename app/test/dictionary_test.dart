@@ -41,7 +41,7 @@ void main() {
 
   test('folding removes diacritics and case', () {
     expect(dictionary.fold('Žluťoučký KŮŇ'), 'zlutoucky kun');
-    expect(dictionary.entryCount, 14); // the untranslated row is left out
+    expect(dictionary.entryCount, 16); // the untranslated row is left out
   });
 
   test('translations are grouped by headword', () async {
@@ -189,5 +189,123 @@ void main() {
     expect(search.language, Language.cze);
     expect(search.result.groups.single.entries.single.eng, 'dog');
     search.dispose();
+  });
+
+  test('typed diacritics pick the right base form', () async {
+    // "nedělá" (does not do) folds like "neděla", a form of "neděle".
+    final result = await dictionary.search(
+      'nedělá',
+      Language.cze,
+      SearchMode.startsWith,
+    );
+    expect(result.baseForms, ['dělat']);
+    expect(headwords(result), ['dělat']);
+    // Without diacritics both readings are possible; the stored form wins.
+    final folded = await dictionary.search(
+      'nedela',
+      Language.cze,
+      SearchMode.startsWith,
+    );
+    expect(folded.baseForms, ['neděle']);
+  });
+
+  test('odd input is cleaned up', () async {
+    final nul = await dictionary.search(
+      'dog\u0000garbage',
+      Language.eng,
+      SearchMode.fulltext,
+    );
+    expect(nul.query, 'dog garbage');
+    expect(nul.groups, isEmpty);
+    final long = await dictionary.search(
+      'a' * 60000,
+      Language.eng,
+      SearchMode.fulltext,
+    );
+    expect(long.query.length, Dictionary.maxQueryLength);
+  });
+
+  test('a newer query is not switched by an older fallback', () async {
+    final search = DictionarySearch(
+      dictionary,
+      language: Language.eng,
+      mode: SearchMode.startsWith,
+    );
+    search.lookUpText('psa'); // would switch to Czech if it could finish
+    search.query = 'washer fluid';
+    final done = Completer<void>();
+    search.addListener(() {
+      if (!search.searching && search.result.query == 'washer fluid') {
+        if (!done.isCompleted) done.complete();
+      }
+    });
+    await done.future.timeout(const Duration(seconds: 5));
+    expect(search.language, Language.eng);
+    expect(search.result.groups.first.headword, 'washer fluid');
+    search.dispose();
+  });
+
+  test(
+    'closing the reader answers pending queries and rejects new ones',
+    () async {
+      final reader = await IsolateSqlReader.open('${tmp.path}/test.sqlite');
+      final pending = reader.select('SELECT count(*) AS n FROM entries');
+      await reader.close();
+      expect((await pending).single['n'], 16);
+      expect(reader.select('SELECT 1'), throwsStateError);
+    },
+  );
+
+  group('many matches', () {
+    late Dictionary big;
+    late Directory bigTmp;
+
+    setUpAll(() async {
+      // 400 entries with "in", 400 with "the" and 20 with the phrase "in the":
+      // the phrase must be found although each word alone fills the limit.
+      bigTmp = await Directory.systemTemp.createTemp('easydict_big');
+      final source = File('${bigTmp.path}/en-cs.txt');
+      source.writeAsStringSync(
+        [
+          for (var i = 0; i < 400; i++) 'in a$i\tv a$i\t\t\t',
+          for (var i = 0; i < 400; i++) 'the b$i\tto b$i\t\t\t',
+          for (var i = 0; i < 20; i++) 'c$i in the d$i\tc v d$i\t\t\t',
+          for (var i = 0; i < 400; i++) 'take care $i\tstarat se $i\t\t\t',
+          'carving\tvyřezávání\tn:\t\t',
+        ].join('\n'),
+      );
+      final db = '${bigTmp.path}/big.sqlite';
+      final build = await Process.run('python3', [
+        '../data/tools/build_db.py',
+        db,
+        '--en-cs',
+        source.path,
+        '--no-forms',
+      ]);
+      expect(build.exitCode, 0, reason: '${build.stdout}${build.stderr}');
+      big = await Dictionary.open(await IsolateSqlReader.open(db));
+    });
+
+    tearDownAll(() async {
+      await big.close();
+      await bigTmp.delete(recursive: true);
+    });
+
+    test('a phrase is found among frequent words', () async {
+      final result = await big.search(
+        'in the',
+        Language.eng,
+        SearchMode.wholeWord,
+      );
+      expect(result.groups, hasLength(20));
+      expect(result.truncated, isFalse);
+    });
+
+    test('a prefix match is not pushed out by other matches', () async {
+      // "car" is in 400 entries ("care"), but "carving" starts with it.
+      final result = await big.search('car', Language.eng, SearchMode.fulltext);
+      expect(result.groups.first.headword, 'carving');
+      expect(result.truncated, isTrue);
+    });
   });
 }

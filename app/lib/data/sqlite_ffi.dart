@@ -65,9 +65,18 @@ class SqliteDatabase {
             null => _api.bindNull(statement, i + 1),
             final int value => _api.bindInt(statement, i + 1, value),
             final String value => () {
-              final text = value.toNativeUtf8();
-              allocated.add(text);
-              return _api.bindText(statement, i + 1, text, -1, nullptr);
+              // The length in bytes keeps a NUL inside the text.
+              final bytes = utf8.encode(value);
+              final text = calloc<Uint8>(bytes.length + 1);
+              text.asTypedList(bytes.length).setAll(0, bytes);
+              allocated.add(text.cast());
+              return _api.bindText(
+                statement,
+                i + 1,
+                text.cast(),
+                bytes.length,
+                nullptr,
+              );
             }(),
             final other => throw ArgumentError('Unsupported argument $other'),
           };

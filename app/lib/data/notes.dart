@@ -44,7 +44,7 @@ const _explanations = <String, (String, String)>{
   '[male]': ('o muži', 'about a man'),
   // style and kind
   '[bás.]': ('básnicky', 'poetic'),
-  '[dět.]': ('dětský výraz', 'childish'),
+  '[dět.]': ('dětský výraz', "children's language"),
   '[form.]': ('formálně', 'formal'),
   '[fráz.]': ('fráze', 'phrase'),
   '[frsl.]': ('frázové sloveso', 'phrasal verb'),

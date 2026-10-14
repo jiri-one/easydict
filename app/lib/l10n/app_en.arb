@@ -13,7 +13,7 @@
   "modeFulltext": "Anywhere",
   "welcomeTitle": "Welcome to EasyDict",
   "welcomeHint": "Just start typing to see results.",
-  "slogan": "The first translator which is completely open with dictionary data too.",
+  "slogan": "The first open-source translator that is completely open, dictionary data included.",
   "entryCount": "{count, plural, =1{1 translation} other{{count} translations}} in the dictionary",
   "@entryCount": {
     "placeholders": {
@@ -34,9 +34,12 @@
   "searchAnywhere": "Search anywhere in the text",
   "searchInEnglish": "Search in English",
   "searchInCzech": "Search in Czech",
-  "baseForms": "Base form: {forms}",
+  "baseForms": "{count, plural, =1{Base form: {forms}} other{Base forms: {forms}}}",
   "@baseForms": {
     "placeholders": {
+      "count": {
+        "type": "int"
+      },
       "forms": {
         "type": "String"
       }
@@ -77,16 +80,16 @@
   "themeDark": "Dark",
   "appLanguage": "App language",
   "systemLanguage": "System",
-  "clipboardLookup": "Look up the clipboard",
-  "clipboardLookupHint": "When the window is activated, search the word copied to the clipboard.",
+  "clipboardLookup": "Look up clipboard text",
+  "clipboardLookupHint": "When the window is activated, look up new text copied to the clipboard.",
   "helpModesTitle": "Search modes",
   "helpModes": "Starts with – headwords beginning with the typed text.\nWhole word – headwords containing the typed word.\nAnywhere – the typed text anywhere in the headword.",
   "helpFormsTitle": "Word forms",
-  "helpForms": "Czech words can be typed in any form: “psa” finds “pes”, “šel” finds “jít”. Diacritics and capital letters do not matter.",
+  "helpForms": "You can also type Czech words in other forms: “psa” finds “pes”, “očima” finds “oko”. Diacritics and capital letters do not matter.",
   "helpTipsTitle": "Tips",
   "helpTips": "Tap a translation to look it up in the other language or to copy it. The flag next to the search field switches the language. EasyDict works offline.",
   "helpTipsAndroid": "Select a word in any app and choose “Look up in EasyDict” from the menu.",
-  "helpTipsDesktop": "Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up the word copied to the clipboard whenever its window is activated.",
+  "helpTipsDesktop": "Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up new text copied to the clipboard when its window is activated.",
   "helpLabelsTitle": "Labels",
   "version": "Version {version}",
   "@version": {

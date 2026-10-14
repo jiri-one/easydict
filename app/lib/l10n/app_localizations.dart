@@ -179,7 +179,7 @@ abstract class AppLocalizations {
   /// No description provided for @slogan.
   ///
   /// In en, this message translates to:
-  /// **'The first translator which is completely open with dictionary data too.'**
+  /// **'The first open-source translator that is completely open, dictionary data included.'**
   String get slogan;
 
   /// No description provided for @entryCount.
@@ -215,8 +215,8 @@ abstract class AppLocalizations {
   /// No description provided for @baseForms.
   ///
   /// In en, this message translates to:
-  /// **'Base form: {forms}'**
-  String baseForms(String forms);
+  /// **'{count, plural, =1{Base form: {forms}} other{Base forms: {forms}}}'**
+  String baseForms(int count, String forms);
 
   /// No description provided for @truncated.
   ///
@@ -347,13 +347,13 @@ abstract class AppLocalizations {
   /// No description provided for @clipboardLookup.
   ///
   /// In en, this message translates to:
-  /// **'Look up the clipboard'**
+  /// **'Look up clipboard text'**
   String get clipboardLookup;
 
   /// No description provided for @clipboardLookupHint.
   ///
   /// In en, this message translates to:
-  /// **'When the window is activated, search the word copied to the clipboard.'**
+  /// **'When the window is activated, look up new text copied to the clipboard.'**
   String get clipboardLookupHint;
 
   /// No description provided for @helpModesTitle.
@@ -377,7 +377,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpForms.
   ///
   /// In en, this message translates to:
-  /// **'Czech words can be typed in any form: “psa” finds “pes”, “šel” finds “jít”. Diacritics and capital letters do not matter.'**
+  /// **'You can also type Czech words in other forms: “psa” finds “pes”, “očima” finds “oko”. Diacritics and capital letters do not matter.'**
   String get helpForms;
 
   /// No description provided for @helpTipsTitle.
@@ -401,7 +401,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpTipsDesktop.
   ///
   /// In en, this message translates to:
-  /// **'Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up the word copied to the clipboard whenever its window is activated.'**
+  /// **'Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up new text copied to the clipboard when its window is activated.'**
   String get helpTipsDesktop;
 
   /// No description provided for @helpLabelsTitle.

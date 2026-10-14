@@ -4,7 +4,6 @@ import 'package:flutter/widgets.dart';
 
 import 'app.dart';
 import 'settings.dart';
-import 'ui/about_page.dart';
 
 /// Desktop: `easydict WORD` starts with WORD looked up.
 Future<void> main(List<String> arguments) async {
@@ -24,9 +23,14 @@ Stream<LicenseEntry> _licenses() async* {
   Future<String> text(String name) =>
       rootBundle.loadString('assets/licenses/$name');
   yield LicenseEntryWithLineBreaks(['EasyDict'], await text('GPL-3.0.txt'));
+  // The complete notice with the cover texts and authors, as the GNU FDL asks;
+  // built with the database by data/tools/build_db.py.
+  final notice = await rootBundle.loadString(
+    'assets/dictionary/easydict.sqlite.NOTICE.txt',
+  );
   yield LicenseEntryWithLineBreaks([
     'Svobodný anglicko-český slovník',
-  ], '$dictionaryNotices\n\n${await text('GFDL-1.1.txt')}');
+  ], '$notice\n\n${await text('GFDL-1.1.txt')}');
   yield LicenseEntryWithLineBreaks(
     ['Czech Hunspell dictionary'],
     'Czech word forms from the Czech Hunspell dictionary of LibreOffice.\n\n'
