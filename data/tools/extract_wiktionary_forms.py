@@ -18,7 +18,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 
 INFLECTION_TAGS = {
@@ -74,6 +74,34 @@ def extract(kaikki_jsonl: Path, wanted: set[str]) -> dict[str, set[str]]:
     return forms_of
 
 
+def drop_borrowed_tables(forms_of: dict[str, set[str]]) -> dict[str, set[str]]:
+    """Drop forms that a lemma got from the table of an unrelated word.
+
+    Some Wiktionary entries use the inflection template of another word, e.g.
+    "zašeptat" shows the forms of "dělat". Such forms mostly belong to one
+    other lemma, which starts with a different letter, as do all the forms.
+    (Suppletive forms like "lidé" of "člověk" are only a minority.)
+    """
+    lemmas_of: dict[str, set[str]] = defaultdict(set)
+    for lemma, forms in forms_of.items():
+        for form in forms | {lemma}:
+            lemmas_of[form.lower()].add(lemma)
+    cleaned = {}
+    for lemma, forms in forms_of.items():
+        lowered = {form.lower() for form in forms}
+        others = Counter(other for form in lowered for other in lemmas_of[form] if other != lemma)
+        if len(lowered) >= 4 and others:
+            other, overlap = others.most_common(1)[0]
+            shared = {form for form in lowered if other in lemmas_of[form]}
+            first = lemma[0].lower()
+            if overlap >= 0.6 * len(lowered) and other[0].lower() != first and all(f[0] != first for f in shared):
+                # the whole table is borrowed: keep only what starts like the lemma
+                forms = {form for form in forms if form[0].lower() == first}
+        if forms:
+            cleaned[lemma] = forms
+    return cleaned
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("kaikki_jsonl", type=Path)
@@ -81,7 +109,7 @@ def main() -> None:
     parser.add_argument("output", type=Path)
     args = parser.parse_args()
 
-    forms_of = extract(args.kaikki_jsonl, dictionary_words(args.en_cs))
+    forms_of = drop_borrowed_tables(extract(args.kaikki_jsonl, dictionary_words(args.en_cs)))
     with args.output.open("w", encoding="utf-8") as out:
         out.write(
             "# Czech inflected forms extracted from Wiktionary (https://en.wiktionary.org)\n"

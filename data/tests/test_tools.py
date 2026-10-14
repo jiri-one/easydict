@@ -6,7 +6,8 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
-from build_db import Folder, build, build_fold_map, rank  # noqa: E402
+from build_db import Folder, build, build_fold_map, dictionary_notice, rank  # noqa: E402
+from extract_wiktionary_forms import drop_borrowed_tables  # noqa: E402
 from hunspell_forms import expand, forms_by_lemma, load_affixes  # noqa: E402
 
 AFF = """\
@@ -16,6 +17,8 @@ PFX N Y 1
 PFX N   0     ne      .
 PFX E Y 1
 PFX E   0     nej     .
+PFX F Y 1
+PFX F   0     jedna   .
 SFX Y Y 3
 SFX Y   ý     á       ý
 SFX Y   ý     é       ý
@@ -27,10 +30,12 @@ SFX P   0     ův/Y    [^aeo]
 """
 
 DIC = """\
-4
+6
 zelený/YyN
 Novák/P
+osmdesátník/PF
 zakázaný/q
+zelené/q
 pes
 """
 
@@ -69,12 +74,16 @@ def test_expand_suffixes_prefixes_and_continuations(hunspell_dir):
         "nezelený", "nezelená", "nezelenější",  # PFX N, cross product with suffixes
     }
     assert expand("Novák", "P", aff) == {"Novák", "Novákův", "Novákova"}  # two-level suffix
+    # a prefix combines with both suffix levels
+    assert {"jednaosmdesátníkův", "jednaosmdesátníkova"} <= expand("osmdesátník", "PF", aff)
 
 
 def test_forms_by_lemma_skips_forbidden_and_unwanted(hunspell_dir):
     forms = forms_by_lemma(hunspell_dir / "cs_CZ.dic", hunspell_dir / "cs_CZ.aff", wanted={"zelený", "zakázaný"})
     assert set(forms) == {"zelený"}
     assert "zelený" not in forms["zelený"]
+    # a forbidden word is left out also when another stem generates it
+    assert "zelená" in forms["zelený"] and "zelené" not in forms["zelený"]
 
 
 def test_fold_removes_diacritics_and_case():
@@ -115,19 +124,38 @@ def test_build_database(tmp_path, hunspell_dir):
     words = set(db.execute("SELECT lang, word FROM words"))
     assert {(0, "dog"), (1, "zeleny"), (0, "novak"), (0, "s"), (1, "novakuv")} <= words
 
-    hunspell = set(db.execute("SELECT form, lemma FROM cs_forms_hunspell"))
-    assert ("zelena", "zelený") in hunspell
-    assert ("nejzelenejsi", "zelený") not in hunspell  # "nej" + another form: left to the app
-    assert ("nezelena", "zelený") not in hunspell  # "ne" + another form: left to the app
+    hunspell = set(db.execute("SELECT form_key, form, lemma FROM cs_forms_hunspell"))
+    assert ("zelena", "zelená", "zelený") in hunspell  # folded key, form with diacritics, lemma
+    assert not any(form == "nejzelenější" for _, form, _ in hunspell)  # "nej" + another form: left to the app
+    assert not any(form == "nezelená" for _, form, _ in hunspell)  # "ne" + another form: left to the app
 
-    wiktionary_forms = set(db.execute("SELECT form, lemma FROM cs_forms_wiktionary"))
-    assert wiktionary_forms == {("psa", "pes"), ("psovi", "pes")}  # "kočka" is not in the dictionary
+    wiktionary_forms = set(db.execute("SELECT form_key, form, lemma FROM cs_forms_wiktionary"))
+    assert wiktionary_forms == {("psa", "psa", "pes"), ("psovi", "psovi", "pes")}  # "kočka" is not used
 
     meta = dict(db.execute("SELECT key, value FROM meta"))
-    assert meta["schema_version"] == "1"
+    assert meta["schema_version"] == "2"
     assert json.loads(meta["fold_map"])["ž"] == "z"
     assert json.loads(meta["negation_prefixes"]) == ["nejne", "nej", "ne"]
     assert "built" not in meta  # no SOURCE_DATE_EPOCH in the test environment
+
+
+def test_dictionary_notice(tmp_path, monkeypatch):
+    header = tmp_path / "_header"
+    header.write_text(
+        "#      Copyright (c)  2016–@@@YEAR@@@  xHire.\n"
+        "#      Permission is granted to copy (...) with the Front-Cover Texts being\n"
+        "#      \"Založeno na svobodném anglicko-českém slovníku\", and with the Back-Cover Texts\n"
+        "#      \"Autoři:\n#      @@@AUTHORS@@@\n#      \"\n"
+        "#      Date: @@@DATE@@@\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "1760000000")  # 2025-10-09
+    notice = dictionary_notice(header, ["Milan Svoboda", "Pino"])
+    assert "@@@" not in notice and "#" not in notice
+    assert "Copyright (c)  2016–2021  xHire." in notice
+    assert notice.index("Jiří Němec") < notice.index("Permission is granted")  # next to the other copyrights
+    assert "Milan Svoboda, Pino" in notice
+    assert "Date: 2025-10-09" in notice
 
 
 def test_build_is_reproducible(tmp_path, hunspell_dir, monkeypatch):
@@ -138,3 +166,16 @@ def test_build_is_reproducible(tmp_path, hunspell_dir, monkeypatch):
     build(first, en_cs, hunspell_dir, None)
     build(second, en_cs, hunspell_dir, None)
     assert first.read_bytes() == second.read_bytes()
+
+
+def test_drop_borrowed_tables():
+    dělat = {"dělám", "děláš", "dělá", "děláme", "dělal"}
+    forms = drop_borrowed_tables({
+        "dělat": set(dělat),
+        "zašeptat": dělat | {"zašeptati", "dělavší"},  # a wrong template on Wiktionary
+        "člověk": {"člověka", "člověku", "člověkem", "lidé", "lidí"},  # suppletive plural
+        "lid": {"lidu", "lidem", "lidé", "lidí"},
+    })
+    assert forms["dělat"] == dělat
+    assert forms["zašeptat"] == {"zašeptati"}
+    assert {"lidé", "lidí"} <= forms["člověk"]

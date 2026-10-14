@@ -6,6 +6,8 @@ two-level suffixes (continuation flags on a suffix) and prefixes attached
 through a suffix's continuation flags (e.g. comparative + "nej").
 """
 
+from __future__ import annotations
+
 import re
 from collections import defaultdict
 from dataclasses import dataclass
@@ -95,7 +97,11 @@ def expand(word: str, flags: str, aff: AffixFile) -> set[str]:
             for cont_flag in sfx.cont:
                 for sfx2 in aff.suffixes.get(cont_flag, ()):
                     if sfx2.applies(form, prefix=False):
-                        forms.add(sfx2.apply(form, prefix=False))
+                        form2 = sfx2.apply(form, prefix=False)
+                        forms.add(form2)
+                        # a prefix can combine with the second suffix too
+                        if sfx.cross_product and sfx2.cross_product:
+                            suffixed.append((form2, sfx2))
                 for pfx in aff.prefixes.get(cont_flag, ()):
                     if pfx.applies(form, prefix=True):
                         forms.add(pfx.apply(form, prefix=True))
@@ -127,13 +133,16 @@ def forms_by_lemma(dic_path: Path, aff_path: Path, wanted: set[str] | None = Non
     """Map each stem (lemma) to its inflected forms (the stem itself excluded).
 
     `wanted` limits the expansion to stems whose lowercase form is in the set.
+    Words marked as forbidden are left out, also when another stem generates them.
     """
     aff = load_affixes(aff_path)
+    entries = list(read_dic(dic_path))
+    forbidden = {stem for stem, flags in entries if aff.forbidden_flag and aff.forbidden_flag in flags}
     result: dict[str, set[str]] = defaultdict(set)
-    for stem, flags in read_dic(dic_path):
-        if aff.forbidden_flag and aff.forbidden_flag in flags:
+    for stem, flags in entries:
+        if stem in forbidden:
             continue
         if wanted is not None and stem.lower() not in wanted:
             continue
-        result[stem] |= expand(stem, flags, aff) - {stem}
+        result[stem] |= expand(stem, flags, aff) - {stem} - forbidden
     return dict(result)

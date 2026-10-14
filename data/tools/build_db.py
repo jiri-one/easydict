@@ -6,6 +6,9 @@ Flathub and F-Droid build environments. The database does not rely on any
 optional SQLite feature (no FTS), so every SQLite build can read it.
 
     data/tools/build_db.py build/easydict.sqlite
+
+Next to the database it writes the licence notice of the dictionary
+(<database>.NOTICE.txt), which the GNU FDL asks to keep with every copy.
 """
 
 from __future__ import annotations
@@ -16,6 +19,7 @@ import os
 import re
 import sqlite3
 import sys
+import textwrap
 import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
@@ -23,10 +27,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from hunspell_forms import forms_by_lemma  # noqa: E402
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 DATA_DIR = Path(__file__).resolve().parent.parent
 WORD_RE = re.compile(r"[^\W_]+")
 ENG, CZE = 0, 1
+# Last year of the upstream Svobodné slovníky releases (the repository went quiet in 2021).
+UPSTREAM_LAST_YEAR = 2021
 # Longest first: the app tries them in this order when a word is not found.
 NEGATION_PREFIXES = ("nejne", "nej", "ne")
 
@@ -53,15 +59,19 @@ CREATE TABLE words (
     entry_id INTEGER NOT NULL,
     PRIMARY KEY (lang, word, entry_id)
 ) WITHOUT ROWID;
+-- form_key is the folded form, form the form with diacritics: the app prefers
+-- exact matches when the typed word has diacritics ("nedělá" is not "neděla").
 CREATE TABLE cs_forms_hunspell (
+    form_key TEXT NOT NULL,
     form TEXT NOT NULL,
     lemma TEXT NOT NULL,
-    PRIMARY KEY (form, lemma)
+    PRIMARY KEY (form_key, form, lemma)
 ) WITHOUT ROWID;
 CREATE TABLE cs_forms_wiktionary (
+    form_key TEXT NOT NULL,
     form TEXT NOT NULL,
     lemma TEXT NOT NULL,
-    PRIMARY KEY (form, lemma)
+    PRIMARY KEY (form_key, form, lemma)
 ) WITHOUT ROWID;
 """
 
@@ -146,6 +156,33 @@ def read_wiktionary_forms(path: Path) -> dict[str, set[str]]:
     return forms_of
 
 
+def build_date() -> datetime:
+    """The build date: SOURCE_DATE_EPOCH for reproducible builds, otherwise now."""
+    if "SOURCE_DATE_EPOCH" in os.environ:
+        return datetime.fromtimestamp(int(os.environ["SOURCE_DATE_EPOCH"]), tz=timezone.utc)
+    return datetime.now(tz=timezone.utc)
+
+
+def dictionary_notice(header: Path, authors: list[str]) -> str:
+    """The licence notice of the dictionary, filled in like the upstream releases.
+
+    The GNU FDL asks to keep the notice with its cover texts and the list of
+    authors, and to add a copyright notice for the modifications.
+    """
+    date = build_date()
+    author_list = "\n".join(textwrap.wrap(", ".join(authors), width=72))
+    text = "\n".join(line[1:].strip() if line.startswith("#") else line for line in header.read_text(encoding="utf-8").splitlines())
+    # The upstream compilation ends with its last release; our changes get their own line.
+    text = text.replace("@@@YEAR@@@", str(UPSTREAM_LAST_YEAR)).replace("@@@DATE@@@", date.strftime("%Y-%m-%d"))
+    text = text.replace("@@@AUTHORS@@@", author_list)
+    modifications = (
+        f"Copyright (c)  2020–{date.year}  Jiří Němec and the contributors of EasyDict,\n"
+        "https://github.com/jiri-one/easydict (modifications)."
+    )
+    first_paragraph_end = text.index("Permission is granted")
+    return (text[:first_paragraph_end] + modifications + "\n" + text[first_paragraph_end:]).strip() + "\n"
+
+
 def read_frequencies(path: Path) -> dict[str, float]:
     frequencies = {}
     with path.open(encoding="utf-8") as source:
@@ -168,8 +205,8 @@ def rank(text: str, frequencies: dict[str, float]) -> int:
     return max(0, round(zipf * 100))
 
 
-def form_rows(forms_of: dict[str, set[str]], czech_words: set[str], fold: Folder) -> set[tuple[str, str]]:
-    """(folded form, lowercase lemma) pairs for lemmas used in the dictionary.
+def form_rows(forms_of: dict[str, set[str]], czech_words: set[str], fold: Folder) -> set[tuple[str, str, str]]:
+    """(folded form, lowercase form, lowercase lemma) rows for lemmas used in the dictionary.
 
     Negated and superlative forms ("nedobrý", "nejlepší" from "lepší") are left
     out when the rest of the word is the lemma or another of its forms: the app
@@ -180,13 +217,12 @@ def form_rows(forms_of: dict[str, set[str]], czech_words: set[str], fold: Folder
         lemma = lemma.lower()
         if lemma not in czech_words:
             continue
-        lemma_key = fold(lemma)
-        keys = {fold(form) for form in forms} - {lemma_key}
-        for key in keys:
-            prefix = next((p for p in NEGATION_PREFIXES if key.startswith(p)), None)
-            rest = key[len(prefix):] if prefix else None
-            if rest is None or (rest != lemma_key and rest not in keys):
-                rows.add((key, lemma))
+        lowered = {form.lower() for form in forms} - {lemma}
+        for form in lowered:
+            prefix = next((p for p in NEGATION_PREFIXES if form.startswith(p)), None)
+            rest = form[len(prefix):] if prefix else None
+            if rest is None or (rest != lemma and rest not in lowered):
+                rows.add((fold(form), form, lemma))
     return rows
 
 
@@ -196,6 +232,7 @@ def build(
     hunspell_dir: Path | None,
     wiktionary: Path | None,
     frequency_dir: Path | None = None,
+    header: Path | None = None,
 ) -> dict[str, int]:
     rows = [columns for columns in read_en_cs(en_cs) if columns[1]]  # skip untranslated stubs
     en_freq = read_frequencies(frequency_dir / "en.tsv") if frequency_dir else {}
@@ -229,11 +266,11 @@ def build(
     if hunspell_dir:
         hunspell = forms_by_lemma(hunspell_dir / "cs_CZ.dic", hunspell_dir / "cs_CZ.aff", wanted=czech_words)
         hunspell_rows = sorted(form_rows(hunspell, czech_words, fold))
-        db.executemany("INSERT INTO cs_forms_hunspell VALUES (?, ?)", hunspell_rows)
+        db.executemany("INSERT INTO cs_forms_hunspell VALUES (?, ?, ?)", hunspell_rows)
         stats["forms_hunspell"] = len(hunspell_rows)
     if wiktionary:
         wiktionary_rows = sorted(form_rows(read_wiktionary_forms(wiktionary), czech_words, fold))
-        db.executemany("INSERT INTO cs_forms_wiktionary VALUES (?, ?)", wiktionary_rows)
+        db.executemany("INSERT INTO cs_forms_wiktionary VALUES (?, ?, ?)", wiktionary_rows)
         stats["forms_wiktionary"] = len(wiktionary_rows)
 
     db.executescript(INDEXES)
@@ -243,8 +280,9 @@ def build(
         for name in (author or "").split("; "):
             if name.strip():
                 authors[name.strip()] = authors.get(name.strip(), 0) + 1
+    authors_sorted = sorted(authors.items(), key=lambda item: (-item[1], item[0]))
     meta = {
-        "authors": json.dumps(sorted(authors.items(), key=lambda item: (-item[1], item[0])), ensure_ascii=False),
+        "authors": json.dumps(authors_sorted, ensure_ascii=False),
         "schema_version": str(SCHEMA_VERSION),
         "fold_map": json.dumps(fold_map, ensure_ascii=False, sort_keys=True),
         "negation_prefixes": json.dumps(NEGATION_PREFIXES),
@@ -253,12 +291,14 @@ def build(
     }
     # Reproducible builds: only stamp a date when the build system provides one.
     if "SOURCE_DATE_EPOCH" in os.environ:
-        built = datetime.fromtimestamp(int(os.environ["SOURCE_DATE_EPOCH"]), tz=timezone.utc)
-        meta["built"] = built.strftime("%Y-%m-%d")
+        meta["built"] = build_date().strftime("%Y-%m-%d")
     db.executemany("INSERT INTO meta VALUES (?, ?)", sorted(meta.items()))
     db.commit()
     db.execute("VACUUM")
     db.close()
+    if header:
+        notice = dictionary_notice(header, [name for name, _ in authors_sorted])
+        output.with_name(output.name + ".NOTICE.txt").write_text(notice, encoding="utf-8")
     return stats
 
 
@@ -269,6 +309,8 @@ def main() -> None:
     parser.add_argument("--hunspell-dir", type=Path, default=DATA_DIR / "cs-forms" / "hunspell")
     parser.add_argument("--wiktionary", type=Path, default=DATA_DIR / "cs-forms" / "wiktionary" / "forms.tsv")
     parser.add_argument("--frequency-dir", type=Path, default=DATA_DIR / "frequency")
+    parser.add_argument("--header", type=Path, default=DATA_DIR / "en-cs" / "_header",
+                        help="licence notice template of the dictionary")
     parser.add_argument("--no-forms", action="store_true", help="build without the Czech inflection tables")
     args = parser.parse_args()
 
@@ -278,6 +320,7 @@ def main() -> None:
         None if args.no_forms else args.hunspell_dir,
         None if args.no_forms else args.wiktionary,
         args.frequency_dir,
+        args.header,
     )
     size = args.output.stat().st_size / 1e6
     print(f"{args.output}: {size:.1f} MB, " + ", ".join(f"{key} {value}" for key, value in stats.items()))
