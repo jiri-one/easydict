@@ -1,9 +1,9 @@
-EasyDict is an offline English–Czech and Czech–English dictionary. It is the first translator which is completely open, with the dictionary data too: more than 150,000 translations of the free dictionary of the Svobodné slovníky project, formerly the GNU/FDL English-Czech Dictionary.
+EasyDict is an offline English–Czech and Czech–English dictionary. It is the first open-source translator that is completely open, dictionary data included: more than 150,000 translations of the free dictionary of the Svobodné slovníky project, formerly the GNU/FDL English-Czech Dictionary.
 
 <ul>
 <li>Results while you type, without an internet connection</li>
 <li>Search by the start of a word, by whole words or anywhere in the text</li>
-<li>Czech words are found in any form: "psa" finds "pes"</li>
+<li>Czech words are also found in other forms: "psa" finds "pes"</li>
 <li>Diacritics and capital letters do not matter</li>
 <li>Czech and English user interface, light and dark theme</li>
 </ul>

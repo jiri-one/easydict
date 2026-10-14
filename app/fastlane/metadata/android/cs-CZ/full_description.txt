@@ -1,11 +1,11 @@
-EasyDict je anglicko-český a česko-anglický slovník, který funguje bez internetu. Je to první překladač, který je otevřený včetně slovníkových dat: přes 150 000 překladů ze svobodného slovníku projektu Svobodné slovníky, dříve GNU/FDL Anglicko-Český slovník.
+EasyDict je anglicko-český a česko-anglický slovník, který funguje bez internetu. Je to první překladač, který je otevřený včetně slovníkových dat: přes 150 000 překladů ze svobodného slovníku projektu Svobodné slovníky, dříve GNU/FDL Anglicko-Český slovník.
 
 <ul>
-<li>Výsledky už během psaní a bez připojení k internetu</li>
-<li>Hledání podle začátku slova, celých slov nebo kdekoli v textu</li>
-<li>Česká slova najde v jakémkoli tvaru: „psa“ najde „pes“</li>
-<li>Na diakritice a velkých písmenech nezáleží</li>
-<li>České a anglické prostředí, světlý a tmavý motiv</li>
+<li>Výsledky už během psaní a bez připojení k internetu</li>
+<li>Hledání podle začátku slova, celých slov nebo kdekoli v textu</li>
+<li>Česká slova najde i v jiných tvarech: „psa“ najde „pes“</li>
+<li>Na diakritice a velkých písmenech nezáleží</li>
+<li>České a anglické prostředí, světlý a tmavý motiv</li>
 </ul>
 
-Slovník se spravuje v repozitáři EasyDictu a vylepšit ho může kdokoli.
+Slovník se spravuje v repozitáři EasyDictu a vylepšit ho může kdokoli.

@@ -14,24 +14,24 @@
   <description>
     <p>
       EasyDict is an offline English–Czech and Czech–English dictionary. It is the first
-      translator which is completely open, with the dictionary data too: more than 150,000
-      translations of the free dictionary of the Svobodné slovníky project, formerly the
-      GNU/FDL English-Czech Dictionary.
+      open-source translator that is completely open, dictionary data included: more than
+      150,000 translations of the free dictionary of the Svobodné slovníky project, formerly
+      the GNU/FDL English-Czech Dictionary.
     </p>
     <p xml:lang="cs">
-      EasyDict je anglicko-český a česko-anglický slovník, který funguje bez internetu. Je to
+      EasyDict je anglicko-český a česko-anglický slovník, který funguje bez internetu. Je to
       první překladač, který je otevřený včetně slovníkových dat: přes 150 000 překladů ze
       svobodného slovníku projektu Svobodné slovníky, dříve GNU/FDL Anglicko-Český slovník.
     </p>
     <ul>
       <li>Results while you type, without an internet connection</li>
-      <li xml:lang="cs">Výsledky už během psaní a bez připojení k internetu</li>
+      <li xml:lang="cs">Výsledky už během psaní a bez připojení k internetu</li>
       <li>Search by the start of a word, by whole words or anywhere in the text</li>
-      <li xml:lang="cs">Hledání podle začátku slova, celých slov nebo kdekoli v textu</li>
-      <li>Czech words are found in any form: “psa” finds “pes”</li>
-      <li xml:lang="cs">Česká slova najde v jakémkoli tvaru: „psa“ najde „pes“</li>
+      <li xml:lang="cs">Hledání podle začátku slova, celých slov nebo kdekoli v textu</li>
+      <li>Czech words are also found in other forms: “psa” finds “pes”</li>
+      <li xml:lang="cs">Česká slova najde i v jiných tvarech: „psa“ najde „pes“</li>
       <li>Diacritics and capital letters do not matter</li>
-      <li xml:lang="cs">Na diakritice a velkých písmenech nezáleží</li>
+      <li xml:lang="cs">Na diakritice a velkých písmenech nezáleží</li>
     </ul>
   </description>
 
@@ -43,21 +43,25 @@
   <screenshots>
     <screenshot type="default">
       <image>https://raw.githubusercontent.com/jiri-one/easydict/v1.0.0/packaging/screenshots/en-2.png</image>
+      <image xml:lang="cs">https://raw.githubusercontent.com/jiri-one/easydict/v1.0.0/packaging/screenshots/cs-2.png</image>
       <caption>Translations of an English word, the common ones first</caption>
       <caption xml:lang="cs">Překlady anglického slova, běžné jako první</caption>
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/jiri-one/easydict/v1.0.0/packaging/screenshots/en-3.png</image>
+      <image xml:lang="cs">https://raw.githubusercontent.com/jiri-one/easydict/v1.0.0/packaging/screenshots/cs-3.png</image>
       <caption>A Czech word in another form finds its base form</caption>
-      <caption xml:lang="cs">České slovo v jiném tvaru najde svůj základní tvar</caption>
+      <caption xml:lang="cs">České slovo v jiném tvaru najde svůj základní tvar</caption>
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/jiri-one/easydict/v1.0.0/packaging/screenshots/en-4.png</image>
+      <image xml:lang="cs">https://raw.githubusercontent.com/jiri-one/easydict/v1.0.0/packaging/screenshots/cs-4.png</image>
       <caption>Dark theme</caption>
       <caption xml:lang="cs">Tmavý motiv</caption>
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/jiri-one/easydict/v1.0.0/packaging/screenshots/en-1.png</image>
+      <image xml:lang="cs">https://raw.githubusercontent.com/jiri-one/easydict/v1.0.0/packaging/screenshots/cs-1.png</image>
       <caption>Start page</caption>
       <caption xml:lang="cs">Úvodní stránka</caption>
     </screenshot>
@@ -100,11 +104,16 @@
     <release version="1.0.0" date="2026-10-20">
       <description>
         <p>The first release of the new EasyDict for Linux, Windows, macOS and Android.</p>
+        <p xml:lang="cs">První vydání nového EasyDictu pro Linux, Windows, macOS a Android.</p>
         <ul>
           <li>Dictionary data updated to the latest version of the free English–Czech dictionary</li>
-          <li>Czech words are found in any form</li>
+          <li xml:lang="cs">Slovníková data v poslední verzi svobodného anglicko-českého slovníku</li>
+          <li>Czech words are also found in other forms</li>
+          <li xml:lang="cs">Česká slova najde i v jiných tvarech</li>
           <li>Search without diacritics</li>
+          <li xml:lang="cs">Hledání bez diakritiky</li>
           <li>Czech and English user interface</li>
+          <li xml:lang="cs">České a anglické prostředí</li>
         </ul>
       </description>
     </release>

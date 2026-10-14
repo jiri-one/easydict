@@ -43,6 +43,7 @@ modules:
       - install -Dm644 -t /app/share/icons/hicolor/scalable/apps ../packaging/linux/one.jiri.easydict.svg
       - install -Dm644 ../LICENSE /app/share/licenses/one.jiri.easydict/LICENSE
       - install -Dm644 ../data/en-cs/LICENCE /app/share/licenses/one.jiri.easydict/dictionary-GFDL-1.1.txt
+      - install -Dm644 assets/dictionary/easydict.sqlite.NOTICE.txt /app/share/licenses/one.jiri.easydict/dictionary-NOTICE.txt
       - install -Dm644 assets/licenses/GPL-2.0.txt /app/share/licenses/one.jiri.easydict/hunspell-cs-GPL-2.0.txt
       - install -Dm644 ../data/README.md /app/share/licenses/one.jiri.easydict/data-sources.md
       - install -Dm644 /var/lib/flutter/LICENSE /app/share/licenses/one.jiri.easydict/flutter-LICENSE

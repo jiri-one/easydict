@@ -1,1 +1,1 @@
-The first release of the new EasyDict: up-to-date dictionary data, Czech words in any form, search without diacritics.
+The first release of the new EasyDict: up-to-date dictionary data, Czech words found in other forms too, search without diacritics.
