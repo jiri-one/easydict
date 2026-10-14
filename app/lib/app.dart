@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -15,10 +16,14 @@ class EasyDictApp extends StatelessWidget {
     super.key,
     required this.settings,
     this.initialQuery = '',
+    this.pageTheme,
   });
 
   final Settings settings;
   final String initialQuery;
+
+  /// On the web, the colour switch of the page instead of the setting.
+  final ValueListenable<ThemeMode>? pageTheme;
 
   ThemeData _theme(Brightness brightness) => ThemeData(
     colorScheme: ColorScheme.fromSeed(
@@ -29,12 +34,12 @@ class EasyDictApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: settings,
+    listenable: Listenable.merge([settings, ?pageTheme]),
     builder: (context, _) => MaterialApp(
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       theme: _theme(Brightness.light),
       darkTheme: _theme(Brightness.dark),
-      themeMode: settings.themeMode,
+      themeMode: pageTheme?.value ?? settings.themeMode,
       locale: settings.locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,

@@ -49,16 +49,18 @@ class SettingsPage extends StatelessWidget {
                 onChanged: (value) => settings.clipboardLookup = value,
               ),
             _Section(l10n.settingsAppearance),
-            _Choice<ThemeMode>(
-              title: l10n.theme,
-              value: settings.themeMode,
-              options: {
-                ThemeMode.system: l10n.themeSystem,
-                ThemeMode.light: l10n.themeLight,
-                ThemeMode.dark: l10n.themeDark,
-              },
-              onChanged: (value) => settings.themeMode = value,
-            ),
+            // on the web the colour switch of the page decides
+            if (!kIsWeb)
+              _Choice<ThemeMode>(
+                title: l10n.theme,
+                value: settings.themeMode,
+                options: {
+                  ThemeMode.system: l10n.themeSystem,
+                  ThemeMode.light: l10n.themeLight,
+                  ThemeMode.dark: l10n.themeDark,
+                },
+                onChanged: (value) => settings.themeMode = value,
+              ),
             _Choice<String>(
               title: l10n.appLanguage,
               value: settings.locale?.languageCode ?? '',
