@@ -1,9 +1,32 @@
 # EasyDict website
-The website of the EasyDict project, [https://easydict.jiri.one](https://easydict.jiri.one): Django (Python) as the backend and some pure JavaScript as the frontend.
+The website of the EasyDict project, [https://easydict.jiri.one](https://easydict.jiri.one): Django (Python) with PostgreSQL as the backend and some pure JavaScript as the frontend. It also serves the web build of the app at `/app`.
 
-The dictionary data come from `data/en-cs/en-cs.txt` of this repository. To load them into an empty database, run `python utils/from_txt_to_django.py` in this directory. The script only adds records, it does not update existing ones; to refresh the data, delete the old records first:
+## The dictionary
 
-    python manage.py shell -c "from web.models import Record; Record.objects.all().delete()"
-    python utils/from_txt_to_django.py
+The site searches the same dictionary as the app, in the same way: `web/dictionary.py` is a port of `app/lib/data/dictionary.dart`, and `web/tests/test_dictionary.py` runs the tests of the app against it. A change of the search belongs to both.
 
-The production image is built from `deploy/Containerfile`. For now the server builds it itself from `main`, so a change is live only after a rebuild there. The `Website image` workflow builds the same image on every change of `web/` on `main` and publishes it as `ghcr.io/jiri-one/easydict-web`, for the server to switch to later.
+The data come from the SQLite database of the app, which `data/tools/build_db.py` builds from `data/` of this repository. `manage.py import_dictionary` copies it into PostgreSQL:
+
+    python ../data/tools/build_db.py /tmp/easydict.sqlite
+    python manage.py import_dictionary /tmp/easydict.sqlite             # only compares
+    python manage.py import_dictionary /tmp/easydict.sqlite --replace   # imports
+
+The production image has the database built in, and the container imports it when it starts (`--auto`), unless the import would remove translations added or changed in PostgreSQL itself, e.g. in the admin; then it only logs a warning and the site keeps its data. Until the first import, the search answers 503: a database with the records of the old site has to be imported once with `--replace` after checking the comparison. Once the site lets people add translations, those must get into `data/en-cs/en-cs.txt`, or the import must merge instead of replacing.
+
+## The web app
+
+`/app` shows the web build of the app (`app/tool/build_web.sh`): the view returns its `index.html`, and the container copies the rest to the static files, where it is served from `/static/app/`. The web app searches through `/api/search` and `/api/info`, so it has the same data as the site.
+
+For development, build the web app and run the site with `WEBAPP_DIR=../app/build/web`; outside production, Django serves the build from `/static/app/` itself.
+
+## Tests
+
+The tests need PostgreSQL and a checkout of the whole repository (they build their data with `data/tools/build_db.py` from the fixtures of the app): `python manage.py test web`.
+
+## Production
+
+The production image is built from `deploy/Containerfile` with the repository as the build context:
+
+    podman build -f web/deploy/Containerfile .
+
+The `Website image` workflow builds it on every change of `web/`, `app/` or `data/` on `main` once the tests pass, and publishes it as `ghcr.io/jiri-one/easydict-web`. The server runs that image and updates it at night with `podman auto-update`, so whatever is merged to `main` goes live, migrations included.

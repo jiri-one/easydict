@@ -1,0 +1,40 @@
+name: Website tests
+
+# shared: CI runs them, and the Website image workflow before it builds what the M1S deploys
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Website tests
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: easydict
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: easydict_django
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U easydict" --health-interval 2s --health-timeout 5s --health-retries 30
+    env:
+      # settings.py connects through a libpq service; creating the test database needs the rest
+      PGSERVICEFILE: ${{ github.workspace }}/pg_service.conf
+      PGHOST: localhost
+      PGUSER: easydict
+      PGPASSWORD: ci
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: python3 -m venv ~/venv && ~/venv/bin/pip install -r deploy/requirements.txt
+      - run: |
+          printf '[easydict_service]\nhost=localhost\nport=5432\ndbname=easydict_django\nuser=easydict\n' > "$PGSERVICEFILE"
+          ~/venv/bin/python utils/new_secret_key.py
+      - run: ~/venv/bin/python manage.py makemigrations --check --dry-run
+      - run: ~/venv/bin/python manage.py test web

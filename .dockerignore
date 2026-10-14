@@ -1,0 +1,15 @@
+# web/deploy/Containerfile builds from the whole repository: keep build outputs and local files
+# out of it (Podman reads this file too).
+.git
+.pytest_cache
+**/build
+**/.dart_tool
+**/.gradle
+**/ephemeral
+**/__pycache__
+**/.idea
+**/*.iml
+app/assets/dictionary
+web/secret_key.txt
+web/dictionary
+web/webapp

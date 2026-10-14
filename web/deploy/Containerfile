@@ -1,8 +1,37 @@
-# Production image of easydict.jiri.one (rootless Podman + Quadlet on the M1S).
-# Build: podman build -f deploy/Containerfile .
+# Production image of easydict.jiri.one. Build from the root of the repository:
+#     podman build -f web/deploy/Containerfile .
 #
 # Runtime: Google's distroless Python (no shell, no package manager, user nonroot = 65532).
 # Its Python is Debian's, so the virtualenv is built with the same Debian release's python3.
+
+# The dictionary and the web app are the same on every platform: built natively, not emulated.
+FROM --platform=$BUILDPLATFORM docker.io/library/debian:13-slim AS dictionary
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 \
+    && rm -rf /var/lib/apt/lists/*
+COPY data /src/data
+RUN python3 /src/data/tools/build_db.py /dictionary/easydict.sqlite \
+    && python3 -c 'import gzip, hashlib, pathlib; \
+db = pathlib.Path("/dictionary/easydict.sqlite"); data = db.read_bytes(); \
+db.with_suffix(".sqlite.sha256").write_text(hashlib.sha256(data).hexdigest() + "\n"); \
+db.with_suffix(".sqlite.gz").write_bytes(gzip.compress(data, 9, mtime=0))'
+
+FROM --platform=$BUILDPLATFORM docker.io/library/debian:13-slim AS webapp
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl git python3 unzip xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+RUN useradd --create-home flutter
+USER flutter
+# the version that .github/workflows build the app with
+ARG FLUTTER_VERSION=3.47.7
+RUN git clone --depth 1 --branch "$FLUTTER_VERSION" https://github.com/flutter/flutter.git /home/flutter/sdk \
+    && /home/flutter/sdk/bin/flutter --disable-analytics \
+    && /home/flutter/sdk/bin/flutter precache --universal --web
+ENV PATH=/home/flutter/sdk/bin:$PATH
+COPY --chown=flutter app /home/flutter/app
+COPY --from=dictionary --chown=flutter /dictionary/easydict.sqlite.NOTICE.txt /home/flutter/app/assets/dictionary/
+WORKDIR /home/flutter/app
+RUN flutter pub get && tool/build_web.sh
 
 FROM docker.io/library/debian:13-slim AS build
 RUN apt-get update \
@@ -12,16 +41,16 @@ ENV PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 RUN python3 -m venv /venv
 # pip itself is not needed at runtime
-COPY deploy/requirements.txt /tmp/requirements.txt
+COPY web/deploy/requirements.txt /tmp/requirements.txt
 RUN /venv/bin/pip install -r /tmp/requirements.txt \
     && /venv/bin/pip uninstall -y pip
 
 WORKDIR /app
-# only what the site needs (utils/ only imports the dictionary data)
-COPY manage.py ./
-COPY easydict ./easydict
-COPY web ./web
-COPY deploy ./deploy
+# only what the site needs (utils/ has helpers for development)
+COPY web/manage.py ./
+COPY web/easydict ./easydict
+COPY web/web ./web
+COPY web/deploy ./deploy
 # bytecode now, the runtime cannot write it
 RUN /venv/bin/python -m compileall -q easydict web deploy \
     && mkdir -p /data/static
@@ -30,6 +59,8 @@ RUN /venv/bin/python -m compileall -q easydict web deploy \
 FROM gcr.io/distroless/python3-debian13:nonroot
 COPY --from=build /venv /venv
 COPY --from=build /app /app
+COPY --from=dictionary /dictionary/easydict.sqlite.gz /dictionary/easydict.sqlite.sha256 /app/dictionary/
+COPY --from=webapp /home/flutter/app/build/web /app/webapp
 COPY --from=build --chown=65532:65532 /data /data
 
 WORKDIR /app
