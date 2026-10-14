@@ -353,7 +353,7 @@ abstract class AppLocalizations {
   /// No description provided for @clipboardLookupHint.
   ///
   /// In en, this message translates to:
-  /// **'When the window is activated, look up new text copied to the clipboard.'**
+  /// **'When the window is activated, look up new single-line text copied to the clipboard (up to 60 characters).'**
   String get clipboardLookupHint;
 
   /// No description provided for @helpModesTitle.
@@ -401,7 +401,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpTipsDesktop.
   ///
   /// In en, this message translates to:
-  /// **'Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up new text copied to the clipboard when its window is activated.'**
+  /// **'Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up new single-line text (up to 60 characters) copied to the clipboard when its window is activated.'**
   String get helpTipsDesktop;
 
   /// No description provided for @helpLabelsTitle.

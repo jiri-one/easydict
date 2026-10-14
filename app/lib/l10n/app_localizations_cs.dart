@@ -111,7 +111,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get help => 'Nápověda';
 
   @override
-  String get about => 'O aplikaci';
+  String get about => 'O aplikaci';
 
   @override
   String get notes => 'Značky';
@@ -168,7 +168,7 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get clipboardLookupHint =>
-      'Po aktivaci okna vyhledá nový text zkopírovaný do schránky.';
+      'Po aktivaci okna vyhledá nový jednořádkový text zkopírovaný do schránky (nejvýše 60 znaků).';
 
   @override
   String get helpModesTitle => 'Režimy hledání';
@@ -197,7 +197,7 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get helpTipsDesktop =>
-      'Spuštěním „easydict SLOVO“ rovnou vyhledáte SLOVO, třeba z klávesové zkratky. V nastavení můžete zapnout i vyhledávání nového textu ze schránky, když se okno EasyDictu aktivuje.';
+      'Spuštěním „easydict SLOVO“ rovnou vyhledáte SLOVO, třeba z klávesové zkratky. V nastavení můžete zapnout i vyhledávání nového jednořádkového textu ze schránky (nejvýše 60 znaků), když se okno EasyDictu aktivuje.';
 
   @override
   String get helpLabelsTitle => 'Značky';

@@ -81,7 +81,7 @@
   "appLanguage": "App language",
   "systemLanguage": "System",
   "clipboardLookup": "Look up clipboard text",
-  "clipboardLookupHint": "When the window is activated, look up new text copied to the clipboard.",
+  "clipboardLookupHint": "When the window is activated, look up new single-line text copied to the clipboard (up to 60 characters).",
   "helpModesTitle": "Search modes",
   "helpModes": "Starts with – headwords beginning with the typed text.\nWhole word – headwords containing the typed word.\nAnywhere – the typed text anywhere in the headword.",
   "helpFormsTitle": "Word forms",
@@ -89,7 +89,7 @@
   "helpTipsTitle": "Tips",
   "helpTips": "Tap a translation to look it up in the other language or to copy it. The flag next to the search field switches the language. EasyDict works offline.",
   "helpTipsAndroid": "Select a word in any app and choose “Look up in EasyDict” from the menu.",
-  "helpTipsDesktop": "Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up new text copied to the clipboard when its window is activated.",
+  "helpTipsDesktop": "Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up new single-line text (up to 60 characters) copied to the clipboard when its window is activated.",
   "helpLabelsTitle": "Labels",
   "version": "Version {version}",
   "@version": {

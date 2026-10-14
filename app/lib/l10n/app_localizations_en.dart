@@ -167,7 +167,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clipboardLookupHint =>
-      'When the window is activated, look up new text copied to the clipboard.';
+      'When the window is activated, look up new single-line text copied to the clipboard (up to 60 characters).';
 
   @override
   String get helpModesTitle => 'Search modes';
@@ -196,7 +196,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTipsDesktop =>
-      'Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up new text copied to the clipboard when its window is activated.';
+      'Start EasyDict as “easydict WORD” to look WORD up right away, e.g. from a keyboard shortcut. In the settings, EasyDict can also look up new single-line text (up to 60 characters) copied to the clipboard when its window is activated.';
 
   @override
   String get helpLabelsTitle => 'Labels';

@@ -175,7 +175,11 @@ def test_drop_borrowed_tables():
         "zašeptat": dělat | {"zašeptati", "dělavší"},  # a wrong template on Wiktionary
         "člověk": {"člověka", "člověku", "člověkem", "lidé", "lidí"},  # suppletive plural
         "lid": {"lidu", "lidem", "lidé", "lidí"},
+        # synonyms with the same suppletive comparative
+        "zle": {"hůře", "hůř", "nejhůře", "nejhůř"},
+        "špatně": {"hůře", "hůř", "nejhůře", "nejhůř"},
     })
     assert forms["dělat"] == dělat
     assert forms["zašeptat"] == {"zašeptati"}
     assert {"lidé", "lidí"} <= forms["člověk"]
+    assert "hůře" in forms["zle"] and "hůře" in forms["špatně"]

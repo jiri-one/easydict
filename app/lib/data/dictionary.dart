@@ -162,14 +162,55 @@ class Dictionary {
   static const maxQueryLength = 100;
 
   static final _unsafeCharacters = RegExp(r'[\u0000-\u001F\u007F]');
-  static final _combiningMarks = RegExp(r'[̀-ͯ]');
+  static final _combiningMarks = RegExp(r'[\u0300-\u036F]');
+  static final _decomposed = RegExp(r'[A-Za-z][\u0301\u030A\u030C]');
+
+  /// Czech letters written as a base letter and a combining mark (text from
+  /// some macOS apps): composed, so that they compare equal to typed ones.
+  static const _compositions = {
+    'a\u0301': 'á',
+    'e\u0301': 'é',
+    'i\u0301': 'í',
+    'o\u0301': 'ó',
+    'u\u0301': 'ú',
+    'y\u0301': 'ý',
+    'A\u0301': 'Á',
+    'E\u0301': 'É',
+    'I\u0301': 'Í',
+    'O\u0301': 'Ó',
+    'U\u0301': 'Ú',
+    'Y\u0301': 'Ý',
+    'u\u030A': 'ů',
+    'U\u030A': 'Ů',
+    'c\u030C': 'č',
+    'd\u030C': 'ď',
+    'e\u030C': 'ě',
+    'n\u030C': 'ň',
+    'r\u030C': 'ř',
+    's\u030C': 'š',
+    't\u030C': 'ť',
+    'z\u030C': 'ž',
+    'C\u030C': 'Č',
+    'D\u030C': 'Ď',
+    'E\u030C': 'Ě',
+    'N\u030C': 'Ň',
+    'R\u030C': 'Ř',
+    'S\u030C': 'Š',
+    'T\u030C': 'Ť',
+    'Z\u030C': 'Ž',
+  };
+
+  static String _composeCzech(String text) => text.replaceAllMapped(
+    _decomposed,
+    (match) => _compositions[match[0]!] ?? match[0]!,
+  );
 
   Future<SearchResult> search(
     String query,
     Language language,
     SearchMode mode,
   ) async {
-    var text = query.replaceAll(_unsafeCharacters, ' ').trim();
+    var text = _composeCzech(query.replaceAll(_unsafeCharacters, ' ')).trim();
     if (text.length > maxQueryLength) {
       text = text.substring(0, maxQueryLength).trim();
     }
@@ -199,7 +240,14 @@ class Dictionary {
         await _fulltext(key, language),
       ],
     };
-    final direct = [for (final (entries, _) in parts) ...entries];
+    final direct = [
+      for (final (entries, _) in parts)
+        for (final entry in entries)
+          // "Anywhere" means the text as typed, also with "%" or "-" in it.
+          if (mode != SearchMode.fulltext ||
+              fold(entry.text(language)).contains(key))
+            entry,
+    ];
     var truncated = parts.any((part) => part.$2);
 
     var baseForms = const <String>[];
@@ -244,12 +292,13 @@ class Dictionary {
     );
   }
 
-  /// The typed word in lowercase with its diacritics, when it is one word
-  /// written with composed letters; null otherwise.
+  /// The typed word in lowercase, when it is one word typed with diacritics;
+  /// null otherwise (without diacritics, any diacritics may be meant).
   String? _exactWord(String text) {
     if (_combiningMarks.hasMatch(text)) return null;
     final exact = words(text.toLowerCase());
-    return exact.length == 1 ? exact.single : null;
+    if (exact.length != 1 || fold(exact.single) == exact.single) return null;
+    return exact.single;
   }
 
   Future<List<Entry>> _entries(String sql, List<Object?> arguments) async => [
@@ -257,10 +306,10 @@ class Dictionary {
   ];
 
   /// The exact match first, then the most common texts, then the shortest.
-  static String _order(Language language, int limit) {
+  static String _order(Language language, int limit, [int offset = 0]) {
     final column = 'e.${language.name}_key';
     return 'ORDER BY $column = ? DESC, e.${language.name}_rank DESC, '
-        'length($column), $column, e.id LIMIT $limit';
+        'length($column), $column, e.id LIMIT $limit OFFSET $offset';
   }
 
   /// Entries whose headword starts with [key]; true when more were left out.
@@ -280,15 +329,20 @@ class Dictionary {
     String key,
     Language language,
   ) async {
-    final (entries, more) = await _startsWith(key, language);
-    return (
-      [
-        for (final entry in entries)
-          if (_startsWithPhrase(words(fold(entry.text(language))), tokens))
-            entry,
-      ],
-      more,
+    final column = '${language.name}_key';
+    // The word must end where the typed text ends ("car thing", not
+    // "carving"), checked before the limit.
+    final entries = await _entries(
+      'SELECT $_columns FROM entries e '
+      'WHERE e.$column >= ? AND e.$column < ? AND (length(e.$column) = ? '
+      "OR substr(e.$column, ? + 1, 1) NOT GLOB '[a-z0-9]') "
+      '${_order(language, rowLimit + 1)}',
+      [key, '$key\u{10FFFF}', key.length, key.length, key],
     );
+    return _limited([
+      for (final entry in entries)
+        if (_startsWithPhrase(words(fold(entry.text(language))), tokens)) entry,
+    ]);
   }
 
   /// Entries containing the words of [tokens] next to each other.
@@ -322,24 +376,30 @@ class Dictionary {
         rarest = token;
       }
     }
-    const candidateLimit = 5000;
-    final candidates = await _entries(
-      'SELECT $_columns FROM words w JOIN entries e ON e.id = w.entry_id '
-      'WHERE w.lang = ? AND w.word = ? AND e.$column LIKE ? ESCAPE ? '
-      '${_order(language, candidateLimit)}',
-      [
-        language.code,
-        rarest,
-        '%${tokens.map(_escapeLike).join('%')}%',
-        r'\',
-        key,
-      ],
-    );
-    final (entries, more) = _limited([
-      for (final entry in candidates)
-        if (_containsPhrase(words(fold(entry.text(language))), tokens)) entry,
-    ]);
-    return (entries, more || candidates.length >= candidateLimit);
+    // Page through the candidates until there are enough real matches.
+    const page = 2000;
+    final matches = <Entry>[];
+    for (var offset = 0; matches.length <= rowLimit; offset += page) {
+      final candidates = await _entries(
+        'SELECT $_columns FROM words w JOIN entries e ON e.id = w.entry_id '
+        'WHERE w.lang = ? AND w.word = ? AND e.$column LIKE ? ESCAPE ? '
+        '${_order(language, page, offset)}',
+        [
+          language.code,
+          rarest,
+          '%${tokens.map(_escapeLike).join('%')}%',
+          r'\',
+          key,
+        ],
+      );
+      matches.addAll(
+        candidates.where(
+          (entry) => _containsPhrase(words(fold(entry.text(language))), tokens),
+        ),
+      );
+      if (candidates.length < page) break;
+    }
+    return _limited(matches);
   }
 
   /// Entries containing [key] anywhere.
@@ -364,11 +424,21 @@ class Dictionary {
   /// With diacritics typed, forms with the same diacritics win, so "nedělá"
   /// finds "dělat" and not "neděle" (whose form "neděla" folds the same).
   Future<List<String>> _baseForms(String key, String? exact) async {
-    final rows = await _formRows(key);
-    final lemmas = _lemmasOf(rows, exact);
+    final found = await _baseFormsMatching(key, exact);
+    if (found != null && found.isEmpty && exact != null) {
+      // Nothing with the typed diacritics: they may be wrong, try any.
+      return await _baseFormsMatching(key, null) ?? const [];
+    }
+    return found ?? const [];
+  }
+
+  /// Base forms of forms equal to [exact] (any form with the folded [key]
+  /// when null); null when the word is a base form itself.
+  Future<List<String>?> _baseFormsMatching(String key, String? exact) async {
+    final lemmas = _lemmasOf(await _formRows(key), exact);
     if (lemmas.isNotEmpty) return lemmas;
     final word = await _czechWord(key);
-    if (word != null && (exact == null || word == exact)) return const [];
+    if (word != null && (exact == null || word == exact)) return null;
     // Negated and superlative forms are not stored: try without the prefix.
     for (final prefix in _negationPrefixes) {
       if (key.length <= prefix.length + 1 ||
@@ -386,8 +456,7 @@ class Dictionary {
         return [restWord];
       }
     }
-    // Nothing with these diacritics: they may be wrong, take any.
-    return exact == null ? const [] : _lemmasOf(rows, null);
+    return const [];
   }
 
   Future<List<(String, String)>> _formRows(String key) async => [

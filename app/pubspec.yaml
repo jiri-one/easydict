@@ -1,5 +1,5 @@
 name: easydict
-description: "The first open source translator which is completely open with dictionary data too."
+description: "The first open-source translator that is completely open, dictionary data included."
 publish_to: 'none'
 
 # Keep lib/version.dart in step (a test checks it).

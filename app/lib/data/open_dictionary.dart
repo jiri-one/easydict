@@ -120,12 +120,15 @@ class IsolateSqlReader implements SqlReader {
   final _pending = <int, Completer<List<Map<String, Object?>>>>{};
   int _nextId = 0;
 
-  /// Set by [close]; completed when the worker has closed the database.
-  Completer<void>? _closed;
+  /// The whole closing, shared by all callers of [close].
+  Future<void>? _closing;
+
+  /// Completed when the worker has closed the database.
+  final _workerClosed = Completer<void>();
 
   void _onResponse(Object? message) {
     if (message == _closedMessage) {
-      _closed?.complete();
+      if (!_workerClosed.isCompleted) _workerClosed.complete();
       return;
     }
     final (id, rows, error) =
@@ -143,7 +146,7 @@ class IsolateSqlReader implements SqlReader {
     String sql, [
     List<Object?> arguments = const [],
   ]) {
-    if (_closed != null) {
+    if (_closing != null) {
       return Future.error(StateError('The dictionary database is closed.'));
     }
     final id = _nextId++;
@@ -156,11 +159,14 @@ class IsolateSqlReader implements SqlReader {
   /// Close the database. Queries sent before are still answered (the worker
   /// handles messages in order); later ones fail.
   @override
-  Future<void> close() async {
-    if (_closed case final closed?) return closed.future;
-    final closed = _closed = Completer<void>();
+  Future<void> close() => _closing ??= _close();
+
+  Future<void> _close() async {
     _commands.send(null);
-    await closed.future.timeout(const Duration(seconds: 5), onTimeout: () {});
+    await _workerClosed.future.timeout(
+      const Duration(seconds: 5),
+      onTimeout: () {},
+    );
     for (final completer in _pending.values) {
       completer.completeError(StateError('The dictionary database is closed.'));
     }

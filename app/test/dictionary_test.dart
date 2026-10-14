@@ -207,6 +207,35 @@ void main() {
       SearchMode.startsWith,
     );
     expect(folded.baseForms, ['neděle']);
+    // The same word from text with combining marks (decomposed, NFD).
+    final decomposed = await dictionary.search(
+      'nede\u030Cla\u0301',
+      Language.cze,
+      SearchMode.startsWith,
+    );
+    expect(decomposed.baseForms, ['dělat']);
+  });
+
+  test('negated forms without diacritics', () async {
+    for (final query in ['nezelena', 'nezeleny', 'nezelená']) {
+      final result = await dictionary.search(
+        query,
+        Language.cze,
+        SearchMode.startsWith,
+      );
+      expect(result.baseForms, ['zelený'], reason: query);
+    }
+  });
+
+  test('anywhere means the text as typed', () async {
+    for (final query in ['dog%', 'washer%fluid', 'dog_']) {
+      final result = await dictionary.search(
+        query,
+        Language.eng,
+        SearchMode.fulltext,
+      );
+      expect(result.groups, isEmpty, reason: query);
+    }
   });
 
   test('odd input is cleaned up', () async {
@@ -250,6 +279,8 @@ void main() {
     () async {
       final reader = await IsolateSqlReader.open('${tmp.path}/test.sqlite');
       final pending = reader.select('SELECT count(*) AS n FROM entries');
+      // Closing twice at the same time finishes both.
+      await Future.wait([reader.close(), reader.close()]);
       await reader.close();
       expect((await pending).single['n'], 16);
       expect(reader.select('SELECT 1'), throwsStateError);
@@ -272,6 +303,13 @@ void main() {
           for (var i = 0; i < 20; i++) 'c$i in the d$i\tc v d$i\t\t\t',
           for (var i = 0; i < 400; i++) 'take care $i\tstarat se $i\t\t\t',
           'carving\tvyřezávání\tn:\t\t',
+          // 5 001 entries with both words apart before the one with the phrase
+          for (var i = 0; i < 5001; i++)
+            'x${i.toString().padLeft(4, '0')} in aa the\tx\t\t\t',
+          'zzzz in the\tz\t\t\t',
+          // 301 headwords starting with "car" but not with the word "car"
+          for (var i = 0; i < 301; i++) 'carvings $i\tc\t\t\t',
+          'car thing\tvěc auta\t\t\t',
         ].join('\n'),
       );
       final db = '${bigTmp.path}/big.sqlite';
@@ -297,14 +335,30 @@ void main() {
         Language.eng,
         SearchMode.wholeWord,
       );
-      expect(result.groups, hasLength(20));
+      expect(result.groups, hasLength(21));
+      expect(
+        result.groups.map((group) => group.headword),
+        contains('zzzz in the'),
+      );
       expect(result.truncated, isFalse);
+    });
+
+    test('a whole word at the start is not pushed out', () async {
+      final result = await big.search(
+        'car',
+        Language.eng,
+        SearchMode.wholeWord,
+      );
+      expect(
+        result.groups.map((group) => group.headword),
+        contains('car thing'),
+      );
     });
 
     test('a prefix match is not pushed out by other matches', () async {
       // "car" is in 400 entries ("care"), but "carving" starts with it.
       final result = await big.search('car', Language.eng, SearchMode.fulltext);
-      expect(result.groups.first.headword, 'carving');
+      expect(result.groups.map((group) => group.headword), contains('carving'));
       expect(result.truncated, isTrue);
     });
   });

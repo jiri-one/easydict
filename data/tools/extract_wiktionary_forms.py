@@ -80,7 +80,8 @@ def drop_borrowed_tables(forms_of: dict[str, set[str]]) -> dict[str, set[str]]:
     Some Wiktionary entries use the inflection template of another word, e.g.
     "zašeptat" shows the forms of "dělat". Such forms mostly belong to one
     other lemma, which starts with a different letter, as do all the forms.
-    (Suppletive forms like "lidé" of "člověk" are only a minority.)
+    (Suppletive forms like "lidé" of "člověk" are only a minority, and the
+    comparative "hůře" shared by "zle" and "špatně" starts like neither.)
     """
     lemmas_of: dict[str, set[str]] = defaultdict(set)
     for lemma, forms in forms_of.items():
@@ -93,8 +94,11 @@ def drop_borrowed_tables(forms_of: dict[str, set[str]]) -> dict[str, set[str]]:
         if len(lowered) >= 4 and others:
             other, overlap = others.most_common(1)[0]
             shared = {form for form in lowered if other in lemmas_of[form]}
-            first = lemma[0].lower()
-            if overlap >= 0.6 * len(lowered) and other[0].lower() != first and all(f[0] != first for f in shared):
+            first, other_first = lemma[0].lower(), other[0].lower()
+            # the shared forms start like the other word, not like this one
+            # ("hůře" is shared by "zle" and "špatně" but belongs to neither alone)
+            if (overlap >= 0.6 * len(lowered) and other_first != first
+                    and all(f[0] == other_first for f in shared)):
                 # the whole table is borrowed: keep only what starts like the lemma
                 forms = {form for form in forms if form[0].lower() == first}
         if forms:

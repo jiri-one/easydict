@@ -1,17 +1,5 @@
-# easydict
+# EasyDict app
 
-The first open source translator which is completely open with dictionary data too.
+The Flutter app of EasyDict for Linux, Windows, macOS and Android: the first open-source translator that is completely open, dictionary data included.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Build the dictionary database first (`./tool/build_dictionary.sh`), then use Flutter as usual (`flutter run`, `flutter test`, `flutter build …`). See the [main README](../README.md) for the whole project and [packaging/README.md](../packaging/README.md) for releases.
