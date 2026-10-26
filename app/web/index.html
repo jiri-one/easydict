@@ -24,7 +24,9 @@
     :root { --fg: #ffffff; --bg: #47516d; color-scheme: dark; }
     [data-theme="light"] { --fg: #000000; --bg: #ffffff; color-scheme: light; }
     [data-theme="dark"] { --fg: #ffffff; --bg: #000000; }
-    [lang="cs"] [lang="en"], [lang="en"] [lang="cs"] { display: none; }
+    /* Not wider: Flutter gives the element holding the app the app's language
+       (#screen, or <html> without the frame), and the app would vanish. */
+    [lang="cs"] :is(#about, #loading) [lang="en"], [lang="en"] :is(#about, #loading) [lang="cs"] { display: none; }
     html, body { height: 100%; margin: 0; }
     body {
       background: var(--bg);
