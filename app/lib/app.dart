@@ -10,6 +10,25 @@ import 'ui/home_page.dart';
 /// The EasyDict blue of the logo.
 const brandColor = Color(0xFF387FF2);
 
+ThemeData appTheme(Brightness brightness) {
+  final colors = ColorScheme.fromSeed(
+    seedColor: brandColor,
+    brightness: brightness,
+  );
+  return ThemeData(
+    colorScheme: colors,
+    // The pale default fill of the selected segment vanishes on black-and-white
+    // e-ink. The unselected colour must be set too, or it falls back to blue.
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: SegmentedButton.styleFrom(
+        foregroundColor: colors.onSurface,
+        selectedForegroundColor: colors.onSecondary,
+        selectedBackgroundColor: colors.secondary,
+      ),
+    ),
+  );
+}
+
 class EasyDictApp extends StatelessWidget {
   const EasyDictApp({
     super.key,
@@ -20,20 +39,13 @@ class EasyDictApp extends StatelessWidget {
   final Settings settings;
   final String initialQuery;
 
-  ThemeData _theme(Brightness brightness) => ThemeData(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: brandColor,
-      brightness: brightness,
-    ),
-  );
-
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: settings,
     builder: (context, _) => MaterialApp(
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
-      theme: _theme(Brightness.light),
-      darkTheme: _theme(Brightness.dark),
+      theme: appTheme(Brightness.light),
+      darkTheme: appTheme(Brightness.dark),
       themeMode: settings.themeMode,
       locale: settings.locale,
       localizationsDelegates: const [
