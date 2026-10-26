@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +10,7 @@ import '../search_controller.dart';
 import '../settings.dart';
 import 'about_page.dart';
 import 'help_page.dart';
+import 'logo.dart';
 import 'results_view.dart';
 import 'settings_page.dart';
 
@@ -142,7 +145,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(l10n.appTitle),
-              Text(l10n.appSubtitle, style: theme.textTheme.bodySmall),
+              Text(l10n.appSubtitle, style: theme.textTheme.bodyMedium),
             ],
           ),
           actions: [
@@ -318,40 +321,82 @@ class _FrontPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    return ListView(
-      padding: const EdgeInsets.all(24),
-      children: [
-        const SizedBox(height: 16),
-        Center(
-          child: Image.asset('assets/images/logo.png', width: 96, height: 96),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          l10n.welcomeTitle,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          l10n.welcomeHint,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.bodyLarge,
-        ),
-        const SizedBox(height: 24),
-        Text(
-          l10n.slogan,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+    const padding = 16.0;
+    const gap = 24.0;
+    return LayoutBuilder(
+      builder: (context, box) {
+        // a page taller than a phone's has room for larger texts too
+        final text = theme.textTheme.apply(
+          fontSizeFactor: (box.maxHeight / 600).clamp(1.0, 1.5),
+        );
+        final width = box.maxWidth - 2 * padding;
+        return Padding(
+          padding: const EdgeInsets.all(padding),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // all the room the texts leave, none when they leave little
+              // (the keyboard up)
+              Flexible(
+                child: LayoutBuilder(
+                  builder: (context, room) {
+                    final size = min(room.maxHeight - gap, width * 0.8);
+                    return size < 64
+                        ? const SizedBox.shrink()
+                        : Padding(
+                            padding: const EdgeInsets.only(bottom: gap),
+                            child: Logo(size: size),
+                          );
+                  },
+                ),
+              ),
+              // Shrunk only where even the texts alone do not fit: they keep
+              // the system text size.
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: max(0, box.maxHeight - 2 * padding),
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: SizedBox(
+                    width: width,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          l10n.welcomeTitle,
+                          textAlign: TextAlign.center,
+                          style: text.headlineMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.welcomeHint,
+                          textAlign: TextAlign.center,
+                          style: text.titleMedium,
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          l10n.slogan,
+                          textAlign: TextAlign.center,
+                          style: text.bodyLarge?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.entryCount(entryCount),
+                          textAlign: TextAlign.center,
+                          style: text.bodyMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          l10n.entryCount(entryCount),
-          textAlign: TextAlign.center,
-          style: theme.textTheme.bodySmall,
-        ),
-      ],
+        );
+      },
     );
   }
 }

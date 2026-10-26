@@ -6,6 +6,7 @@ import 'data/open_dictionary.dart';
 import 'l10n/app_localizations.dart';
 import 'settings.dart';
 import 'ui/home_page.dart';
+import 'ui/logo.dart';
 
 /// The EasyDict blue of the logo.
 const brandColor = Color(0xFF387FF2);
@@ -93,7 +94,7 @@ class _DictionaryLoaderState extends State<_DictionaryLoader> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Image.asset('assets/images/logo.png', width: 96, height: 96),
+                const Logo(size: 96),
                 const SizedBox(height: 24),
                 if (snapshot.hasError) ...[
                   Text(l10n.openError),

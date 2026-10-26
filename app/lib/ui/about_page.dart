@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/dictionary.dart';
 import '../l10n/app_localizations.dart';
 import '../version.dart';
+import 'logo.dart';
 
 const websiteUrl = 'https://easydict.jiri.one';
 const sourceUrl = 'https://github.com/jiri-one/easydict';
@@ -35,9 +36,7 @@ class AboutPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 16),
         children: [
-          Center(
-            child: Image.asset('assets/images/logo.png', width: 96, height: 96),
-          ),
+          const Center(child: Logo(size: 96)),
           const SizedBox(height: 16),
           Text(
             l10n.appTitle,
@@ -75,9 +74,9 @@ class AboutPage extends StatelessWidget {
               context: context,
               applicationName: l10n.appTitle,
               applicationVersion: appVersion,
-              applicationIcon: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Image.asset('assets/images/logo.png', width: 48),
+              applicationIcon: const Padding(
+                padding: EdgeInsets.all(8),
+                child: Logo(size: 48),
               ),
               applicationLegalese: '© 2020–2026 Jiří Němec\nGNU GPL 3',
             ),
