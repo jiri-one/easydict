@@ -50,3 +50,5 @@ EasyDict started in 2020 as a desktop app in Python and GTK 3, published on PyPI
 ---
 
 **Česky:** EasyDict je anglicko-český a česko-anglický slovník pro Linux, Windows, macOS a Android, který funguje bez internetu, a web [easydict.jiri.one](https://easydict.jiri.one), kde běží i jako [webová aplikace](https://easydict.jiri.one/app). Obsahuje přes 150 000 překladů ze svobodného slovníku projektu Svobodné slovníky, jehož data se nyní spravují tady v adresáři `data/`, a česká slova najde i v jiných tvarech. Začínal v roce 2020 jako aplikace v Pythonu a GTK, jejíž poslední verze s GTK 4 zůstává v repozitáři [easydict-gtk](https://github.com/jiri-one/easydict-gtk).
+
+[#arch-everywhere](https://github.com/topics/arch-everywhere) [#iusearchbtw](https://github.com/topics/iusearchbtw)
