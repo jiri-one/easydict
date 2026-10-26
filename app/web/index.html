@@ -102,6 +102,12 @@
         // the app takes them too (lib/page_theme_web.dart)
         window.dispatchEvent(new Event("easydict-theme"));
       });
+      // the website in other tabs; null is a cleared storage
+      window.addEventListener("storage", function (event) {
+        if (event.key !== "theme" && event.key !== null) return;
+        root.dataset.theme = themes.indexOf(event.newValue) >= 0 ? event.newValue : "auto";
+        window.dispatchEvent(new Event("easydict-theme"));
+      });
     })();
   </script>
   <aside id="about">

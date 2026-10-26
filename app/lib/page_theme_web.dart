@@ -7,14 +7,15 @@ ValueNotifier<ThemeMode>? pageTheme() => _PageTheme();
 
 /// One colour choice for the whole website: the switch of the page around the
 /// app (app/web/index.html), the one of the home page and the app's setting.
+/// The app follows data-theme of the page, which holds the choice also when the
+/// storage refuses it.
 class _PageTheme extends ValueNotifier<ThemeMode> {
-  _PageTheme() : super(_stored()) {
+  _PageTheme() : super(_shown()) {
     // the switch on this page, and the website in other tabs
     web.window.addEventListener('easydict-theme', _update.toJS);
-    web.window.addEventListener('storage', _update.toJS);
   }
 
-  void _update(web.Event event) => super.value = _stored();
+  void _update(web.Event event) => super.value = _shown();
 
   @override
   set value(ThemeMode mode) {
@@ -32,15 +33,10 @@ class _PageTheme extends ValueNotifier<ThemeMode> {
     super.value = mode;
   }
 
-  static ThemeMode _stored() {
-    String? theme;
-    try {
-      theme = web.window.localStorage.getItem('theme');
-    } catch (_) {}
-    return switch (theme) {
-      'light' => ThemeMode.light,
-      'dark' => ThemeMode.dark,
-      _ => ThemeMode.system,
-    };
-  }
+  static ThemeMode _shown() =>
+      switch (web.document.documentElement?.getAttribute('data-theme')) {
+        'light' => ThemeMode.light,
+        'dark' => ThemeMode.dark,
+        _ => ThemeMode.system,
+      };
 }
