@@ -18,7 +18,7 @@ for scale in 1 2 3; do
     png flag_cs.svg $((24 * scale)) $((16 * scale)) "$dir/flag_cs.png"
     png flag_en.svg $((32 * scale)) $((16 * scale)) "$dir/flag_en.png"
 done
-# the app draws the logo itself, at any size (lib/ui/logo.dart)
+# not PNGs: the front page enlarges the logo to fill the screen
 cp icon.svg "$APP/assets/logo.svg"
 
 for density in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do

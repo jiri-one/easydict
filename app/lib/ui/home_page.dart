@@ -329,14 +329,14 @@ class _FrontPage extends StatelessWidget {
         final text = theme.textTheme.apply(
           fontSizeFactor: (box.maxHeight / 600).clamp(1.0, 1.5),
         );
-        final width = box.maxWidth - 2 * padding;
+        final width = max(0.0, box.maxWidth - 2 * padding);
         return Padding(
           padding: const EdgeInsets.all(padding),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // all the room the texts leave, none when they leave little
-              // (the keyboard up)
+              // Smaller than 64, as with the keyboard up, the logo would only
+              // crowd the texts.
               Flexible(
                 child: LayoutBuilder(
                   builder: (context, room) {
