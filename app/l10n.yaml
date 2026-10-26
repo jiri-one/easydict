@@ -2,3 +2,6 @@ arb-dir: lib/l10n
 template-arb-file: app_en.arb
 output-localization-file: app_localizations.dart
 nullable-getter: false
+# Where the system language is neither, Flutter takes the first supported
+# locale, and that would be Czech: the list is alphabetical otherwise.
+preferred-supported-locales: [en]
