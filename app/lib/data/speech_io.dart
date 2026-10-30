@@ -105,7 +105,7 @@ Future<String> _extractAssets() async {
   await for (final entry in Directory(base).list()) {
     if (entry is Directory &&
         entry.path.startsWith('$base/easydict-speech-') &&
-        !entry.path.startsWith(target.path)) {
+        entry.path != target.path) {
       await entry.delete(recursive: true);
     }
   }

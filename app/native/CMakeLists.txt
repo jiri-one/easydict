@@ -13,7 +13,8 @@ target_include_directories(easydict_speech PRIVATE ${CMAKE_CURRENT_BINARY_DIR} $
 target_compile_definitions(easydict_speech PRIVATE _LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION)
 if(MSVC)
   target_compile_options(easydict_speech PRIVATE /utf-8 /bigobj)
-  target_compile_definitions(easydict_speech PRIVATE WIN32 UNICODE _UNICODE NOMINMAX)
+  # RHVoice derives from std::unary_function, which C++17 removed from MSVC's STL.
+  target_compile_definitions(easydict_speech PRIVATE WIN32 UNICODE _UNICODE NOMINMAX _HAS_AUTO_PTR_ETC=1)
 else()
   target_compile_options(easydict_speech PRIVATE -fvisibility=hidden)
 endif()

@@ -36,18 +36,28 @@ async function speak(button) {
     const status = button.closest('details, .result-group').querySelector('[role="status"]');
     status.innerText = '';
     speech?.pause();
-    const audio = new Audio('/api/speech?' + new URLSearchParams({
+    const audio = new Audio();
+    speech = audio;
+    const source = '/api/speech?' + new URLSearchParams({
         lang: button.dataset.speechLanguage,
         q: button.dataset.speechText,
-    }));
-    speech = audio;
-    try {
-        await audio.play();
-    } catch (_) {
-        if (speech === audio && status.isConnected) {
-            status.innerText = form.dataset.speechFailed;
-            status.scrollIntoView({block: 'nearest', behavior: 'instant'});
+    });
+    // The server renders one word at a time, and a replaced word can still hold it.
+    for (let attempt = 1; ; attempt++) {
+        audio.src = source;
+        try {
+            await audio.play();
+            return;
+        } catch (_) {
+            if (speech !== audio) return;
+            if (attempt === 3) break;
         }
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        if (speech !== audio) return;
+    }
+    if (status.isConnected) {
+        status.innerText = form.dataset.speechFailed;
+        status.scrollIntoView({block: 'nearest', behavior: 'instant'});
     }
 }
 
