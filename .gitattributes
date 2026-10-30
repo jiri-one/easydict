@@ -1,0 +1,2 @@
+# Git for Windows would write CRLF, and hts_engine does not read \r as a separator.
+app/assets/speech/** -text

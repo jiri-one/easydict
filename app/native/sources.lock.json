@@ -1,0 +1,13 @@
+{
+  "RHVoice": "fa9dd196fd2dac3b0bf089a2d80fc8477c2380e3",
+  "miniaudio": {
+    "tag": "0.11.23",
+    "sha256": "7e4f3f13c8fe66df2080ac3dd12a89193e3c2463cb7f067c798abd7331cd8ee6"
+  },
+  "submodules": {
+    "data/languages/Czech": "6d70bc7fb6a30a5a0f3a7199643f7e5ae1e43d5a",
+    "data/languages/English": "8a2ea34df72a190dae245460aeb20a867d64775c",
+    "data/voices/radek": "155e6798a2973c5d1901608febb7ca7873114dc0",
+    "data/voices/slt": "c17dded68322016aba2868d9c29f11bba14d275f"
+  }
+}
