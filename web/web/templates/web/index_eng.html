@@ -58,7 +58,7 @@
 	</main>
 	<side_bar>
 		<a class="app-link" href="/app">Open the web app</a>
-		<form id="main_search_form" data-loading="Searching…" data-error="The search failed:">
+		<form id="main_search_form" data-loading="Searching…" data-error="The search failed:" data-copied="Copied to the clipboard" data-copy-failed="Copying failed. You can select the translation and copy it manually." data-speech-failed="Could not play pronunciation.">
 			{% csrf_token %}
 			<input type="hidden" name="page_language" value="eng">
 			<fieldset>

@@ -1,6 +1,7 @@
 const form = document.getElementById('main_search_form');
 const results = document.getElementById('results');
 let searchController;
+let speech;
 
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -31,7 +32,31 @@ form.addEventListener('submit', async (event) => {
     }
 });
 
+async function speak(button) {
+    const status = button.closest('details, .result-group').querySelector('[role="status"]');
+    status.innerText = '';
+    speech?.pause();
+    const audio = new Audio('/api/speech?' + new URLSearchParams({
+        lang: button.dataset.speechLanguage,
+        q: button.dataset.speechText,
+    }));
+    speech = audio;
+    try {
+        await audio.play();
+    } catch (_) {
+        if (speech === audio && status.isConnected) {
+            status.innerText = form.dataset.speechFailed;
+            status.scrollIntoView({block: 'nearest', behavior: 'instant'});
+        }
+    }
+}
+
 results.addEventListener('click', async (event) => {
+    const speechButton = event.target.closest('button[data-speech-text]');
+    if (speechButton) {
+        speak(speechButton);
+        return;
+    }
     const lookup = event.target.closest('button[data-lookup-text]');
     if (lookup) {
         form.elements.searched_text.value = lookup.dataset.lookupText;
@@ -47,9 +72,9 @@ results.addEventListener('click', async (event) => {
         let message;
         try {
             await navigator.clipboard.writeText(copy.dataset.copyText);
-            message = copy.dataset.copied;
+            message = form.dataset.copied;
         } catch (_) {
-            message = copy.dataset.copyFailed;
+            message = form.dataset.copyFailed;
         }
         if (status.isConnected && detail.open) {
             status.innerText = message;

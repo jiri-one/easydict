@@ -37,7 +37,7 @@ The `Website image` workflow builds it on every change of `web/`, `app/` or `dat
 
 ## Pronunciation
 
-`GET /api/speech?lang=cze&q=ahoj` (or `lang=eng`) returns mono PCM WAV using the same bundled RHVoice 1.18.4, Radek and Slt as the app. Requests accept 1–300 characters, run without a shell, and stop after ten seconds. Only one renderer runs at a time across the workers, and a request arriving meanwhile gets a 503, so speech cannot block searching. Successful responses can be cached for one day. Each request uses an isolated renderer process so a timeout cannot leave synthesis running in a web worker.
+The speakers in the search results and the web app use `GET /api/speech?lang=cze&q=ahoj` (or `lang=eng`), which returns mono PCM WAV from the same bundled RHVoice 1.18.4, Radek and Slt as the app. `spoken_text` in `web/speech.py` is a port of `app/lib/data/speech_text.dart`, and both are tested against `app/test/fixtures/speech_text.json`: a change belongs to both. Requests accept 1–300 characters, run without a shell, and stop after ten seconds. Only one renderer runs at a time across the workers, and a request arriving meanwhile gets a 503, so speech cannot block searching. Successful responses can be cached for one day. Each request uses an isolated renderer process so a timeout cannot leave synthesis running in a web worker.
 
 For local development:
 

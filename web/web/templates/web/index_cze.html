@@ -58,7 +58,7 @@
 	</main>
 	<side_bar>
 		<a class="app-link" href="/app">Otevřít webovou aplikaci</a>
-		<form id="main_search_form" data-loading="Hledám…" data-error="Hledání selhalo:">
+		<form id="main_search_form" data-loading="Hledám…" data-error="Hledání selhalo:" data-copied="Zkopírováno do schránky" data-copy-failed="Kopírování se nezdařilo. Překlad můžete označit a zkopírovat ručně." data-speech-failed="Výslovnost se nepodařilo přehrát.">
 			{% csrf_token %}
 			<input type="hidden" name="page_language" value="cze">
 			<fieldset>

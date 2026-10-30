@@ -1,4 +1,5 @@
 import fcntl
+import json
 import subprocess
 from pathlib import Path
 from unittest import skipUnless
@@ -8,6 +9,14 @@ from django.conf import settings
 from django.test import SimpleTestCase
 
 from web import speech
+
+
+class SpokenTextTests(SimpleTestCase):
+    def test_the_same_as_the_app(self):
+        fixture = settings.BASE_DIR.parent / 'app/test/fixtures/speech_text.json'
+        for text, language, spoken in json.loads(fixture.read_text(encoding='utf-8')):
+            with self.subTest(text=text):
+                self.assertEqual(speech.spoken_text(text, language), spoken)
 
 
 class SpeechTests(SimpleTestCase):

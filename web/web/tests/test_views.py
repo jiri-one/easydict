@@ -3,7 +3,7 @@ from pathlib import Path
 
 from django.test import SimpleTestCase, TestCase, override_settings
 
-from web.dictionary import Entry, Group, SearchResult
+from web.dictionary import Entry, Group, SearchResult, other
 from web.helpers import MAX_RESULTS, results_html
 
 from . import DictionaryTestCase
@@ -18,12 +18,13 @@ class HomePageSearchTests(DictionaryTestCase):
 
     def test_translations_of_a_headword(self):
         content = self.search("dog", language="eng").content.decode()
-        self.assertIn('<span class="result-word">dog</span>', content)
+        self.assertIn('<h2 class="result-word">dog</h2>', content)
         self.assertLess(content.index('class="result-translation">pes<'), content.index('class="result-translation">čokl<'))
-        self.assertNotIn('class="result-language"', content)
         self.assertIn("podstatné jméno · hovorově", content)
         self.assertNotIn('class="result-labels">n:', content)
         self.assertNotIn('class="result-labels">[hovor.]', content)
+        self.assertIn('data-speech-text="dog" data-speech-language="eng"', content)
+        self.assertIn('data-speech-text="pes" data-speech-language="cze"', content)
         self.assertIn('<details class="result-entry">', content)
         self.assertIn('data-lookup-text="pes" data-lookup-language="cze"', content)
         self.assertIn("Autor překladu: Milan Svoboda", content)
@@ -42,11 +43,10 @@ class HomePageSearchTests(DictionaryTestCase):
                 with self.subTest(page_language=page_language, query=query):
                     content = self.search(query, language=language, page_language=page_language).content.decode()
                     self.assertIn(f'class="result-labels">{labels}<', content)
-                    self.assertNotIn('class="result-language"', content)
                     self.assertInHTML(
-                        f'<h2 class="result-headword"><span class="result-word">{query}</span></h2>', content,
+                        f'<h2 class="result-word">{query}</h2>', content,
                     )
-                    translation_language = "cze" if language == "eng" else "eng"
+                    translation_language = other(language)
                     self.assertIn(
                         f'data-lookup-text="{translation}" data-lookup-language="{translation_language}"', content,
                     )
@@ -56,12 +56,12 @@ class HomePageSearchTests(DictionaryTestCase):
     def test_a_form_finds_its_base_form(self):
         self.assertContains(self.search("psa"), "Nalezeno jako tvar slova „pes“.")
         self.assertContains(self.search("psa", page_language="eng"), "Found as a form of “pes”.")
-        self.assertContains(self.search("psa"), '<span class="result-word">pes</span>')
+        self.assertContains(self.search("psa"), '<h2 class="result-word">pes</h2>')
 
     def test_whole_word_and_fulltext(self):
-        self.assertContains(self.search("ostrikovacu"), '<span class="result-word">kapalina do ostřikovačů</span>')
+        self.assertContains(self.search("ostrikovacu"), '<h2 class="result-word">kapalina do ostřikovačů</h2>')
         self.assertNotContains(self.search("ostrik"), 'class="result-headword"')
-        self.assertContains(self.search("ostrik", mode="fulltext"), '<span class="result-word">kapalina do ostřikovačů</span>')
+        self.assertContains(self.search("ostrik", mode="fulltext"), '<h2 class="result-word">kapalina do ostřikovačů</h2>')
 
     def test_nothing_found(self):
         self.assertContains(self.search("xyz"), "Nic nenalezeno.")
@@ -89,7 +89,7 @@ class HomePageEscapingTests(DictionaryTestCase):
 
     def test_dictionary_data_is_escaped(self):
         response = self.search("tučně", "cze")
-        self.assertContains(response, '<span class="result-word">&lt;b&gt;tučně&lt;/b&gt;</span>')
+        self.assertContains(response, '<h2 class="result-word">&lt;b&gt;tučně&lt;/b&gt;</h2>')
         self.assertContains(response, 'class="result-translation">bold &amp; strong<')
         self.assertContains(response, 'class="result-labels">&lt;i&gt;<')
 
@@ -171,6 +171,21 @@ class ResultDetailTests(SimpleTestCase):
         html = results_html(result, "cze")
         self.assertIn("data-copy-text=", html)
         self.assertNotIn("data-lookup-text=", html)
+
+    def test_speech_buttons_get_the_spoken_text(self):
+        entry = Entry(1, "give sth (to sb)", "dát <něco>", None, None, None, 0, 0)
+        result = SearchResult("give", "eng", "wholeWord", [Group(entry.eng, [entry])])
+        html = results_html(result, "cze")
+        self.assertIn('data-speech-text="give something" data-speech-language="eng"', html)
+        self.assertIn('data-speech-text="dát &lt;něco&gt;" data-speech-language="cze"', html)
+        self.assertIn('aria-label="Přehrát výslovnost"', html)
+
+    def test_nothing_to_speak_has_no_button(self):
+        entry = Entry(1, "(gloss)", "překlad", None, None, None, 0, 0)
+        result = SearchResult("gloss", "eng", "wholeWord", [Group(entry.eng, [entry])])
+        html = results_html(result, "cze")
+        self.assertEqual(html.count("data-speech-text="), 1)
+        self.assertIn('data-speech-text="překlad"', html)
 
     def test_search_script_waits_for_the_results_panel(self):
         for url in ("/cze", "/eng"):

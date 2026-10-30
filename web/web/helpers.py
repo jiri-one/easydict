@@ -2,6 +2,7 @@ from django.template.loader import render_to_string
 
 from .dictionary import SearchResult, other
 from .notes import note_labels
+from .speech import spoken_text
 
 MAX_RESULTS = 100
 MAX_SEARCHED_TEXT = 50
@@ -12,26 +13,24 @@ TEXTS = {
         "author": "Autor překladu",
         "look_up": "Vyhledat „{}“",
         "copy": "Kopírovat",
-        "copied": "Zkopírováno do schránky",
-        "copy_failed": "Kopírování se nezdařilo. Překlad můžete označit a zkopírovat ručně.",
         "base_form": "Nalezeno jako tvar slova {}.",
         "base_forms": "Nalezeno jako tvar slov {}.",
         "quotes": "„{}“",
         "more": "… (zobrazeno prvních {} překladů)",
         "updating": "Slovník se právě aktualizuje, zkuste to prosím za chvíli.",
+        "speak": "Přehrát výslovnost",
     },
     "eng": {
         "nothing": "Nothing found.",
         "author": "Translated by",
         "look_up": "Look up “{}”",
         "copy": "Copy",
-        "copied": "Copied to the clipboard",
-        "copy_failed": "Copying failed. You can select the translation and copy it manually.",
         "base_form": "Found as a form of {}.",
         "base_forms": "Found as a form of {}.",
         "quotes": "“{}”",
         "more": "… (the first {} translations are shown)",
         "updating": "The dictionary is being updated, please try again in a moment.",
+        "speak": "Speak pronunciation",
     },
 }
 
@@ -60,6 +59,7 @@ def results_html(result: SearchResult, page_language: str) -> str:
             translations.append({
                 "source": entry.text(result.language),
                 "translation": translation,
+                "speech": spoken_text(translation, translation_language),
                 "labels": " · ".join(note_labels(entry.notes, page_language)),
                 "special": entry.special,
                 "author": entry.author,
@@ -68,12 +68,14 @@ def results_html(result: SearchResult, page_language: str) -> str:
             })
         groups.append({
             "headword": group.headword,
+            "speech": spoken_text(group.headword, result.language),
             "entries": translations,
         })
     return render_to_string("web/search_results.html", {
         "groups": groups,
         "base_forms": base_forms,
         "texts": texts,
+        "language": result.language,
         "translation_language": translation_language,
         "more": texts["more"].format(shown) if truncated else "",
     })
