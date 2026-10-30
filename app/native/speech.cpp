@@ -37,8 +37,7 @@ struct Audio {
   uint64_t request;
   int rate = 0;
   std::vector<short> samples;
-  size_t position = 0;
-  std::atomic<bool> finished{false};
+  std::atomic<size_t> position{0};
 };
 static int rate(int value, void* user) {
   static_cast<Audio*>(user)->rate = value;
@@ -52,12 +51,10 @@ static int collect(const short* samples, unsigned count, void* user) {
 }
 static void playback(ma_device* device, void* output, const void*, ma_uint32 frames) {
   auto& audio = *static_cast<Audio*>(device->pUserData);
-  auto* out = static_cast<short*>(output);
-  if (current.load() != audio.request) { audio.finished = true; return; }
-  const auto count = std::min<size_t>(frames, audio.samples.size() - audio.position);
-  std::copy_n(audio.samples.data() + audio.position, count, out);
-  audio.position += count;
-  if (audio.position == audio.samples.size()) audio.finished = true;
+  const size_t position = audio.position;
+  const auto count = std::min<size_t>(frames, audio.samples.size() - position);
+  std::copy_n(audio.samples.data() + position, count, static_cast<short*>(output));
+  audio.position = position + count;
 }
 static void little(std::ofstream& out, uint32_t n, int bytes) {
   for (int i = 0; i < bytes; ++i) out.put(static_cast<char>(n >> (i * 8)));
@@ -113,10 +110,12 @@ int ed_speech(const char* data, const char* language, const char* text, uint64_t
     config.pUserData = &audio;
     ma_device device;
     if (ma_device_init(nullptr, &config, &device) != MA_SUCCESS) return -1;
+    // Stopping drops what the device still holds, so that part must be silence.
+    const ma_uint64 held = ma_uint64(device.playback.internalPeriodSizeInFrames) * device.playback.internalPeriods;
+    audio.samples.resize(audio.samples.size() + size_t(held * audio.rate / device.playback.internalSampleRate) + 1);
     if (ma_device_start(&device) != MA_SUCCESS) { ma_device_uninit(&device); return -1; }
-    while (!audio.finished && current.load() == request) std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    // Let the final device buffer reach the speakers.
-    if (current.load() == request) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    while (audio.position < audio.samples.size() && current.load() == request)
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     ma_device_uninit(&device);
     return 1;
   } catch (...) { return -1; }

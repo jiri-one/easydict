@@ -55,5 +55,5 @@ for kind, names in [('languages', ['Czech', 'English']), ('voices', ['radek', 's
 files = {str(path.relative_to(assets)): hashlib.sha256(path.read_bytes()).hexdigest()
          for path in sorted(assets.rglob('*'))
          if path.is_file() and path.name not in ('manifest.json', 'checksum.txt')}
-(assets / 'manifest.json').write_text(json.dumps(files, indent=2) + '\n')
+(assets / 'manifest.json').write_text(json.dumps(sorted(files), indent=2) + '\n')
 (assets / 'checksum.txt').write_text(hashlib.sha256(json.dumps(files, sort_keys=True).encode()).hexdigest() + '\n')

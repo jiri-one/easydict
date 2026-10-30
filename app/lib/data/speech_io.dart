@@ -57,9 +57,20 @@ int _synthesize(String path, String language, String text, int request) =>
       ),
     );
 
-/// RHVoice needs real files, and Android cannot open assets as files.
+Future<String>? _extraction;
+
 Future<String> _assetPath() async {
   if (!Platform.isAndroid) return '$desktopAssetsDir/assets/speech';
+  try {
+    return await (_extraction ??= _extractAssets());
+  } catch (_) {
+    _extraction = null;
+    rethrow;
+  }
+}
+
+/// RHVoice needs real files, and Android cannot open assets as files.
+Future<String> _extractAssets() async {
   final checksum = (await rootBundle.loadString('assets/speech/checksum.txt'))
       .trim();
   final base = await getDatabasesPath();
@@ -70,10 +81,10 @@ Future<String> _assetPath() async {
   );
   await partial.create(recursive: true);
   try {
-    final manifest = jsonDecode(
+    final names = jsonDecode(
       await rootBundle.loadString('assets/speech/manifest.json'),
-    ) as Map<String, dynamic>;
-    for (final name in manifest.keys) {
+    ) as List<dynamic>;
+    for (final name in names) {
       final file = File('${partial.path}/$name');
       await file.parent.create(recursive: true);
       final data = await rootBundle.load('assets/speech/$name');
