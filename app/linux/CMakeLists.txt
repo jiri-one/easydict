@@ -74,6 +74,9 @@ set_target_properties(${BINARY_NAME}
 # them to the application.
 include(flutter/generated_plugins.cmake)
 
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../native" "${CMAKE_CURRENT_BINARY_DIR}/speech")
+list(APPEND PLUGIN_BUNDLED_LIBRARIES $<TARGET_FILE:easydict_speech>)
+
 
 # === Installation ===
 # By default, "installing" just makes a relocatable bundle in the build

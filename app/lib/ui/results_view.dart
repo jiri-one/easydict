@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../data/dictionary.dart';
 import '../data/notes.dart';
 import '../l10n/app_localizations.dart';
+import 'speech_button.dart';
 
 class ResultsView extends StatefulWidget {
   const ResultsView({
@@ -150,8 +151,7 @@ class _GroupTile extends StatelessWidget {
                         ),
                       ),
                     ),
-                    // Keep room for the speech button added separately.
-                    const SizedBox.square(dimension: 48),
+                    SpeechButton(text: group.headword, language: language),
                   ],
                 ),
               ),
@@ -307,8 +307,7 @@ class _EntryDetailsState extends State<_EntryDetails> {
                   ),
                 ),
               ),
-              // Keep room for the speech button added separately.
-              const SizedBox.square(dimension: 48),
+              SpeechButton(text: translation, language: language.other),
             ],
           ),
           if (entry.author != null) ...[

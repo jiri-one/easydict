@@ -28,6 +28,7 @@ class HelpPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          section(l10n.speak, l10n.helpSpeech),
           section(l10n.helpModesTitle, l10n.helpModes),
           section(l10n.helpFormsTitle, l10n.helpForms),
           section(

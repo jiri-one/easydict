@@ -248,4 +248,14 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get searchError => 'Hledání selhalo.';
+
+  @override
+  String get speak => 'Přehrát výslovnost';
+
+  @override
+  String get speechError => 'Výslovnost se nepodařilo přehrát.';
+
+  @override
+  String get helpSpeech =>
+      'Klepnutím na reproduktor si poslechnete slovo. V nainstalované aplikaci výslovnost funguje offline, webová aplikace používá server.';
 }

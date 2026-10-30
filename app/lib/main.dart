@@ -21,6 +21,20 @@ Future<void> main(List<String> arguments) async {
 Stream<LicenseEntry> _licenses() async* {
   Future<String> text(String name) =>
       rootBundle.loadString('assets/licenses/$name');
+  for (final name in [
+    'RHVoice.txt',
+    'CC0-Radek.txt',
+    'CMU-Slt.txt',
+    'hts_engine.txt',
+    'miniaudio.txt',
+    'RapidXML.txt',
+    'UTF8-CPP.txt',
+    'LGPL-2.1.txt',
+  ]) {
+    yield LicenseEntryWithLineBreaks([
+      name.replaceAll('.txt', ''),
+    ], await text(name));
+  }
   yield LicenseEntryWithLineBreaks(['EasyDict'], await text('GPL-3.0.txt'));
   // the complete notice with the cover texts and authors, as the GNU FDL asks
   final notice = await rootBundle.loadString(

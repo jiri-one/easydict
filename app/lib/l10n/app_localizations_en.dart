@@ -247,4 +247,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchError => 'Searching failed.';
+
+  @override
+  String get speak => 'Speak pronunciation';
+
+  @override
+  String get speechError => 'Could not play pronunciation.';
+
+  @override
+  String get helpSpeech =>
+      'Tap the speaker to hear a word. Pronunciation works offline in the installed app; the web app uses the server.';
 }

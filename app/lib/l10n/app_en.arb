@@ -111,5 +111,8 @@
   "loading": "Preparing the dictionary…",
   "openError": "The dictionary could not be opened.",
   "retry": "Try again",
-  "searchError": "Searching failed."
+  "searchError": "Searching failed.",
+  "speak": "Speak pronunciation",
+  "speechError": "Could not play pronunciation.",
+  "helpSpeech": "Tap the speaker to hear a word. Pronunciation works offline in the installed app; the web app uses the server."
 }

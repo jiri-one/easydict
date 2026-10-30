@@ -493,6 +493,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Searching failed.'**
   String get searchError;
+
+  /// No description provided for @speak.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak pronunciation'**
+  String get speak;
+
+  /// No description provided for @speechError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not play pronunciation.'**
+  String get speechError;
+
+  /// No description provided for @helpSpeech.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the speaker to hear a word. Pronunciation works offline in the installed app; the web app uses the server.'**
+  String get helpSpeech;
 }
 
 class _AppLocalizationsDelegate

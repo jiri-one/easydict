@@ -68,7 +68,7 @@ class AboutPage extends StatelessWidget {
             leading: const Icon(Icons.gavel),
             title: Text(l10n.licenses),
             subtitle: const Text(
-              'GNU GPL 3, GNU FDL 1.1, GNU GPL 2, CC BY-SA 4.0',
+              'GNU GPL 3, GNU FDL 1.1, GNU GPL 2, CC BY-SA 4.0, LGPL 2.1, CC0, CMU, Boost, BSD, MIT-0',
             ),
             onTap: () => showLicensePage(
               context: context,
@@ -79,6 +79,14 @@ class AboutPage extends StatelessWidget {
                 child: Logo(size: 48),
               ),
               applicationLegalese: '© 2020–2026 Jiří Němec\nGNU GPL 3',
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.volume_up_outlined),
+            title: Text(l10n.speak),
+            subtitle: const Text(
+              'RHVoice • Radek (Radek Zalud, CC0) • Slt (CMU Arctic)\n'
+              'hts_engine • miniaudio • UTF8-CPP • RapidXML',
             ),
           ),
           const Divider(),

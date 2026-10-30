@@ -30,6 +30,7 @@ Builds:
       - app/windows
       - web
     prebuild:
+      - sdkmanager 'cmake;3.22.1'
       - export PUB_CACHE=$(pwd)/.pub-cache
       - $$flutter$$/bin/flutter config --no-analytics
       - $$flutter$$/bin/flutter pub get --enforce-lockfile
@@ -58,6 +59,7 @@ Builds:
       - app/windows
       - web
     prebuild:
+      - sdkmanager 'cmake;3.22.1'
       - export PUB_CACHE=$(pwd)/.pub-cache
       - $$flutter$$/bin/flutter config --no-analytics
       - $$flutter$$/bin/flutter pub get --enforce-lockfile
@@ -86,6 +88,7 @@ Builds:
       - app/windows
       - web
     prebuild:
+      - sdkmanager 'cmake;3.22.1'
       - export PUB_CACHE=$(pwd)/.pub-cache
       - $$flutter$$/bin/flutter config --no-analytics
       - $$flutter$$/bin/flutter pub get --enforce-lockfile

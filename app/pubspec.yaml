@@ -48,3 +48,19 @@ flutter:
       platforms: [android, ios, linux, macos, windows]
     - path: assets/dictionary/easydict.sha256
       platforms: [android, ios, linux, macos, windows]
+    - path: assets/speech/languages/Czech/
+      platforms: [android, linux, macos, windows]
+    - path: assets/speech/languages/Czech/userdict/src/
+      platforms: [android, linux, macos, windows]
+    - path: assets/speech/languages/English/
+      platforms: [android, linux, macos, windows]
+    - path: assets/speech/voices/radek/
+      platforms: [android, linux, macos, windows]
+    - path: assets/speech/voices/radek/24000/
+      platforms: [android, linux, macos, windows]
+    - path: assets/speech/voices/slt/
+      platforms: [android, linux, macos, windows]
+    - path: assets/speech/voices/slt/24000/
+      platforms: [android, linux, macos, windows]
+    - path: assets/speech/
+      platforms: [android, linux, macos, windows]

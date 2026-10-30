@@ -65,5 +65,8 @@
   "loading": "Připravuji slovník…",
   "openError": "Slovník se nepodařilo otevřít.",
   "retry": "Zkusit znovu",
-  "searchError": "Hledání selhalo."
+  "searchError": "Hledání selhalo.",
+  "speak": "Přehrát výslovnost",
+  "speechError": "Výslovnost se nepodařilo přehrát.",
+  "helpSpeech": "Klepnutím na reproduktor si poslechnete slovo. V nainstalované aplikaci výslovnost funguje offline, webová aplikace používá server."
 }
