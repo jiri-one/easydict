@@ -224,12 +224,6 @@ abstract class AppLocalizations {
   /// **'Only the best matches are shown. Type more to narrow the search.'**
   String get truncated;
 
-  /// No description provided for @showMore.
-  ///
-  /// In en, this message translates to:
-  /// **'Show {count} more'**
-  String showMore(int count);
-
   /// No description provided for @settings.
   ///
   /// In en, this message translates to:
@@ -247,18 +241,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'About'**
   String get about;
-
-  /// No description provided for @notes.
-  ///
-  /// In en, this message translates to:
-  /// **'Labels'**
-  String get notes;
-
-  /// No description provided for @special.
-  ///
-  /// In en, this message translates to:
-  /// **'Note'**
-  String get special;
 
   /// No description provided for @author.
   ///

@@ -2,10 +2,12 @@ import 'package:easydict/app.dart';
 import 'package:easydict/data/dictionary.dart';
 import 'package:easydict/l10n/app_localizations.dart';
 import 'package:easydict/ui/results_view.dart';
+import 'package:easydict/ui/speech_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'contrast.dart';
 
 const dog = Entry(id: 1, eng: 'dog', cze: 'pes', notes: 'n:');
 const colloquial = Entry(
@@ -40,12 +42,7 @@ Widget app({
 }) => MaterialApp(
   locale: Locale(locale),
   theme: appTheme(brightness),
-  localizationsDelegates: const [
-    AppLocalizations.delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-  ],
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
   home: Scaffold(
     body: MediaQuery(
@@ -209,10 +206,44 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('překlad 0'), findsOneWidget);
     expect(find.text('překlad 6'), findsOneWidget);
-    expect(find.text('Zobrazit další (1)'), findsNothing);
     await tester.tap(find.text('překlad 6'));
     await tester.pump();
     expect(find.text('Kopírovat'), findsOneWidget);
+  });
+
+  testWidgets('a long group is built only as it scrolls in', (tester) async {
+    final entries = List.generate(
+      200,
+      (i) => Entry(id: i, eng: 'dog', cze: 'překlad $i'),
+    );
+    await tester.pumpWidget(app(search: result(entries: entries)));
+    await tester.pumpAndSettle();
+    expect(find.text('překlad 0'), findsOneWidget);
+    expect(find.text('překlad 199'), findsNothing);
+    await tester.scrollUntilVisible(
+      find.text('překlad 199'),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('překlad 199'), findsOneWidget);
+  });
+
+  testWidgets('the headword and the open translation can be spoken', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app(search: result()));
+    await tester.pumpAndSettle();
+    final headword = tester.widget<SpeechButton>(find.byType(SpeechButton));
+    expect(headword.text, 'dog');
+    expect(headword.language, Language.eng);
+
+    await tester.tap(find.text('čokl'));
+    await tester.pump();
+    final translation = tester.widget<SpeechButton>(
+      find.byType(SpeechButton).last,
+    );
+    expect(translation.text, 'čokl');
+    expect(translation.language, Language.cze);
   });
 
   for (final fail in [false, true]) {
@@ -246,7 +277,11 @@ void main() {
       );
       await tester.pumpWidget(app(search: search));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('překlad 11'));
+      await tester.scrollUntilVisible(
+        find.text('překlad 11'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('překlad 11'));
       await tester.pump();
@@ -335,11 +370,6 @@ void main() {
         final heading = find.widgetWithText(SelectableText, 'dog');
         final selection = TextSelectionTheme.of(tester.element(heading));
         final colors = appTheme(brightness).colorScheme;
-        double contrast(Color a, Color b) {
-          final values = [a.computeLuminance(), b.computeLuminance()]..sort();
-          return (values.last + 0.05) / (values.first + 0.05);
-        }
-
         expect(
           contrast(selection.selectionHandleColor!, colors.onSurface),
           greaterThan(3),
@@ -353,6 +383,20 @@ void main() {
         );
       },
     );
+
+    testWidgets('the speaker contrasts with the ${brightness.name} bar', (
+      tester,
+    ) async {
+      await tester.pumpWidget(app(search: result(), brightness: brightness));
+      await tester.pumpAndSettle();
+      final icon = tester.widget<RichText>(
+        find.descendant(
+          of: find.byIcon(Icons.volume_up_outlined),
+          matching: find.byType(RichText),
+        ),
+      );
+      expect(icon.text.style?.color, appTheme(brightness).colorScheme.surface);
+    });
 
     testWidgets(
       'narrow ${brightness.name} results with large text remain usable',

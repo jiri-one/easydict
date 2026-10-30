@@ -46,6 +46,9 @@ ThemeData appTheme(Brightness brightness) {
     splashFactory: NoSplash.splashFactory,
     highlightColor: Colors.transparent,
     hoverColor: Colors.transparent,
+    expansionTileTheme: const ExpansionTileThemeData(
+      expansionAnimationStyle: AnimationStyle.noAnimation,
+    ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         animationDuration: Duration.zero,
@@ -148,9 +151,8 @@ class _DictionaryLoaderState extends State<_DictionaryLoader> {
                         setState(() => _dictionary = openDictionary()),
                     child: Text(l10n.retry),
                   ),
-                ] else ...[
+                ] else
                   Text(l10n.loading),
-                ],
               ],
             ),
           ),

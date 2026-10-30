@@ -8,8 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def dart_string(text: str) -> str:
-    encoded = json.dumps(text, ensure_ascii=False)[1:-1].replace(r'\"', '"')
-    return "'" + encoded.replace("'", r"\'").replace("$", r"\$") + "'"
+    return json.dumps(text, ensure_ascii=False).replace("$", r"\$")
 
 
 def main():

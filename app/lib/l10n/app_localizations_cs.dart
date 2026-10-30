@@ -100,11 +100,6 @@ class AppLocalizationsCs extends AppLocalizations {
       'Zobrazeny jsou jen nejlepší shody. Upřesněte hledání.';
 
   @override
-  String showMore(int count) {
-    return 'Zobrazit další ($count)';
-  }
-
-  @override
   String get settings => 'Nastavení';
 
   @override
@@ -112,12 +107,6 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get about => 'O aplikaci';
-
-  @override
-  String get notes => 'Značky';
-
-  @override
-  String get special => 'Poznámka';
 
   @override
   String get author => 'Autor překladu';

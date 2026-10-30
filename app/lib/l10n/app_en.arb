@@ -46,19 +46,9 @@
     }
   },
   "truncated": "Only the best matches are shown. Type more to narrow the search.",
-  "showMore": "Show {count} more",
-  "@showMore": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "settings": "Settings",
   "help": "Help",
   "about": "About",
-  "notes": "Labels",
-  "special": "Note",
   "author": "Translated by",
   "lookUp": "Look up “{word}”",
   "@lookUp": {

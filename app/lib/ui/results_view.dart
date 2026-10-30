@@ -80,94 +80,76 @@ class _ResultsViewState extends State<ResultsView> {
             ),
           )
         : null;
-    final offset = header == null ? 0 : 1;
+    // One item per row, so that a long group is built only as it scrolls in.
+    final items = <Object>[
+      ?header,
+      for (final group in result.groups) ...[group, ...group.entries],
+      ?footer,
+    ];
     return ListView.builder(
       // A new result starts at the top, not where the old one was scrolled.
       key: ObjectKey(result),
       padding: const EdgeInsets.only(bottom: 24),
-      itemCount: result.groups.length + offset + (footer == null ? 0 : 1),
-      itemBuilder: (context, index) {
-        if (index < offset) return header!;
-        final groupIndex = index - offset;
-        if (groupIndex == result.groups.length) return footer!;
-        return _GroupTile(
-          group: result.groups[groupIndex],
+      itemCount: items.length,
+      itemBuilder: (context, index) => switch (items[index]) {
+        final ResultGroup group => _HeadwordBar(
+          headword: group.headword,
+          language: result.language,
+        ),
+        final Entry entry => _TranslationRow(
+          entry: entry,
           language: result.language,
           onLookUp: widget.onLookUp,
-          expandedEntries: _expandedEntries,
-          onExpansionChanged: _setExpanded,
-        );
+          initiallyExpanded: _expandedEntries.contains(entry.id),
+          onExpansionChanged: (expanded) => _setExpanded(entry.id, expanded),
+        ),
+        final item => item as Widget,
       },
     );
   }
 }
 
-class _GroupTile extends StatelessWidget {
-  const _GroupTile({
-    required this.group,
-    required this.language,
-    required this.onLookUp,
-    required this.expandedEntries,
-    required this.onExpansionChanged,
-  });
+class _HeadwordBar extends StatelessWidget {
+  const _HeadwordBar({required this.headword, required this.language});
 
-  final ResultGroup group;
+  final String headword;
   final Language language;
-  final void Function(String text, Language language) onLookUp;
-  final Set<int> expandedEntries;
-  final void Function(int id, bool expanded) onExpansionChanged;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final headerColor = theme.colorScheme.surface;
     return Padding(
-      padding: const EdgeInsets.only(top: 16, bottom: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            color: theme.colorScheme.onSurface,
-            padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
-            child: TextSelectionTheme(
-              data: TextSelectionTheme.of(context).copyWith(
-                cursorColor: headerColor,
-                selectionColor: headerColor.withValues(alpha: 0.4),
-                selectionHandleColor: headerColor,
-              ),
-              child: IconTheme.merge(
-                data: IconThemeData(color: headerColor),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Semantics(
-                        header: true,
-                        child: SelectableText(
-                          group.headword,
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            color: headerColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+      padding: const EdgeInsets.only(top: 24),
+      child: Container(
+        color: theme.colorScheme.onSurface,
+        padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+        child: TextSelectionTheme(
+          data: TextSelectionTheme.of(context).copyWith(
+            selectionColor: headerColor.withValues(alpha: 0.4),
+            selectionHandleColor: headerColor,
+          ),
+          child: IconTheme.merge(
+            data: IconThemeData(color: headerColor),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Semantics(
+                    header: true,
+                    child: SelectableText(
+                      headword,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: headerColor,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SpeechButton(text: group.headword, language: language),
-                  ],
+                  ),
                 ),
-              ),
+                SpeechButton(text: headword, language: language),
+              ],
             ),
           ),
-          for (final entry in group.entries)
-            _TranslationRow(
-              key: ValueKey(entry.id),
-              entry: entry,
-              language: language,
-              onLookUp: onLookUp,
-              initiallyExpanded: expandedEntries.contains(entry.id),
-              onExpansionChanged: (expanded) =>
-                  onExpansionChanged(entry.id, expanded),
-            ),
-        ],
+        ),
       ),
     );
   }
@@ -175,7 +157,6 @@ class _GroupTile extends StatelessWidget {
 
 class _TranslationRow extends StatelessWidget {
   const _TranslationRow({
-    super.key,
     required this.entry,
     required this.language,
     required this.onLookUp,
@@ -199,17 +180,12 @@ class _TranslationRow extends StatelessWidget {
     return ExpansionTile(
       initiallyExpanded: initiallyExpanded,
       onExpansionChanged: onExpansionChanged,
-      expansionAnimationStyle: AnimationStyle.noAnimation,
       tilePadding: const EdgeInsets.fromLTRB(28, 4, 16, 4),
       childrenPadding: const EdgeInsets.fromLTRB(28, 0, 16, 16),
       shape: Border(bottom: BorderSide(color: theme.colorScheme.outline)),
       collapsedShape: Border(
         bottom: BorderSide(color: theme.colorScheme.outline),
       ),
-      textColor: theme.colorScheme.onSurface,
-      collapsedTextColor: theme.colorScheme.onSurface,
-      iconColor: theme.colorScheme.onSurface,
-      collapsedIconColor: theme.colorScheme.onSurface,
       title: Text(
         entry.text(language.other),
         style: theme.textTheme.titleLarge?.copyWith(
@@ -265,7 +241,7 @@ class _EntryDetailsState extends State<_EntryDetails> {
     setState(() => _copySucceeded = succeeded);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final statusContext = _copyStatusKey.currentContext;
-      if (statusContext != null && statusContext.mounted) {
+      if (statusContext != null) {
         Scrollable.ensureVisible(
           statusContext,
           duration: Duration.zero,

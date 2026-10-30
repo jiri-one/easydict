@@ -99,11 +99,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Only the best matches are shown. Type more to narrow the search.';
 
   @override
-  String showMore(int count) {
-    return 'Show $count more';
-  }
-
-  @override
   String get settings => 'Settings';
 
   @override
@@ -111,12 +106,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get about => 'About';
-
-  @override
-  String get notes => 'Labels';
-
-  @override
-  String get special => 'Note';
 
   @override
   String get author => 'Translated by';
