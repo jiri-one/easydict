@@ -128,3 +128,6 @@ if os.environ.get("SYSTEM_ENV") == "PRODUCTION":
             "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
         },
     }
+
+SPEECH_EXECUTABLE = os.environ.get('SPEECH_EXECUTABLE', BASE_DIR / 'speech' / 'easydict-speech')
+SPEECH_DATA = os.environ.get('SPEECH_DATA', BASE_DIR.parent / 'app' / 'assets' / 'speech')

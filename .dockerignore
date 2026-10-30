@@ -13,3 +13,5 @@ app/assets/dictionary
 web/secret_key.txt
 web/dictionary
 web/webapp
+
+**/.cxx

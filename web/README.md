@@ -34,3 +34,16 @@ The production image is built from `deploy/Containerfile` with the repository as
     podman build -f web/deploy/Containerfile .
 
 The `Website image` workflow builds it on every change of `web/`, `app/` or `data/` on `main` once the tests pass, and publishes it as `ghcr.io/jiri-one/easydict-web`. The server runs that image and updates it at night with `podman auto-update`, so whatever is merged to `main` goes live, migrations included.
+
+## Pronunciation
+
+`GET /api/speech?lang=cze&q=ahoj` (or `lang=eng`) returns mono PCM WAV using the same bundled RHVoice 1.18.4, Radek and Slt as the app. Requests accept 1–300 characters, run without a shell, and stop after ten seconds. Only one renderer runs at a time across the workers, and a request arriving meanwhile gets a 503, so speech cannot block searching. Successful responses can be cached for one day. Each request uses an isolated renderer process so a timeout cannot leave synthesis running in a web worker.
+
+For local development:
+
+    cmake -S ../app/native -B speech -DCMAKE_BUILD_TYPE=Release -DSPEECH_CLI=ON
+    cmake --build speech -j2
+
+The container compiles this dependency from the vendored sources. `SPEECH_EXECUTABLE` and `SPEECH_DATA` override the executable and data directories. The production image includes the engine library next to the renderer and needs no audio device. Existing security middleware permits this same-origin GET endpoint.
+
+Speech licences are listed in the [main README](../README.md); see `../app/native/README.md` for the sources.

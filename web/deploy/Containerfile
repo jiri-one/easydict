@@ -33,6 +33,11 @@ COPY --from=dictionary --chown=flutter /dictionary/easydict.sqlite.NOTICE.txt /h
 WORKDIR /home/flutter/app
 RUN flutter pub get && tool/build_web.sh
 
+FROM docker.io/library/debian:13-slim AS speech
+RUN apt-get update && apt-get install -y --no-install-recommends cmake g++ make && rm -rf /var/lib/apt/lists/*
+COPY app/native /src/native
+RUN cmake -S /src/native -B /build -DCMAKE_BUILD_TYPE=Release -DSPEECH_CLI=ON && cmake --build /build -j2
+
 FROM docker.io/library/debian:13-slim AS build
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3-venv \
@@ -57,6 +62,8 @@ RUN /venv/bin/python -m compileall -q easydict web deploy \
 
 
 FROM gcr.io/distroless/python3-debian13:nonroot
+COPY --from=speech /build/easydict-speech /build/libeasydict_speech.so /app/speech/
+COPY app/assets/speech /app/speech/data
 COPY --from=build /venv /venv
 COPY --from=build /app /app
 COPY --from=dictionary /dictionary/easydict.sqlite.gz /dictionary/easydict.sqlite.sha256 /app/dictionary/
@@ -67,6 +74,7 @@ WORKDIR /app
 ENV PATH=/venv/bin:/usr/bin:/bin \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    SPEECH_DATA=/app/speech/data \
     SYSTEM_ENV=PRODUCTION \
     DJANGO_SETTINGS_MODULE=easydict.settings \
     PGSERVICEFILE=/app/deploy/pg_service.conf

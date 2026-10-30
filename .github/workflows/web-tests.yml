@@ -37,4 +37,10 @@ jobs:
           printf '[easydict_service]\nhost=localhost\nport=5432\ndbname=easydict_django\nuser=easydict\n' > "$PGSERVICEFILE"
           ~/venv/bin/python utils/new_secret_key.py
       - run: ~/venv/bin/python manage.py makemigrations --check --dry-run
+      - name: Build the speech renderer from vendored sources
+        run: cmake -S ../app/native -B /tmp/speech -DCMAKE_BUILD_TYPE=Release -DSPEECH_CLI=ON && cmake --build /tmp/speech -j2
+      - run: sudo locale-gen cs_CZ.UTF-8
+      - run: python3 ../app/tool/check_speech.py /tmp/speech/libeasydict_speech.so ../app/assets/speech
       - run: ~/venv/bin/python manage.py test web
+        env:
+          SPEECH_EXECUTABLE: /tmp/speech/easydict-speech
