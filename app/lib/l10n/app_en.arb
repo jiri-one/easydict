@@ -70,6 +70,7 @@
   },
   "copy": "Copy",
   "copied": "Copied to the clipboard",
+  "copyError": "Copying failed. You can select the translation and copy it manually.",
   "settingsSearch": "Search",
   "defaultLanguage": "Search in",
   "defaultMode": "Search mode",

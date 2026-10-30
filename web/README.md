@@ -23,6 +23,10 @@ For development, build the web app and run the site with `WEBAPP_DIR=../app/buil
 
 The tests need PostgreSQL and a checkout of the whole repository (they build their data with `data/tools/build_db.py` from the fixtures of the app): `python manage.py test web`.
 
+Label explanations in Czech and English live in `web/web/note_labels.json` and follow `data/en-cs/format.cs.md` and `format.en.md`. After editing them, run `python3 data/tools/generate_note_labels.py` from the repository root to update the app's copy. The app tests check that the two stay in sync. Unknown labels remain visible; translation priorities are hidden.
+
+Result labels follow the app's interface language or the website's page language in both search directions, just like the controls and help.
+
 ## Production
 
 The production image is built from `deploy/Containerfile` with the repository as the build context:

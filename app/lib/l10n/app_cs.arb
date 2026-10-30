@@ -31,6 +31,7 @@
   "lookUp": "Vyhledat „{word}“",
   "copy": "Kopírovat",
   "copied": "Zkopírováno do schránky",
+  "copyError": "Kopírování se nezdařilo. Překlad můžete označit a zkopírovat ručně.",
   "settingsSearch": "Hledání",
   "defaultLanguage": "Hledat v jazyce",
   "defaultMode": "Režim hledání",

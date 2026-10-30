@@ -133,6 +133,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copied => 'Copied to the clipboard';
 
   @override
+  String get copyError =>
+      'Copying failed. You can select the translation and copy it manually.';
+
+  @override
   String get settingsSearch => 'Search';
 
   @override

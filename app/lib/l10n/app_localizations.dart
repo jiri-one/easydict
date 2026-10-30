@@ -284,6 +284,12 @@ abstract class AppLocalizations {
   /// **'Copied to the clipboard'**
   String get copied;
 
+  /// No description provided for @copyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Copying failed. You can select the translation and copy it manually.'**
+  String get copyError;
+
   /// No description provided for @settingsSearch.
   ///
   /// In en, this message translates to:

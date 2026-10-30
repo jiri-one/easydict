@@ -18,18 +18,50 @@ class HomePageSearchTests(DictionaryTestCase):
 
     def test_translations_of_a_headword(self):
         content = self.search("dog", language="eng").content.decode()
-        self.assertIn("<b>dog</b>", content)
-        self.assertLess(content.index("&emsp;pes | n:"), content.index("&emsp;čokl | n: [hovor.]"))
+        self.assertIn('<span class="result-word">dog</span>', content)
+        self.assertLess(content.index('class="result-translation">pes<'), content.index('class="result-translation">čokl<'))
+        self.assertNotIn('class="result-language"', content)
+        self.assertIn("podstatné jméno · hovorově", content)
+        self.assertNotIn('class="result-labels">n:', content)
+        self.assertNotIn('class="result-labels">[hovor.]', content)
+        self.assertIn('<details class="result-entry">', content)
+        self.assertIn('data-lookup-text="pes" data-lookup-language="cze"', content)
+        self.assertIn("Autor překladu: Milan Svoboda", content)
+
+    def test_labels_follow_the_page_language_in_both_search_directions(self):
+        for page_language, noun_labels, verb_label, copy, look_up in (
+            ("cze", "podstatné jméno · hovorově", "sloveso", "Kopírovat", "Vyhledat „{}“"),
+            ("eng", "noun · colloquial", "verb", "Copy", "Look up “{}”"),
+        ):
+            for query, language, translation, labels in (
+                ("dog", "eng", "čokl", noun_labels),
+                ("čokl", "cze", "dog", noun_labels),
+                ("go", "eng", "jít", verb_label),
+                ("jít", "cze", "go", verb_label),
+            ):
+                with self.subTest(page_language=page_language, query=query):
+                    content = self.search(query, language=language, page_language=page_language).content.decode()
+                    self.assertIn(f'class="result-labels">{labels}<', content)
+                    self.assertNotIn('class="result-language"', content)
+                    self.assertInHTML(
+                        f'<h2 class="result-headword"><span class="result-word">{query}</span></h2>', content,
+                    )
+                    translation_language = "cze" if language == "eng" else "eng"
+                    self.assertIn(
+                        f'data-lookup-text="{translation}" data-lookup-language="{translation_language}"', content,
+                    )
+                    self.assertIn(f'>{look_up.format(translation)}</button>', content)
+                    self.assertIn(f'>{copy}</button>', content)
 
     def test_a_form_finds_its_base_form(self):
         self.assertContains(self.search("psa"), "Nalezeno jako tvar slova „pes“.")
         self.assertContains(self.search("psa", page_language="eng"), "Found as a form of “pes”.")
-        self.assertContains(self.search("psa"), "<b>pes</b>")
+        self.assertContains(self.search("psa"), '<span class="result-word">pes</span>')
 
     def test_whole_word_and_fulltext(self):
-        self.assertContains(self.search("ostrikovacu"), "<b>kapalina do ostřikovačů</b>")
-        self.assertNotContains(self.search("ostrik"), "<b>")
-        self.assertContains(self.search("ostrik", mode="fulltext"), "<b>kapalina do ostřikovačů</b>")
+        self.assertContains(self.search("ostrikovacu"), '<span class="result-word">kapalina do ostřikovačů</span>')
+        self.assertNotContains(self.search("ostrik"), 'class="result-headword"')
+        self.assertContains(self.search("ostrik", mode="fulltext"), '<span class="result-word">kapalina do ostřikovačů</span>')
 
     def test_nothing_found(self):
         self.assertContains(self.search("xyz"), "Nic nenalezeno.")
@@ -57,12 +89,13 @@ class HomePageEscapingTests(DictionaryTestCase):
 
     def test_dictionary_data_is_escaped(self):
         response = self.search("tučně", "cze")
-        self.assertContains(response, "<b>&lt;b&gt;tučně&lt;/b&gt;</b>")
-        self.assertContains(response, "&emsp;bold &amp; strong | &lt;i&gt;")
+        self.assertContains(response, '<span class="result-word">&lt;b&gt;tučně&lt;/b&gt;</span>')
+        self.assertContains(response, 'class="result-translation">bold &amp; strong<')
+        self.assertContains(response, 'class="result-labels">&lt;i&gt;<')
 
     def test_results_are_limited(self):
         content = self.search("kos", "cze").content.decode()
-        self.assertEqual(content.count("&emsp;"), MAX_RESULTS)
+        self.assertEqual(content.count('<details class="result-entry">'), MAX_RESULTS)
         self.assertIn(f"zobrazeno prvních {MAX_RESULTS} překladů", content)
 
 
@@ -114,6 +147,35 @@ class BaseFormTextTests(SimpleTestCase):
         self.assertIn("Nalezeno jako tvar slova „pes“.", self.html(["pes"]))
         self.assertIn("Nalezeno jako tvar slov „pes“, „psát“.", self.html(["pes", "psát"]))
         self.assertIn("Found as a form of “pes”, “psát”.", self.html(["pes", "psát"], "eng"))
+
+
+class ResultDetailTests(SimpleTestCase):
+    def test_all_dictionary_fields_and_action_attributes_are_escaped(self):
+        entry = Entry(
+            1, '<script>source</script>', '" onclick="alert(1)',
+            'v: [hovor.] [unknown label] 2', '<img src=x onerror=alert(1)>',
+            '<script>author</script>', 0, 0,
+        )
+        result = SearchResult("test", "eng", "wholeWord", [Group(entry.eng, [entry])])
+        html = results_html(result, "cze")
+        self.assertNotIn("<script>", html)
+        self.assertNotIn("<img", html)
+        self.assertIn('data-copy-text="&quot; onclick=&quot;alert(1)"', html)
+        self.assertIn('data-lookup-text="&quot; onclick=&quot;alert(1)"', html)
+        self.assertIn("sloveso · hovorově · [unknown label]", html)
+        self.assertIn("&lt;script&gt;author&lt;/script&gt;", html)
+
+    def test_long_translations_remain_copyable(self):
+        entry = Entry(1, "long", "překlad " * 20, None, None, None, 0, 0)
+        result = SearchResult("long", "eng", "wholeWord", [Group("long", [entry])])
+        html = results_html(result, "cze")
+        self.assertIn("data-copy-text=", html)
+        self.assertNotIn("data-lookup-text=", html)
+
+    def test_search_script_waits_for_the_results_panel(self):
+        for url in ("/cze", "/eng"):
+            response = self.client.get(url)
+            self.assertContains(response, 'web/js/my_ajax.js" defer')
 
 
 class NotImportedTests(TestCase):

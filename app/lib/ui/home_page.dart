@@ -216,10 +216,13 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ),
-                    if (_search.searching)
-                      const LinearProgressIndicator(minHeight: 2)
-                    else
-                      const SizedBox(height: 2),
+                    SizedBox(
+                      height: 2,
+                      width: double.infinity,
+                      child: _search.searching
+                          ? ColoredBox(color: theme.colorScheme.onSurface)
+                          : null,
+                    ),
                     Expanded(child: _body(l10n)),
                   ],
                 ),
@@ -285,9 +288,9 @@ class _LanguageButton extends StatelessWidget {
     final english = language == Language.eng;
     return Tooltip(
       message: english ? l10n.searchingEnglish : l10n.searchingCzech,
-      child: FilledButton.tonal(
+      child: OutlinedButton(
         onPressed: onPressed,
-        style: FilledButton.styleFrom(
+        style: OutlinedButton.styleFrom(
           minimumSize: const Size(0, 48),
           padding: const EdgeInsets.symmetric(horizontal: 14),
         ),

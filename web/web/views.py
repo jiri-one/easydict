@@ -4,9 +4,8 @@ from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_POST
 
 from .dictionary import LANGUAGES, MODES, Dictionary, DictionaryNotImported
-from .helpers import TEXTS, results_html
+from .helpers import MAX_SEARCHED_TEXT, TEXTS, results_html
 
-MAX_SEARCHED_TEXT = 50
 FORM_MODES = {"starts_with": "startsWith", "whole_word": "wholeWord", "fulltext": "fulltext"}
 
 

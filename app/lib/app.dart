@@ -12,16 +12,54 @@ import 'ui/logo.dart';
 const brandColor = Color(0xFF387FF2);
 
 ThemeData appTheme(Brightness brightness) {
-  final colors = ColorScheme.fromSeed(
-    seedColor: brandColor,
-    brightness: brightness,
-  );
+  final foreground = brightness == Brightness.light
+      ? Colors.black
+      : Colors.white;
+  final background = brightness == Brightness.light
+      ? Colors.white
+      : Colors.black;
+  final colors =
+      ColorScheme.fromSeed(
+        seedColor: brandColor,
+        brightness: brightness,
+      ).copyWith(
+        primary: foreground,
+        onPrimary: background,
+        secondary: foreground,
+        onSecondary: background,
+        secondaryContainer: background,
+        onSecondaryContainer: foreground,
+        surface: background,
+        onSurface: foreground,
+        onSurfaceVariant: foreground,
+        outline: foreground,
+        outlineVariant: foreground,
+        surfaceContainerLowest: background,
+        surfaceContainerLow: background,
+        surfaceContainer: background,
+        surfaceContainerHigh: background,
+        surfaceContainerHighest: background,
+        surfaceTint: Colors.transparent,
+      );
   return ThemeData(
     colorScheme: colors,
-    // The pale default fill of the selected segment vanishes on black-and-white
-    // e-ink. The unselected colour must be set too, or it falls back to blue.
+    splashFactory: NoSplash.splashFactory,
+    highlightColor: Colors.transparent,
+    hoverColor: Colors.transparent,
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        animationDuration: Duration.zero,
+        foregroundColor: foreground,
+        side: BorderSide(color: foreground),
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(animationDuration: Duration.zero),
+    ),
+    // Filled selection stays visible on monochrome displays.
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: SegmentedButton.styleFrom(
+        animationDuration: Duration.zero,
         foregroundColor: colors.onSurface,
         selectedForegroundColor: colors.onSecondary,
         selectedBackgroundColor: colors.secondary,
@@ -48,6 +86,7 @@ class EasyDictApp extends StatelessWidget {
       theme: appTheme(Brightness.light),
       darkTheme: appTheme(Brightness.dark),
       themeMode: settings.themeMode,
+      themeAnimationDuration: Duration.zero,
       locale: settings.locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -104,15 +143,13 @@ class _DictionaryLoaderState extends State<_DictionaryLoader> {
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 16),
-                  FilledButton.tonal(
+                  OutlinedButton(
                     onPressed: () =>
                         setState(() => _dictionary = openDictionary()),
                     child: Text(l10n.retry),
                   ),
                 ] else ...[
                   Text(l10n.loading),
-                  const SizedBox(height: 16),
-                  const SizedBox(width: 160, child: LinearProgressIndicator()),
                 ],
               ],
             ),

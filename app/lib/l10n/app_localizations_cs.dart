@@ -134,6 +134,10 @@ class AppLocalizationsCs extends AppLocalizations {
   String get copied => 'Zkopírováno do schránky';
 
   @override
+  String get copyError =>
+      'Kopírování se nezdařilo. Překlad můžete označit a zkopírovat ručně.';
+
+  @override
   String get settingsSearch => 'Hledání';
 
   @override

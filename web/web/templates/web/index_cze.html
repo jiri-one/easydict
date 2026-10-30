@@ -76,8 +76,8 @@
 			</fieldset>
 			<hr />
 		</form>
-		<script src="{% static 'web/js/my_ajax.js' %}"></script>
-		<div id="results">Výsledky vyhledávání budou zde.</div>
+		<script src="{% static 'web/js/my_ajax.js' %}" defer></script>
+		<div id="results" role="region" tabindex="-1" aria-label="Výsledky hledání">Výsledky vyhledávání budou zde.</div>
 		<div class="rest">
 			<hr />Novinky: EasyDict je nově i&nbsp;jako <a href="/app">webová aplikace</a>.</div>
 	</side_bar>

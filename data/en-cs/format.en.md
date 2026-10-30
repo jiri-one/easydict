@@ -40,8 +40,10 @@ It is also possible to name categories characterising the word:
 |--------------|--------------------------------------|
 | `[bás.]`     | poeticism                            |
 | `[dět.]`     | childish                             |
+| `[form.]`    | formal                               |
 | `[fráz.]`    | phrase                               |
 | `[frsl.]`    | phrasal verb (e.g., give up)         |
+| `[hanl.]`    | pejorative                           |
 | `[hovor.]`   | colloquially                         |
 | `[id.]`      | idiom (e.g., a bun in the oven)      |
 | `[jmén.]`    | proper name                          |
@@ -62,9 +64,11 @@ Humane and social sciences:
 
 |--------------|--------------------------------------|
 |--------------|--------------------------------------|
+| `[ekon.]`    | economics                            |
 | `[fin.]`     | finance                              |
 | `[hist.]`    | historical expression or name        |
 | `[hud.]`     | musical terminology                  |
+| `[karet.]`   | card games                           |
 | `[lingv.]`   | linguistic                           |
 | `[myt.]`     | mythological                         |
 | `[náb.]`     | word related to religion             |
@@ -79,6 +83,7 @@ Natural sciences:
 |--------------|--------------------------------------|
 |--------------|--------------------------------------|
 | `[astr.]`    | astronomy                            |
+| `[astro.]`   | astrology                            |
 | `[bio.]`     | biology                              |
 | `[bot.]`     | botany                               |
 | `[eko.]`     | ecology                              |
@@ -92,6 +97,7 @@ Natural sciences:
 | `[opt.]`     | optics                               |
 | `[zem.]`     | geography                            |
 | `[zoo.]`     | zoology                              |
+| `[zool.]`    | zoology                              |
 
 Agriculture, industry, technology:
 
@@ -111,6 +117,7 @@ Agriculture, industry, technology:
 | `[stav.]`    | building industry, architecture      |
 | `[tech.]`    | technical domain                     |
 | `[text.]`    | textile industry                     |
+| `[typo.]`    | typography                           |
 | `[voj.]`     | military terminology                 |
 | `[zeměděl.]` | term from the field of agriculture   |
 

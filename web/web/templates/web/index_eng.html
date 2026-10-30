@@ -76,8 +76,8 @@
 			</fieldset>
 			<hr />
 		</form>
-		<script src="{% static 'web/js/my_ajax.js' %}"></script>
-		<div id="results">The results of the search will be here.</div>
+		<script src="{% static 'web/js/my_ajax.js' %}" defer></script>
+		<div id="results" role="region" tabindex="-1" aria-label="Search results">The results of the search will be here.</div>
 		<div class="rest">
 			<hr />News: EasyDict is now also a <a href="/app">web app</a>.</div>
 	</side_bar>
