@@ -43,14 +43,16 @@ async function speak(button) {
         q: button.dataset.speechText,
     });
     // The server renders one word at a time, and a replaced word can still hold it.
-    for (let attempt = 1; ; attempt++) {
+    // A deadline, because play() does not tell a busy server from a render that failed.
+    const deadline = performance.now() + 6000;
+    while (true) {
         audio.src = source;
         try {
             await audio.play();
             return;
         } catch (_) {
             if (speech !== audio) return;
-            if (attempt === 3) break;
+            if (performance.now() >= deadline) break;
         }
         await new Promise((resolve) => setTimeout(resolve, 300));
         if (speech !== audio) return;

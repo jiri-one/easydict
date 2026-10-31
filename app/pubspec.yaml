@@ -52,15 +52,15 @@ flutter:
       platforms: [android, linux, macos, windows]
     - path: assets/speech/languages/Czech/userdict/src/
       platforms: [android, linux, macos, windows]
-    - path: assets/speech/languages/English/
+    - path: assets/speech/espeak-ng-data/
+      platforms: [android, linux, macos, windows]
+    - path: assets/speech/espeak-ng-data/lang/gmw/
+      platforms: [android, linux, macos, windows]
+    - path: assets/speech/voices/ljspeech/
       platforms: [android, linux, macos, windows]
     - path: assets/speech/voices/radek/
       platforms: [android, linux, macos, windows]
     - path: assets/speech/voices/radek/24000/
-      platforms: [android, linux, macos, windows]
-    - path: assets/speech/voices/slt/
-      platforms: [android, linux, macos, windows]
-    - path: assets/speech/voices/slt/24000/
       platforms: [android, linux, macos, windows]
     - path: assets/speech/
       platforms: [android, linux, macos, windows]

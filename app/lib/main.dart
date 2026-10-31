@@ -24,7 +24,9 @@ Stream<LicenseEntry> _licenses() async* {
   for (final name in [
     'RHVoice.txt',
     'CC0-Radek.txt',
-    'CMU-Slt.txt',
+    'Piper-LJSpeech.txt',
+    'eSpeak-NG.txt',
+    'Apache-2.0.txt',
     'hts_engine.txt',
     'miniaudio.txt',
     'RapidXML.txt',

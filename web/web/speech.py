@@ -50,7 +50,7 @@ def synthesize(text, language):
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             return subprocess.run(
                 [settings.SPEECH_EXECUTABLE, settings.SPEECH_DATA, language, text, '/dev/stdout'],
-                check=True, timeout=10, stdin=subprocess.DEVNULL,
+                check=True, timeout=20, stdin=subprocess.DEVNULL,
                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
             ).stdout
     except BlockingIOError as error:

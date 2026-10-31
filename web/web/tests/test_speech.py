@@ -61,7 +61,7 @@ class SpeechTests(SimpleTestCase):
         self.assertEqual(speech.synthesize(text, 'eng'), b'RIFFtest')
         arguments = run.call_args.args[0]
         self.assertEqual(arguments[:4], [settings.SPEECH_EXECUTABLE, settings.SPEECH_DATA, 'eng', text])
-        self.assertEqual(run.call_args.kwargs['timeout'], 10)
+        self.assertEqual(run.call_args.kwargs['timeout'], 20)
         self.assertTrue(run.call_args.kwargs['check'])
         self.assertNotIn('shell', run.call_args.kwargs)
 

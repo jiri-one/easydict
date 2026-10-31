@@ -45,7 +45,7 @@ The web app is built with `./tool/build_web.sh`; it searches through the website
 - Czech word forms (`data/cs-forms/`): GNU GPL 2 (Hunspell) and CC BY-SA 4.0 (Wiktionary)
 - word frequencies (`data/frequency/`): CC BY-SA 4.0 (wordfreq)
 
-Speech uses RHVoice (LGPL/GPL), GPL language data, Radek (CC0, speaker Radek Zalud), Slt (CMU Arctic), modified hts_engine (GPL/BSD), UTF8-CPP and RapidXML (Boost), and miniaudio (public domain/MIT-0). Full notices are in `app/assets/licenses/`.
+Speech uses RHVoice (LGPL/GPL), GPL language data and Radek (CC0, speaker Radek Zalud) for Czech, and eSpeak NG (GPL) with Piper's LJSpeech voice (MIT, public-domain recordings by Linda Johnson) for English, modified hts_engine (GPL/BSD), UTF8-CPP and RapidXML (Boost), and miniaudio (public domain/MIT-0). Full notices are in `app/assets/licenses/`.
 
 ## History
 
@@ -55,6 +55,6 @@ EasyDict started in 2020 as a desktop app in Python and GTK 3, published on PyPI
 
 **Česky:** EasyDict je anglicko-český a česko-anglický slovník pro Linux, Windows, macOS a Android, který funguje bez internetu, a web [easydict.jiri.one](https://easydict.jiri.one), kde běží i jako [webová aplikace](https://easydict.jiri.one/app). Obsahuje přes 150 000 překladů ze svobodného slovníku projektu Svobodné slovníky, jehož data se nyní spravují tady v adresáři `data/`, a česká slova najde i v jiných tvarech. Začínal v roce 2020 jako aplikace v Pythonu a GTK, jejíž poslední verze s GTK 4 zůstává v repozitáři [easydict-gtk](https://github.com/jiri-one/easydict-gtk).
 
-Výslovnost češtiny a angličtiny přehraje ikona reproduktoru; nainstalovaná aplikace funguje offline. Licence výslovnosti: RHVoice LGPL/GPL, jazyková data GPL, Radek CC0 (Radek Zalud), Slt CMU Arctic, hts_engine GPL/BSD, UTF8-CPP a RapidXML Boost, miniaudio public domain/MIT-0. Úplná znění jsou v `app/assets/licenses/`.
+Výslovnost češtiny a angličtiny přehraje ikona reproduktoru; nainstalovaná aplikace funguje offline. Licence výslovnosti: RHVoice LGPL/GPL, jazyková data GPL, Radek CC0 (Radek Zalud), eSpeak NG GPL, hlas LJSpeech z Piperu MIT (nahrávky Lindy Johnson jsou volné, public domain), hts_engine GPL/BSD, UTF8-CPP a RapidXML Boost, miniaudio public domain/MIT-0. Úplná znění jsou v `app/assets/licenses/`.
 
 [#arch-everywhere](https://github.com/topics/arch-everywhere) [#iusearchbtw](https://github.com/topics/iusearchbtw)

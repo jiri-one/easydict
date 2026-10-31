@@ -69,7 +69,7 @@ Future<String> _assetPath() async {
   }
 }
 
-/// RHVoice needs real files, and Android cannot open assets as files.
+/// The engines need real files, and Android cannot open assets as files.
 Future<String> _extractAssets() async {
   final checksum = (await rootBundle.loadString('assets/speech/checksum.txt'))
       .trim();

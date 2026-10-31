@@ -14,14 +14,16 @@ Future<void> speak(String text, Language language) async {
       .replace(queryParameters: {'lang': language.name, 'q': text})
       .toString();
   // The server renders one word at a time, and a replaced word can still hold it.
-  for (var attempt = 1; ; attempt++) {
+  // A deadline, because play() does not tell a busy server from a render that failed.
+  final tapped = Stopwatch()..start();
+  while (true) {
     audio.src = source;
     try {
       await audio.play().toDart;
       return;
     } catch (_) {
       if (!identical(_audio, audio)) return;
-      if (attempt == 3) rethrow;
+      if (tapped.elapsedMilliseconds >= 6000) rethrow;
     }
     await Future<void>.delayed(const Duration(milliseconds: 300));
     if (!identical(_audio, audio)) return;

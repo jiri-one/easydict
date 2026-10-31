@@ -6,8 +6,17 @@
   },
   "submodules": {
     "data/languages/Czech": "6d70bc7fb6a30a5a0f3a7199643f7e5ae1e43d5a",
-    "data/languages/English": "8a2ea34df72a190dae245460aeb20a867d64775c",
-    "data/voices/radek": "155e6798a2973c5d1901608febb7ca7873114dc0",
-    "data/voices/slt": "c17dded68322016aba2868d9c29f11bba14d275f"
+    "data/voices/radek": "155e6798a2973c5d1901608febb7ca7873114dc0"
+  },
+  "espeak-ng": {
+    "commit": "212928b394a96e8fd2096616bfd54e17845c48f6"
+  },
+  "piper": {
+    "url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ljspeech/medium/",
+    "files": {
+      "en_US-ljspeech-medium.onnx": "6f52a751e2349abe7a76735eb09dc1875298c77ea2342ffd2fef79ff81b87f22",
+      "en_US-ljspeech-medium.onnx.json": "141d612cc0a95ed7efc1ca936b845c2364967f2e9217c5dbfcf69fc4d6c65860",
+      "MODEL_CARD": "fbee1529c89d36b3fe76d7e9f3f832dce17f44900a52d76a9bda735654766b4d"
+    }
   }
 }

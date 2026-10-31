@@ -2114,7 +2114,7 @@ const language* language::get_item_second_language(const item& i) const
   {
     const std::string tag="language_list";
 
-    register_language<english_info>("English",2);
+
 
 
 

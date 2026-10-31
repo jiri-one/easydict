@@ -68,7 +68,7 @@ class AboutPage extends StatelessWidget {
             leading: const Icon(Icons.gavel),
             title: Text(l10n.licenses),
             subtitle: const Text(
-              'GNU GPL 3, GNU FDL 1.1, GNU GPL 2, CC BY-SA 4.0, LGPL 2.1, CC0, CMU, Boost, BSD, MIT-0',
+              'GNU GPL 3, GNU FDL 1.1, GNU GPL 2, CC BY-SA 4.0, LGPL 2.1, CC0, Boost, BSD, MIT, MIT-0, Apache 2.0',
             ),
             onTap: () => showLicensePage(
               context: context,
@@ -85,7 +85,8 @@ class AboutPage extends StatelessWidget {
             leading: const Icon(Icons.volume_up_outlined),
             title: Text(l10n.speak),
             subtitle: const Text(
-              'RHVoice • Radek (Radek Zalud, CC0) • Slt (CMU Arctic)\n'
+              'RHVoice • Radek (Radek Zalud, CC0)\n'
+              'Piper • LJSpeech (Linda Johnson, public domain) • eSpeak NG\n'
               'hts_engine • miniaudio • UTF8-CPP • RapidXML',
             ),
           ),
