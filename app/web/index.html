@@ -18,9 +18,12 @@
   <script>
     // the colours chosen on the website (web/web/static/web/js/theme.js): only the cookie
     // reaches both, because this page runs on its own subdomain
-    var cookie = /(?:^|; )theme=(\w+)/.exec(document.cookie);
+    function cookieTheme() {
+      var cookie = /(?:^|; )theme=(\w+)/.exec(document.cookie);
+      return cookie && cookie[1];
+    }
     try {
-      document.documentElement.dataset.theme = (cookie && cookie[1]) || localStorage.getItem("theme") || "auto";
+      document.documentElement.dataset.theme = cookieTheme() || localStorage.getItem("theme") || "auto";
     } catch (error) {}
     if (!/^cs\b/.test(navigator.language)) document.documentElement.lang = "en";
   </script>
@@ -117,6 +120,15 @@
         root.dataset.theme = themes.indexOf(event.newValue) >= 0 ? event.newValue : "auto";
         window.dispatchEvent(new Event("easydict-theme"));
       });
+      // the website in other tabs: the storage does not reach it, and a cookie has no event
+      function followCookie() {
+        var theme = cookieTheme();
+        if (themes.indexOf(theme) < 0 || theme === root.dataset.theme) return;
+        root.dataset.theme = theme;
+        window.dispatchEvent(new Event("easydict-theme"));
+      }
+      window.addEventListener("focus", followCookie);
+      document.addEventListener("visibilitychange", followCookie);
     })();
   </script>
   <aside id="about">

@@ -3,9 +3,7 @@
 
 Outages are rare, so nothing else would show that the copy stopped working. Served from here, the
 app cannot reach the website: the API allows only the origin of the web app. So it falls back the
-way it would in an outage. Flutter draws on a canvas, so the result is read from the accessibility
-tree, where the text of the banner is not reliable: it can drop out when the results arrive in the
-next frame. That the copy was used shows on this server instead.
+way it would in an outage. Flutter draws on a canvas, so the check reads the accessibility tree.
 """
 
 import http.server
@@ -26,7 +24,9 @@ PAGE = rb"""<!doctype html>
     const page = document.getElementById("app").contentDocument;
     page?.querySelector("flt-semantics-placeholder")?.click();
     const tree = page?.querySelector("flt-semantics-host")?.outerHTML ?? "";
-    if (/\bpes\b/.test(tree)) fetch("/found", { method: "POST" });
+    if (/copy of the dictionary from/.test(tree) && /\bpes\b/.test(tree)) {
+      fetch("/found", { method: "POST" });
+    }
   }, 500);
 </script>
 """
@@ -37,8 +37,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory=WEB, **kwargs)
 
     def do_GET(self):
-        if self.path.endswith(".sqlite.gz"):
-            self.server.copy_requested = True
         if self.path != "/check.html":
             super().do_GET()
             return
@@ -67,7 +65,6 @@ def browser():
 def main():
     server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     server.found = threading.Event()
-    server.copy_requested = False
     threading.Thread(target=server.serve_forever, daemon=True).start()
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as profile, open(Path(profile) / "log", "w+") as log:
         chrome = subprocess.Popen(
@@ -85,11 +82,11 @@ def main():
             stderr=log,
         )
         try:
-            found = server.found.wait(TIMEOUT)
+            answered = server.found.wait(TIMEOUT)
         finally:
             chrome.terminate()
             chrome.wait()
-        if found and server.copy_requested:
+        if answered:
             print("The copy of the dictionary answers in the browser.")
             return
         log.seek(0)
