@@ -14,9 +14,11 @@
   <link rel="manifest" href="manifest.json">
   <title>EasyDict</title>
   <script>
-    // the colours chosen on the website (web/web/static/web/js/theme.js)
+    // the colours chosen on the website (web/web/static/web/js/theme.js): only the cookie
+    // reaches both, because this page runs on its own subdomain
+    var cookie = /(?:^|; )theme=(\w+)/.exec(document.cookie);
     try {
-      document.documentElement.dataset.theme = localStorage.getItem("theme") || "auto";
+      document.documentElement.dataset.theme = (cookie && cookie[1]) || localStorage.getItem("theme") || "auto";
     } catch (error) {}
     if (!/^cs\b/.test(navigator.language)) document.documentElement.lang = "en";
   </script>
@@ -98,13 +100,14 @@
       button.addEventListener("click", function () {
         var theme = themes[(themes.indexOf(root.dataset.theme) + 1) % themes.length];
         root.dataset.theme = theme;
+        document.cookie = "theme=" + theme + "; Domain=easydict.jiri.one; Path=/; Max-Age=31536000; SameSite=Lax; Secure";
         try {
           localStorage.setItem("theme", theme);
         } catch (error) {}
         // the app takes them too (lib/page_theme_web.dart)
         window.dispatchEvent(new Event("easydict-theme"));
       });
-      // the website in other tabs; null is a cleared storage
+      // the app in other tabs; null is a cleared storage
       window.addEventListener("storage", function (event) {
         if (event.key !== "theme" && event.key !== null) return;
         root.dataset.theme = themes.indexOf(event.newValue) >= 0 ? event.newValue : "auto";
@@ -113,17 +116,17 @@
     })();
   </script>
   <aside id="about">
-    <a href="/"><img class="logo" src="icons/Icon-192.png" alt="EasyDict"></a>
+    <a href="https://easydict.jiri.one/"><img class="logo" src="icons/Icon-192.png" alt="EasyDict"></a>
     <h1>EasyDict</h1>
     <p lang="cs">Anglicko-český a česko-anglický slovník, který je otevřený včetně slovníkových dat. Tady je jako webová aplikace, se stejnými daty jako vyhledávání na webu.</p>
     <p lang="en">An English–Czech and Czech–English dictionary that is open, dictionary data included. Here it is as a web app, with the same data as the search on the website.</p>
     <ul lang="cs">
-      <li><a href="/cze">Úvodní stránka</a></li>
+      <li><a href="https://easydict.jiri.one/cze">Úvodní stránka</a></li>
       <li><a href="https://github.com/jiri-one/easydict/releases">Aplikace pro Linux, Windows, macOS a&nbsp;Android</a> (první vydání připravujeme)</li>
       <li><a href="https://github.com/jiri-one/easydict">Zdrojový kód</a></li>
     </ul>
     <ul lang="en">
-      <li><a href="/eng">Home page</a></li>
+      <li><a href="https://easydict.jiri.one/eng">Home page</a></li>
       <li><a href="https://github.com/jiri-one/easydict/releases">Apps for Linux, Windows, macOS and Android</a> (the first release is on its way)</li>
       <li><a href="https://github.com/jiri-one/easydict">Source code</a></li>
     </ul>

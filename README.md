@@ -22,7 +22,7 @@ Tips:
 
 - `app/` – the Flutter app for Linux, Windows, macOS and Android
 - `data/` – the dictionary data, a continuation of [Svobodné slovníky](https://github.com/lehrbuch/svobodneslovniky), and the tools that build the app database
-- `web/` – the website (Django), which also serves the web app and searches for it
+- `web/` – the website (Django), which also searches for the web app
 - `branding/` – the logo and the script that renders all icons from it
 - `packaging/` – Linux metadata, the Flatpak and F-Droid recipes and how to make a release
 
@@ -34,7 +34,7 @@ You need [Flutter](https://docs.flutter.dev/get-started/install) 3.47 and Python
     ./tool/build_dictionary.sh   # builds assets/dictionary/easydict.sqlite from data/
     flutter run
 
-The web app is built with `./tool/build_web.sh`; it searches through the website, see [web/README.md](web/README.md).
+The web app for GitHub Pages is built with `./tool/build_pages.sh`; it searches through the website, and in a copy of the dictionary in the browser when the website is down, see [web/README.md](web/README.md).
 
 ## Licences
 
@@ -42,6 +42,7 @@ The web app is built with `./tool/build_web.sh`; it searches through the website
 - the dictionary (`data/en-cs/`): GNU FDL 1.1 or later
 - Czech word forms (`data/cs-forms/`): GNU GPL 2 (Hunspell) and CC BY-SA 4.0 (Wiktionary)
 - word frequencies (`data/frequency/`): CC BY-SA 4.0 (wordfreq)
+- SQLite in the web app's copy of the dictionary: public domain, with the MIT/NCSA glue code of Emscripten
 
 ## History
 

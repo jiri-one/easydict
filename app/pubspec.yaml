@@ -42,7 +42,8 @@ flutter:
           # The optimisers load a native library of the Flutter SDK, and the
           # logo has no masks or clips to optimise.
           args: [--no-optimize-masks, --no-optimize-clips, --no-optimize-overdraw]
-    # built by tool/build_dictionary.sh; the web app searches on the server
+    # Built by tool/build_dictionary.sh. The web app searches on the server, and
+    # tool/build_pages.sh gives it the database as a separate download.
     - assets/dictionary/easydict.sqlite.NOTICE.txt
     - path: assets/dictionary/easydict.sqlite
       platforms: [android, ios, linux, macos, windows]
