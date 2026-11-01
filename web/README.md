@@ -1,5 +1,5 @@
 # EasyDict website
-The website of the EasyDict project, [https://easydict.jiri.one](https://easydict.jiri.one): Django (Python) with PostgreSQL as the backend and some pure JavaScript as the frontend. It also serves the web build of the app at `/app`.
+The website of the EasyDict project, [https://easydict.jiri.one](https://easydict.jiri.one): Django (Python) with PostgreSQL as the backend and some pure JavaScript as the frontend. It also answers the searches of the web app.
 
 ## The dictionary
 
@@ -15,9 +15,11 @@ The production image has the database built in, and the container imports it whe
 
 ## The web app
 
-`/app` shows the web build of the app (`app/tool/build_web.sh`): the view returns its `index.html`, and the container copies the rest to the static files, where it is served from `/static/app/`. The web app searches through `/api/search` and `/api/info`, so it has the same data as the site.
+The public web app lives on GitHub Pages at [app.easydict.jiri.one](https://app.easydict.jiri.one), so that it does not go down with the server (`app/tool/build_pages.sh`, deployed by the `CI` workflow from `main`). A Cloudflare redirect rule sends `/app` there, keeping the query. The app searches through `/api/search` and `/api/info`, so it has the same data as the site, which is why `WEBAPP_ORIGIN` in the settings allows that one origin to read them. When the API does not answer twice in a row (an error 5xx or 5 s of silence), the app downloads a copy of the dictionary from GitHub Pages once and searches in the browser, with SQLite compiled to WebAssembly and the same queries as the offline apps. It says so in a banner and tries the API again every minute. The copy is built from `data/` with every deployment, so it does not have translations approved since they were exported. Add `?source=copy` to the address to try it; `app/tool/check_copy.py` checks it in a browser in CI.
 
-For development, build the web app and run the site with `WEBAPP_DIR=../app/build/web`; outside production, Django serves the build from `/static/app/` itself.
+The image still builds its own copy of the app without the fallback (`app/tool/build_web.sh`): `/app` shows it if the redirect rule is off. The view returns its `index.html`, and the container copies the rest to the static files, where it is served from `/static/app/`.
+
+For development, build the web app and run the site with `WEBAPP_DIR=../app/build/web`; outside production, Django serves the build from `/static/app/` itself. API and page then share an origin, so no CORS is involved.
 
 ## Tests
 
