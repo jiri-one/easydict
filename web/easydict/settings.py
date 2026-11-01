@@ -102,6 +102,8 @@ DICTIONARY_DATABASE = os.environ.get("DICTIONARY_DATABASE", BASE_DIR / "dictiona
 # app/tool/build_web.sh; in production the proxy serves it from STATIC_ROOT/app (copied there by
 # deploy/entrypoint.py), only index.html goes through the view /app
 WEBAPP_DIR = Path(os.environ.get("WEBAPP_DIR", BASE_DIR / "webapp"))
+# GitHub Pages serves it to the public (app/tool/build_pages.sh), so its searches are cross-origin
+WEBAPP_ORIGIN = "https://app.easydict.jiri.one"
 if os.environ.get("SYSTEM_ENV") != "PRODUCTION" and WEBAPP_DIR.is_dir():
     # runserver has no proxy in front of it
     STATICFILES_DIRS = [("app", WEBAPP_DIR)]
