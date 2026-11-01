@@ -243,4 +243,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchError => 'Searching failed.';
+
+  @override
+  String get copyDownloading =>
+      'The EasyDict server is not answering. Downloading a copy of the dictionary…';
+
+  @override
+  String copyInUse(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'The EasyDict server is not answering. Searching a copy of the dictionary from $dateString.';
+  }
+
+  @override
+  String get copyFailed =>
+      'The EasyDict server is not answering, and the copy of the dictionary could not be downloaded.';
 }

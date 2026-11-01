@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:easydict/data/dictionary.dart';
@@ -105,7 +106,24 @@ void main() {
     );
     expect(
       dictionary.search('psa', Language.cze, SearchMode.startsWith),
-      throwsA(isA<http.ClientException>()),
+      throwsA(isA<ServerUnavailable>()),
+    );
+  });
+
+  test('a wrong request is not an outage', () async {
+    final dictionary = await RemoteDictionary.open(
+      api,
+      client: server(searchStatus: 400),
+    );
+    expect(
+      dictionary.search('psa', Language.cze, SearchMode.startsWith),
+      throwsA(
+        isA<http.ClientException>().having(
+          (error) => error,
+          'error',
+          isNot(isA<ServerUnavailable>()),
+        ),
+      ),
     );
   });
 
@@ -113,7 +131,29 @@ void main() {
     final client = MockClient((request) async => http.Response('', 502));
     expect(
       RemoteDictionary.open(api, client: client),
-      throwsA(isA<http.ClientException>()),
+      throwsA(isA<ServerUnavailable>()),
+    );
+  });
+
+  test('a lost connection is an outage', () async {
+    final client = MockClient(
+      (request) => throw http.ClientException('Failed to fetch'),
+    );
+    expect(
+      RemoteDictionary.open(api, client: client),
+      throwsA(isA<ServerUnavailable>()),
+    );
+  });
+
+  test('a server that hangs is an outage', () async {
+    final client = MockClient((request) => Completer<http.Response>().future);
+    expect(
+      RemoteDictionary.open(
+        api,
+        client: client,
+        timeout: const Duration(milliseconds: 1),
+      ),
+      throwsA(isA<ServerUnavailable>()),
     );
   });
 }

@@ -70,6 +70,8 @@ class DictionarySearch extends ChangeNotifier {
 
   void lookUp(String text, Language language) => _start(text, language);
 
+  void retry() => _restart();
+
   /// Text from outside (another app, the clipboard, the command line) has no
   /// language: Czech letters mean Czech, and when nothing is found, the other
   /// language is tried.

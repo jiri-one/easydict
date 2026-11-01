@@ -487,6 +487,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Searching failed.'**
   String get searchError;
+
+  /// No description provided for @copyDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'The EasyDict server is not answering. Downloading a copy of the dictionary…'**
+  String get copyDownloading;
+
+  /// No description provided for @copyInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'The EasyDict server is not answering. Searching a copy of the dictionary from {date}.'**
+  String copyInUse(DateTime date);
+
+  /// No description provided for @copyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The EasyDict server is not answering, and the copy of the dictionary could not be downloaded.'**
+  String get copyFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -244,4 +244,20 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get searchError => 'Hledání selhalo.';
+
+  @override
+  String get copyDownloading =>
+      'Server EasyDictu neodpovídá. Stahuji kopii slovníku…';
+
+  @override
+  String copyInUse(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Server EasyDictu neodpovídá. Hledám v kopii slovníku z $dateString.';
+  }
+
+  @override
+  String get copyFailed =>
+      'Server EasyDictu neodpovídá a kopii slovníku se nepodařilo stáhnout.';
 }
