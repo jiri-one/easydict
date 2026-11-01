@@ -1,8 +1,6 @@
 #!/bin/sh
-# Run tool/build_dictionary.sh first: the app needs the licence notice of the
-# dictionary. Arguments go to `flutter build web`, and BASE_HREF is where the
-# files will be served from (tool/build_pages.sh). By default this is the build
-# that the website serves itself, without the copy of the dictionary.
+# Run tool/build_dictionary.sh first: the web app has no database, but it needs
+# the licence notice of the dictionary. Arguments go to `flutter build web`.
 #
 # Nothing may come from elsewhere than the website: CanvasKit is in the build
 # (--no-web-resources-cdn), and Roboto, which the engine would fetch from Google
@@ -10,7 +8,7 @@
 set -eu
 
 cd "$(dirname "$0")/.."
-flutter build web --release --no-web-resources-cdn --base-href "${BASE_HREF:-/static/app/}" "$@"
+flutter build web --release --no-web-resources-cdn --base-href /static/app/ "$@"
 # A JavaScript build loads only canvaskit/ or canvaskit/chromium/: skwasm is for
 # WebAssembly builds, the symbols for debugging.
 rm -r build/web/canvaskit/skwasm* build/web/canvaskit/wimp* build/web/canvaskit/webparagraph

@@ -14,11 +14,13 @@ Future<Dictionary> openDictionary() {
       RemoteDictionary.open(Uri.base.resolve(_api));
   if (_copy.isEmpty) return openServer();
   return FailoverDictionary.open(
-    openServer: openServer,
+    // ?source=copy plays an outage: real ones are too rare to show that the copy
+    // still works
+    openServer: Uri.base.queryParameters['source'] == 'copy'
+        ? () async => throw const ServerUnavailable('?source=copy')
+        : openServer,
     openCopy: (onProgress) async =>
         SqlDictionary.open(await WorkerSqlReader.open(_copy, onProgress)),
     copyDate: DateTime.parse(_copyDate),
-    // ?source=copy: outages are too rare to find out otherwise that it works
-    preferCopy: Uri.base.queryParameters['source'] == 'copy',
   );
 }

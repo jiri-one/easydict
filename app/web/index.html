@@ -12,6 +12,8 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="manifest" href="manifest.json">
+  <!-- the API, which the app would otherwise start to reach only after loading -->
+  <link rel="preconnect" href="https://easydict.jiri.one" crossorigin>
   <title>EasyDict</title>
   <script>
     // the colours chosen on the website (web/web/static/web/js/theme.js): only the cookie
@@ -97,13 +99,15 @@
       var english = root.lang === "en";
       button.title = english ? "Colours: colourful / light / dark" : "Barvy: barevné / světlé / tmavé";
       button.setAttribute("aria-label", english ? "Switch colours: colourful, light, dark" : "Přepnout barvy: barevné, světlé, tmavé");
-      button.addEventListener("click", function () {
-        var theme = themes[(themes.indexOf(root.dataset.theme) + 1) % themes.length];
+      window.easydictSetTheme = function (theme) {
         root.dataset.theme = theme;
         document.cookie = "theme=" + theme + "; Domain=easydict.jiri.one; Path=/; Max-Age=31536000; SameSite=Lax; Secure";
         try {
           localStorage.setItem("theme", theme);
         } catch (error) {}
+      };
+      button.addEventListener("click", function () {
+        window.easydictSetTheme(themes[(themes.indexOf(root.dataset.theme) + 1) % themes.length]);
         // the app takes them too (lib/page_theme_web.dart)
         window.dispatchEvent(new Event("easydict-theme"));
       });

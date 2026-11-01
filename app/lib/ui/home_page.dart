@@ -61,6 +61,9 @@ class _HomePageState extends State<HomePage> {
       _search,
       if (dictionary is FailoverDictionary) dictionary,
     ]);
+    if (dictionary is FailoverDictionary) {
+      dictionary.onServerBack = _search.retry;
+    }
     _lifecycle = AppLifecycleListener(onResume: _lookUpClipboard);
     if (widget.initialQuery.isNotEmpty) _lookUpText(widget.initialQuery);
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
@@ -88,6 +91,8 @@ class _HomePageState extends State<HomePage> {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       _selectedText.setMethodCallHandler(null);
     }
+    final dictionary = widget.dictionary;
+    if (dictionary is FailoverDictionary) dictionary.onServerBack = null;
     _lifecycle.dispose();
     _search.dispose();
     _text.dispose();
@@ -280,9 +285,11 @@ class _HomePageState extends State<HomePage> {
     if (_search.query.trim().isEmpty) {
       return _FrontPage(entryCount: widget.dictionary.entryCount);
     }
-    // Nothing was searched yet: with the copy of the dictionary still on its
-    // way, "nothing found" would stay there for seconds.
-    if (_search.result.query.isEmpty) return const SizedBox.shrink();
+    // No result yet: with the copy of the dictionary still on its way, "nothing
+    // found" would stay there for seconds.
+    if (identical(_search.result, SearchResult.empty)) {
+      return const SizedBox.shrink();
+    }
     return ResultsView(
       result: _search.result,
       onLookUp: _lookUp,

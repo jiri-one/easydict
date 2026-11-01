@@ -22,25 +22,21 @@ async function download(url) {
   }
 }
 
-// Without the Cache API (some private windows) every outage downloads the copy again.
-async function stored(url) {
-  const cache = await globalThis.caches?.open("easydict-dictionary").catch(() => undefined);
-  const cached = await cache?.match(url);
-  if (cached) return cached.blob();
-  const blob = await download(url);
+async function store(cache, url, blob) {
   try {
-    await cache?.put(url, new Response(blob));
-    for (const key of (await cache?.keys()) ?? []) {
-      if (key.url !== url) await cache.delete(key);
-    }
+    for (const key of await cache.keys()) await cache.delete(key);
+    await cache.put(url, new Response(blob));
   } catch (error) {
     console.warn("The dictionary copy was not stored:", error);
   }
-  return blob;
 }
 
 async function open(url) {
-  const unpacked = (await stored(url)).stream().pipeThrough(new DecompressionStream("gzip"));
+  // Without the Cache API (some private windows) every outage downloads the copy again.
+  const cache = await globalThis.caches?.open("easydict-dictionary").catch(() => undefined);
+  const cached = await cache?.match(url);
+  const blob = cached ? await cached.blob() : await download(url);
+  const unpacked = blob.stream().pipeThrough(new DecompressionStream("gzip"));
   const bytes = new Uint8Array(await new Response(unpacked).arrayBuffer());
   const sqlite3 = await sqlite3InitModule();
   const { capi, wasm } = sqlite3;
@@ -55,20 +51,17 @@ async function open(url) {
       capi.SQLITE_DESERIALIZE_FREEONCLOSE | capi.SQLITE_DESERIALIZE_READONLY,
     ),
   );
+  // Every page is in memory already, and the default cache would hold them twice.
+  database.exec("PRAGMA cache_size = 16");
+  // Only now: a broken file would stay in the cache until the next dictionary.
+  if (cache && !cached) await store(cache, url, blob);
 }
 
 onmessage = async ({ data }) => {
-  if (data.open) {
-    try {
-      await open(data.open);
-      postMessage({ opened: true });
-    } catch (error) {
-      postMessage({ failed: `${error}` });
-    }
-    return;
-  }
   try {
-    postMessage({ id: data.id, rows: database.selectObjects(data.sql, data.arguments) });
+    if (data.open) await open(data.open);
+    const rows = data.sql ? database.selectObjects(data.sql, data.arguments) : [];
+    postMessage({ id: data.id, rows });
   } catch (error) {
     postMessage({ id: data.id, error: `${error}` });
   }

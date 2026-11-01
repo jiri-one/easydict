@@ -30,6 +30,9 @@ jobs:
         working-directory: app
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # the date of the dictionary copy comes from the history of data/
+          fetch-depth: 0
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: 3.47.7
@@ -54,15 +57,13 @@ jobs:
   # new API has to reach main a day before the app starts to use it
   deploy:
     name: GitHub Pages
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.event_name == 'push'
     needs: [data, app, web]
     runs-on: ubuntu-24.04
     permissions:
       pages: write
       id-token: write
-    concurrency:
-      group: pages
-      cancel-in-progress: false
+    concurrency: pages
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

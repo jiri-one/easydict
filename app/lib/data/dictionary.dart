@@ -12,6 +12,18 @@ enum Language {
 
 enum SearchMode { startsWith, wholeWord, fulltext }
 
+/// Thrown by [Dictionary.search] when the server is down or something in front
+/// of it answers instead, so asking elsewhere can help. Other errors would
+/// repeat there.
+class ServerUnavailable implements Exception {
+  const ServerUnavailable(this.reason);
+
+  final String reason;
+
+  @override
+  String toString() => reason;
+}
+
 /// The web app searches on the website (RemoteDictionary), with a copy of the
 /// database for when that does not answer (FailoverDictionary).
 abstract interface class Dictionary {
