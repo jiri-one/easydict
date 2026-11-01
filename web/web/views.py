@@ -1,3 +1,5 @@
+from functools import wraps
+
 from django.conf import settings
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render
@@ -8,6 +10,17 @@ from .helpers import TEXTS, results_html
 
 MAX_SEARCHED_TEXT = 50
 FORM_MODES = {"starts_with": "startsWith", "whole_word": "wholeWord", "fulltext": "fulltext"}
+
+
+def api(view):
+    """Only the web app: other sites should not build on the search of a small home server."""
+    @require_GET
+    @wraps(view)
+    def wrapper(request):
+        response = view(request)
+        response['Access-Control-Allow-Origin'] = settings.WEBAPP_ORIGIN
+        return response
+    return wrapper
 
 
 def index_cze(request):
@@ -35,7 +48,7 @@ def search(request):
     return HttpResponse(results_html(result, page_language))
 
 
-@require_GET
+@api
 def api_search(request):
     language = request.GET.get('lang', 'eng')
     mode = request.GET.get('mode', 'startsWith')
@@ -50,7 +63,7 @@ def api_search(request):
     return response
 
 
-@require_GET
+@api
 def api_info(request):
     try:
         meta = Dictionary.load().meta

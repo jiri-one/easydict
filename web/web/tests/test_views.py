@@ -96,6 +96,14 @@ class ApiTests(DictionaryTestCase):
         self.assertEqual(self.client.get("/api/search", {"q": "a", "lang": "author"}).status_code, 400)
         self.assertEqual(self.client.get("/api/search", {"q": "a", "mode": "regex"}).status_code, 400)
 
+    def test_only_the_web_app_may_read_the_answers(self):
+        for response in (
+            self.client.get("/api/search", {"q": "dog"}),
+            self.client.get("/api/search", {"q": "a", "lang": "author"}),
+            self.client.get("/api/info"),
+        ):
+            self.assertEqual(response["Access-Control-Allow-Origin"], "https://app.easydict.jiri.one")
+
     def test_info(self):
         meta = self.client.get("/api/info").json()["meta"]
         self.assertEqual(meta["entries"], "16")
@@ -123,7 +131,10 @@ class NotImportedTests(TestCase):
         response = self.client.post("/search", {"searched_text": "dog", "language": "eng"})
         self.assertContains(response, "Slovník se právě aktualizuje", status_code=503)
         self.assertEqual(self.client.get("/api/search", {"q": "dog"}).status_code, 503)
-        self.assertEqual(self.client.get("/api/info").status_code, 503)
+        response = self.client.get("/api/info")
+        self.assertEqual(response.status_code, 503)
+        # or the app sees a network error instead of the update
+        self.assertEqual(response["Access-Control-Allow-Origin"], "https://app.easydict.jiri.one")
 
 
 class WebAppTests(TestCase):
