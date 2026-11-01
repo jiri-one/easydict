@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../data/dictionary.dart';
+import '../data/failover_dictionary.dart';
 import '../l10n/app_localizations.dart';
 import '../search_controller.dart';
 import '../settings.dart';
@@ -43,6 +44,7 @@ class _HomePageState extends State<HomePage> {
   final _text = TextEditingController();
   final _focus = FocusNode();
   late final DictionarySearch _search;
+  late final Listenable _changes;
   late final AppLifecycleListener _lifecycle;
   String? _lastClipboard;
 
@@ -54,6 +56,11 @@ class _HomePageState extends State<HomePage> {
       language: widget.settings.language,
       mode: widget.settings.mode,
     );
+    final dictionary = widget.dictionary;
+    _changes = Listenable.merge([
+      _search,
+      if (dictionary is FailoverDictionary) dictionary,
+    ]);
     _lifecycle = AppLifecycleListener(onResume: _lookUpClipboard);
     if (widget.initialQuery.isNotEmpty) _lookUpText(widget.initialQuery);
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
@@ -173,9 +180,18 @@ class _HomePageState extends State<HomePage> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 760),
               child: ListenableBuilder(
-                listenable: _search,
+                listenable: _changes,
                 builder: (context, _) => Column(
                   children: [
+                    if (widget.dictionary
+                        case final FailoverDictionary dictionary)
+                      _CopyBanner(
+                        dictionary: dictionary,
+                        onRetry: () {
+                          dictionary.retryCopy();
+                          _search.retry();
+                        },
+                      ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
                       child: Row(
@@ -264,11 +280,57 @@ class _HomePageState extends State<HomePage> {
     if (_search.query.trim().isEmpty) {
       return _FrontPage(entryCount: widget.dictionary.entryCount);
     }
+    // Nothing was searched yet: with the copy of the dictionary still on its
+    // way, "nothing found" would stay there for seconds.
+    if (_search.result.query.isEmpty) return const SizedBox.shrink();
     return ResultsView(
       result: _search.result,
       onLookUp: _lookUp,
       onModeChange: (mode) => _search.mode = mode,
       onLanguageChange: (language) => _search.language = language,
+    );
+  }
+}
+
+class _CopyBanner extends StatelessWidget {
+  const _CopyBanner({required this.dictionary, required this.onRetry});
+
+  final FailoverDictionary dictionary;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final status = dictionary.status;
+    if (status == CopyStatus.unused) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Semantics(
+                  liveRegion: true,
+                  child: Text(switch (status) {
+                    CopyStatus.ready => l10n.copyInUse(dictionary.copyDate),
+                    CopyStatus.failed => l10n.copyFailed,
+                    _ => l10n.copyDownloading,
+                  }, style: Theme.of(context).textTheme.bodySmall),
+                ),
+              ),
+              if (status == CopyStatus.failed)
+                TextButton(onPressed: onRetry, child: Text(l10n.retry)),
+            ],
+          ),
+          if (status == CopyStatus.downloading)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: LinearProgressIndicator(value: dictionary.progress),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -382,12 +444,15 @@ class _FrontPage extends StatelessWidget {
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          l10n.entryCount(entryCount),
-                          textAlign: TextAlign.center,
-                          style: text.bodyMedium,
-                        ),
+                        // unknown until the copy of the dictionary is here
+                        if (entryCount > 0) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.entryCount(entryCount),
+                            textAlign: TextAlign.center,
+                            style: text.bodyMedium,
+                          ),
+                        ],
                       ],
                     ),
                   ),

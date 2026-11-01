@@ -110,5 +110,16 @@
   "loading": "Preparing the dictionary…",
   "openError": "The dictionary could not be opened.",
   "retry": "Try again",
-  "searchError": "Searching failed."
+  "searchError": "Searching failed.",
+  "copyDownloading": "The EasyDict server is not answering. Downloading a copy of the dictionary…",
+  "copyInUse": "The EasyDict server is not answering. Searching a copy of the dictionary from {date}.",
+  "copyFailed": "The EasyDict server is not answering, and the copy of the dictionary could not be downloaded.",
+  "@copyInUse": {
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMd"
+      }
+    }
+  }
 }

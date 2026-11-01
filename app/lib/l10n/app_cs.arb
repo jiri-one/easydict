@@ -64,5 +64,8 @@
   "loading": "Připravuji slovník…",
   "openError": "Slovník se nepodařilo otevřít.",
   "retry": "Zkusit znovu",
-  "searchError": "Hledání selhalo."
+  "searchError": "Hledání selhalo.",
+  "copyDownloading": "Server EasyDictu neodpovídá. Stahuji kopii slovníku…",
+  "copyInUse": "Server EasyDictu neodpovídá. Hledám v kopii slovníku z {date}.",
+  "copyFailed": "Server EasyDictu neodpovídá a kopii slovníku se nepodařilo stáhnout."
 }

@@ -12,7 +12,8 @@ enum Language {
 
 enum SearchMode { startsWith, wholeWord, fulltext }
 
-/// The web app has no database: it searches on the website (RemoteDictionary).
+/// The web app searches on the website (RemoteDictionary), with a copy of the
+/// database for when that does not answer (FailoverDictionary).
 abstract interface class Dictionary {
   /// Longer queries are cut: nobody types them, and SQLite rejects too long
   /// LIKE patterns.

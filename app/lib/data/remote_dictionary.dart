@@ -1,20 +1,35 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
 import 'dictionary.dart';
 
+/// The server is down or something in front of it answers instead, so asking
+/// elsewhere can help. Other errors would repeat there.
+class ServerUnavailable extends http.ClientException {
+  ServerUnavailable(super.message, [super.uri]);
+}
+
 /// The API is in web/web/views.py.
 class RemoteDictionary implements Dictionary {
-  RemoteDictionary._(this._client, this._api, this.meta);
+  RemoteDictionary._(this._client, this._api, this._timeout, this.meta);
 
-  static Future<RemoteDictionary> open(Uri api, {http.Client? client}) async {
+  /// A usual answer takes 0.2 s, and only this ends a request to a hanging
+  /// server.
+  static const defaultTimeout = Duration(seconds: 5);
+
+  static Future<RemoteDictionary> open(
+    Uri api, {
+    http.Client? client,
+    Duration timeout = defaultTimeout,
+  }) async {
     final httpClient = client ?? http.Client();
     try {
-      final info = await _get(httpClient, api.resolve('info'));
+      final info = await _get(httpClient, api.resolve('info'), timeout);
       final meta = (info['meta']! as Map<String, Object?>)
           .cast<String, String>();
-      return RemoteDictionary._(httpClient, api, meta);
+      return RemoteDictionary._(httpClient, api, timeout, meta);
     } catch (_) {
       if (client == null) httpClient.close();
       rethrow;
@@ -23,6 +38,7 @@ class RemoteDictionary implements Dictionary {
 
   final http.Client _client;
   final Uri _api;
+  final Duration _timeout;
 
   @override
   final Map<String, String> meta;
@@ -51,6 +67,7 @@ class RemoteDictionary implements Dictionary {
               'mode': mode.name,
             },
           ),
+      _timeout,
     );
     return SearchResult(
       query: json['query']! as String,
@@ -71,13 +88,26 @@ class RemoteDictionary implements Dictionary {
           Entry.fromRow(entry! as Map<String, Object?>),
       ]);
 
-  static Future<Map<String, Object?>> _get(http.Client client, Uri uri) async {
-    final response = await client.get(uri);
+  static Future<Map<String, Object?>> _get(
+    http.Client client,
+    Uri uri,
+    Duration timeout,
+  ) async {
+    final http.Response response;
+    try {
+      response = await client.get(uri).timeout(timeout);
+    } on TimeoutException {
+      throw ServerUnavailable('No answer in $timeout', uri);
+    } on http.ClientException catch (error) {
+      // also what a browser reports when the answer has no CORS headers
+      throw ServerUnavailable(error.message, uri);
+    }
     if (response.statusCode != 200) {
-      throw http.ClientException(
-        'HTTP ${response.statusCode} ${response.reasonPhrase ?? ''}'.trim(),
-        uri,
-      );
+      final status =
+          'HTTP ${response.statusCode} ${response.reasonPhrase ?? ''}'.trim();
+      throw response.statusCode >= 500
+          ? ServerUnavailable(status, uri)
+          : http.ClientException(status, uri);
     }
     return jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, Object?>;
   }
