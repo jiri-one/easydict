@@ -319,6 +319,7 @@ class _CopyBanner extends StatelessWidget {
             children: [
               Expanded(
                 child: Semantics(
+                  container: true,
                   liveRegion: true,
                   child: Text(switch (status) {
                     CopyStatus.ready => l10n.copyInUse(dictionary.copyDate),
