@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:easydict/data/dictionary.dart';
 import 'package:easydict/data/failover_dictionary.dart';
-import 'package:easydict/data/remote_dictionary.dart';
 import 'package:easydict/l10n/app_localizations.dart';
 import 'package:easydict/settings.dart';
 import 'package:easydict/ui/home_page.dart';
@@ -10,28 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class _Copy implements Dictionary {
-  @override
-  Map<String, String> get meta => {'entries': '7'};
-
-  @override
-  int get entryCount => 7;
-
-  @override
-  Future<SearchResult> search(
-    String query,
-    Language language,
-    SearchMode mode,
-  ) async => SearchResult(
-    query: query,
-    language: language,
-    mode: mode,
-    groups: const [],
-  );
-
-  @override
-  Future<void> close() async {}
-}
+import 'fake_dictionary.dart';
 
 void main() {
   late Settings settings;
@@ -43,10 +21,13 @@ void main() {
 
   Future<FailoverDictionary> pumpWithoutServer(
     WidgetTester tester,
-    Future<Dictionary> Function() openCopy,
-  ) async {
+    Future<Dictionary> Function() openCopy, {
+    Future<Dictionary> Function()? openServer,
+  }) async {
     final dictionary = await FailoverDictionary.open(
-      openServer: () async => throw ServerUnavailable('The server is down.'),
+      openServer:
+          openServer ??
+          () async => throw const ServerUnavailable('The server is down.'),
       openCopy: (_) => openCopy(),
       copyDate: DateTime(2026, 11, 1),
     );
@@ -76,7 +57,7 @@ void main() {
     expect(find.textContaining('Downloading a copy'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
 
-    download.complete(_Copy());
+    download.complete(FakeDictionary('copy'));
     await tester.pump();
     await tester.pump();
     expect(
@@ -94,10 +75,33 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     expect(find.textContaining('Nothing found'), findsNothing);
 
-    download.complete(_Copy());
+    download.complete(FakeDictionary('copy'));
     await tester.pump();
     await tester.pump();
     expect(find.textContaining('Nothing found'), findsOneWidget);
+    await finish(tester, dictionary);
+  });
+
+  testWidgets('results of the copy give way to the server', (tester) async {
+    var serverDown = true;
+    final dictionary = await pumpWithoutServer(
+      tester,
+      () async => FakeDictionary('copy'),
+      openServer: () async {
+        if (serverDown) throw const ServerUnavailable('The server is down.');
+        return FakeDictionary('server');
+      },
+    );
+    await tester.enterText(find.byType(TextField), 'dog');
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump();
+    expect(find.textContaining('“copy”'), findsOneWidget);
+
+    serverDown = false;
+    await tester.pump(const Duration(minutes: 1));
+    await tester.pump();
+    expect(find.textContaining('“server”'), findsOneWidget);
+    expect(find.textContaining('Searching a copy'), findsNothing);
     await finish(tester, dictionary);
   });
 
@@ -105,7 +109,7 @@ void main() {
     var attempts = 0;
     final dictionary = await pumpWithoutServer(tester, () async {
       if (++attempts == 1) throw StateError('HTTP 404');
-      return _Copy();
+      return FakeDictionary('copy');
     });
     await tester.pump();
     expect(find.textContaining('could not be downloaded'), findsOneWidget);

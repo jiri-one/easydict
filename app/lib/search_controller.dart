@@ -70,6 +70,7 @@ class DictionarySearch extends ChangeNotifier {
 
   void lookUp(String text, Language language) => _start(text, language);
 
+  /// Also drops a search still running, by its generation.
   void retry() => _restart();
 
   /// Text from outside (another app, the clipboard, the command line) has no

@@ -9,7 +9,6 @@ next frame. That the copy was used shows on this server instead.
 """
 
 import http.server
-import json
 import os
 import shutil
 import subprocess
@@ -20,28 +19,20 @@ from pathlib import Path
 
 WEB = Path(__file__).resolve().parent.parent / "build" / "web"
 TIMEOUT = 120
-PAGE = b"""<!doctype html>
+PAGE = rb"""<!doctype html>
 <iframe id="app" src="/?q=dog" width="500" height="800"></iframe>
 <script>
-  const report = (result) => fetch("/result", { method: "POST", body: JSON.stringify(result) });
-  addEventListener("error", (event) => report({ error: event.message }));
   setInterval(() => {
     const page = document.getElementById("app").contentDocument;
     page?.querySelector("flt-semantics-placeholder")?.click();
     const tree = page?.querySelector("flt-semantics-host")?.outerHTML ?? "";
-    if (/\\bpes\\b/.test(tree)) report({ found: true });
+    if (/\bpes\b/.test(tree)) fetch("/found", { method: "POST" });
   }, 500);
 </script>
 """
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
-    extensions_map = {
-        **http.server.SimpleHTTPRequestHandler.extensions_map,
-        ".mjs": "text/javascript",
-        ".wasm": "application/wasm",
-    }
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=WEB, **kwargs)
 
@@ -58,11 +49,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(PAGE)
 
     def do_POST(self):
-        length = int(self.headers["Content-Length"])
-        self.server.result = json.loads(self.rfile.read(length))
         self.send_response(204)
         self.end_headers()
-        self.server.finished.set()
+        self.server.found.set()
 
     def log_message(self, *args):
         pass
@@ -77,8 +66,7 @@ def browser():
 
 def main():
     server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-    server.finished = threading.Event()
-    server.result = None
+    server.found = threading.Event()
     server.copy_requested = False
     threading.Thread(target=server.serve_forever, daemon=True).start()
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as profile, open(Path(profile) / "log", "w+") as log:
@@ -97,16 +85,16 @@ def main():
             stderr=log,
         )
         try:
-            answered = server.finished.wait(TIMEOUT)
+            found = server.found.wait(TIMEOUT)
         finally:
             chrome.terminate()
             chrome.wait()
-        if answered and server.result.get("found") and server.copy_requested:
+        if found and server.copy_requested:
             print("The copy of the dictionary answers in the browser.")
             return
         log.seek(0)
         print(*(line for line in log if "CONSOLE" in line), sep="", file=sys.stderr)
-    sys.exit(f"The copy failed: {server.result}" if answered else f"No result from the copy in {TIMEOUT} s.")
+    sys.exit(f"No result from the copy in {TIMEOUT} s.")
 
 
 if __name__ == "__main__":
