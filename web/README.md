@@ -15,7 +15,59 @@ The production image has the database built in, and the container imports it whe
 
 ## The web app
 
-The public web app lives on GitHub Pages at [app.easydict.jiri.one](https://app.easydict.jiri.one), so that it does not go down with the server (`app/tool/build_pages.sh`, deployed by the `CI` workflow from `main`). A Cloudflare redirect rule sends `/app` there, keeping the query. The app searches through `/api/search` and `/api/info`, so it has the same data as the site, which is why `WEBAPP_ORIGIN` in the settings allows that one origin to read them. When the API does not answer twice in a row (an error 5xx or 5 s of silence), the app downloads a copy of the dictionary from GitHub Pages once and searches in the browser, with SQLite compiled to WebAssembly and the same queries as the offline apps. It says so in a banner and tries the API again every minute. The copy is built from `data/` with every deployment and carries the date of its last change, so it does not have translations approved since they were exported. Add `?source=copy` to the address to try it; `app/tool/check_copy.py` checks it in a browser in CI.
+The public web app lives on GitHub Pages at [app.easydict.jiri.one](https://app.easydict.jiri.one), so that it does not go down with the server (`app/tool/build_pages.sh`, deployed by the `CI` workflow from `main`). While the server answers, the app searches there and shows what the website shows, even a change from a minute ago. Only when the server does not answer does it search a copy of the dictionary in the browser.
+
+```mermaid
+flowchart LR
+    browser(["Browser"])
+    subgraph cloudflare["Cloudflare: easydict.jiri.one"]
+        redirect["Redirect rule for /app"]
+        tunnel["Tunnel"]
+    end
+    subgraph pages["GitHub Pages: app.easydict.jiri.one"]
+        app["The web app"]
+        copy["Copy of the dictionary, 17 MB"]
+    end
+    subgraph m1s["M1S, the server"]
+        django["Django: the website and its API"]
+        postgres[("PostgreSQL")]
+    end
+    browser -- "opens /app" --> redirect
+    redirect -- "302" --> app
+    browser -- "searches" --> tunnel --> django --> postgres
+    browser -. "downloads it when the API does not answer" .-> copy
+```
+
+`app.easydict.jiri.one` is a DNS-only CNAME to `jiri-one.github.io`, so it does not depend on the tunnel. A Cloudflare redirect rule sends `easydict.jiri.one/app*` there with a 302 and keeps the query, so `/app?q=dog` still searches; browsers would remember a 301, and turning the rule off would not bring them back. The app calls `/api/search` and `/api/info` of the website, which is why `WEBAPP_ORIGIN` in the settings allows that one origin to read them.
+
+### When the server does not answer
+
+```mermaid
+flowchart TD
+    server["Search on the server"]
+    subgraph fallback["Without the server"]
+        cached{"Is the copy saved in the browser?"}
+        download["Download the copy from GitHub Pages"]
+        copy["Search in the copy, with a banner"]
+        failed["Banner with Retry"]
+        cached -- "yes" --> copy
+        cached -- "no" --> download
+        download --> copy
+        download -- "fails" --> failed
+        failed -- "Retry" --> download
+    end
+    server -- "no answer twice in a row: 5xx, network error or 5 s of silence" --> cached
+    fallback -. "the server answers again, asked every minute" .-> server
+```
+
+An error switches the app to the copy within a moment; silence takes 10 s, two attempts of 5 s. The copy is the SQLite database of the offline apps, built from `data/` with every deployment. A web worker opens it with SQLite compiled to WebAssembly, and the app searches it with the same queries as the offline apps. The whole database, 51 MB unpacked, stays in memory: the storage of SQLite in a browser needs headers that GitHub Pages cannot send, and its variant without them works in one tab only. The browser keeps the downloaded file until the data change, so another outage usually downloads nothing. The banner gives the date of the last change of `data/`, because what changed only in the database of the website is not in the copy. Without the server, whether the copy is downloading, ready or failed, the app asks `/api/info` every minute; once it answers, the app goes back to the server and repeats the search. Add `?source=copy` to the address to try the copy; `app/tool/check_copy.py` checks it in a browser in CI.
+
+| Situation | The app comes from | Search |
+| --- | --- | --- |
+| The server answers | GitHub Pages | on the server, the same as on the website |
+| The server is down, the copy is saved in the browser | GitHub Pages | in the copy, without downloading it again |
+| The server is down, no copy saved yet | GitHub Pages | in the copy, after a download of 17 MB |
+| GitHub Pages is down | nowhere; with the redirect rule off, `/app` on the server | on the server |
 
 The image still builds its own copy of the app without the fallback (`app/tool/build_web.sh`): `/app` shows it if the redirect rule is off. The view returns its `index.html`, and the container copies the rest to the static files, where it is served from `/static/app/`.
 
@@ -31,4 +83,16 @@ The production image is built from `deploy/Containerfile` with the repository as
 
     podman build -f web/deploy/Containerfile .
 
-The `Website image` workflow builds it on every change of `web/`, `app/` or `data/` on `main` once the tests pass, and publishes it as `ghcr.io/jiri-one/easydict-web`. The server runs that image and updates it at night with `podman auto-update`, so whatever is merged to `main` goes live, migrations included.
+```mermaid
+flowchart TD
+    main(["main"])
+    ci["CI workflow"]
+    image["Website image workflow"]
+    pages["GitHub Pages: the web app and the copy"]
+    ghcr["ghcr.io/jiri-one/easydict-web"]
+    m1s["M1S: the website and its API"]
+    main --> ci -- "minutes after the merge" --> pages
+    main --> image --> ghcr -- "at night, podman auto-update" --> m1s
+```
+
+The `Website image` workflow builds it on every change of `web/`, `app/` or `data/` on `main` once the tests pass, and publishes it as `ghcr.io/jiri-one/easydict-web`. The server runs that image and updates it at night with `podman auto-update`, so whatever is merged to `main` goes live, migrations included. The web app goes live minutes after the merge and meets the website of the day before: a new API has to reach `main` a day before the app starts to use it.
