@@ -260,4 +260,18 @@ class AppLocalizationsCs extends AppLocalizations {
   @override
   String get copyFailed =>
       'Server EasyDictu neodpovídá a kopii slovníku se nepodařilo stáhnout.';
+
+  @override
+  String get copyError =>
+      'Kopírování se nezdařilo. Překlad můžete označit a zkopírovat ručně.';
+
+  @override
+  String get speak => 'Přehrát výslovnost';
+
+  @override
+  String get speechError => 'Výslovnost se nepodařilo přehrát.';
+
+  @override
+  String get helpSpeech =>
+      'Klepnutím na reproduktor si poslechnete slovo. V nainstalované aplikaci výslovnost funguje offline, webová aplikace používá server.';
 }

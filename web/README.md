@@ -96,3 +96,18 @@ flowchart TD
 ```
 
 The `Website image` workflow builds it on every change of `web/`, `app/` or `data/` on `main` once the tests pass, and publishes it as `ghcr.io/jiri-one/easydict-web`. The server runs that image and updates it at night with `podman auto-update`, so whatever is merged to `main` goes live, migrations included. The web app goes live minutes after the merge and meets the website of the day before: a new API has to reach `main` a day before the app starts to use it.
+
+## Pronunciation
+
+The speakers in the search results and the web app use `GET /api/speech?lang=cze&q=ahoj` (or `lang=eng`), which returns mono PCM WAV from the same renderer as the app: RHVoice 1.18.4 with Radek for Czech, Piper's LJSpeech voice for English. The Pages build uses `EASYDICT_API` for both search and speech, so pronunciation comes from the website rather than Pages. `spoken_text` in `web/speech.py` is a port of `app/lib/data/speech_text.dart`, and both are tested against `app/test/fixtures/speech_text.json`: a change belongs to both. Requests accept 1–300 characters, run without a shell, and stop after twenty seconds. Only one renderer runs at a time across the workers, and a request arriving meanwhile gets a 503, which the clients retry, so speech cannot block searching. Successful responses can be cached for one day. Each request uses an isolated renderer process so a timeout cannot leave synthesis running in a web worker.
+
+For local development:
+
+    cmake -S ../app/native -B speech -DCMAKE_BUILD_TYPE=Release -DSPEECH_CLI=ON
+    cmake --build speech -j2
+
+The container compiles this dependency from the vendored sources. `SPEECH_EXECUTABLE` and `SPEECH_DATA` override the executable and data directories. The production image includes the engine library next to the renderer and needs no audio device. Both the website and the Pages app play this endpoint through an audio element. When the M1S is down, the dictionary copy remains searchable but pronunciation is unavailable.
+
+For a rollout that introduces a new API, first dispatch `Website image` on the reviewed branch and deploy that image on the M1S. Verify the endpoint before merging the branch to publish the Pages app. The workflow publishes `latest` as well as the commit tag, so dispatch only a branch ready for production.
+
+Speech licences are listed in the [main README](../README.md); see `../app/native/README.md` for the sources.

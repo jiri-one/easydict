@@ -103,6 +103,7 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
+      - run: brew install cmake
       - working-directory: app
         run: flutter build macos --release
       - name: Package

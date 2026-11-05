@@ -40,8 +40,10 @@ Také lze uvést kategorie, které slovo charakterizují:
 |--------------|--------------------------------------|
 | `[bás.]`     | básnicky                             |
 | `[dět.]`     | dětský výraz, dětsky                 |
+| `[form.]`    | formálně                             |
 | `[fráz.]`    | zkratka označující frázi             |
 | `[frsl.]`    | frázové sloveso (např. give up)      |
+| `[hanl.]`    | hanlivě                              |
 | `[hovor.]`   | hovorově                             |
 | `[id.]`      | idiom (např. a bun in the oven)      |
 | `[jmén.]`    | vlastní jméno                        |
@@ -62,9 +64,11 @@ Humanitní a společenské vědy:
 
 |--------------|--------------------------------------|
 |--------------|--------------------------------------|
+| `[ekon.]`    | ekonomie                             |
 | `[fin.]`     | finance                              |
 | `[hist.]`    | historický výraz, historický název   |
 | `[hud.]`     | hudební terminologie                 |
+| `[karet.]`   | karetní hry                          |
 | `[lingv.]`   | lingvistické                         |
 | `[myt.]`     | mytologie                            |
 | `[náb.]`     | výraz z oblasti náboženství          |
@@ -79,6 +83,7 @@ Přírodní vědy:
 |--------------|--------------------------------------|
 |--------------|--------------------------------------|
 | `[astr.]`    | astronomie                           |
+| `[astro.]`   | astrologie                           |
 | `[bio.]`     | biologie                             |
 | `[bot.]`     | výraz z oblasti botaniky             |
 | `[eko.]`     | ekologie                             |
@@ -92,6 +97,7 @@ Přírodní vědy:
 | `[opt.]`     | optika                               |
 | `[zem.]`     | zeměpisný výraz                      |
 | `[zoo.]`     | zoologie                             |
+| `[zool.]`    | zoologie                             |
 
 Zemědělství, průmysl, technika:
 
@@ -111,6 +117,7 @@ Zemědělství, průmysl, technika:
 | `[stav.]`    | stavebnictví, architektura           |
 | `[tech.]`    | technický obor                       |
 | `[text.]`    | textilní průmysl                     |
+| `[typo.]`    | typografie                           |
 | `[voj.]`     | vojenská terminologie                |
 | `[zeměděl.]` | zemědělský výraz                     |
 

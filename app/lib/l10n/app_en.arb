@@ -121,5 +121,9 @@
         "format": "yMd"
       }
     }
-  }
+  },
+  "copyError": "Copying failed. You can select the translation and copy it manually.",
+  "speak": "Speak pronunciation",
+  "speechError": "Could not play pronunciation.",
+  "helpSpeech": "Tap the speaker to hear a word. Pronunciation works offline in the installed app; the web app uses the server."
 }

@@ -67,5 +67,9 @@
   "searchError": "Hledání selhalo.",
   "copyDownloading": "Server EasyDictu neodpovídá. Stahuji kopii slovníku…",
   "copyInUse": "Server EasyDictu neodpovídá. Hledám v kopii slovníku z {date}.",
-  "copyFailed": "Server EasyDictu neodpovídá a kopii slovníku se nepodařilo stáhnout."
+  "copyFailed": "Server EasyDictu neodpovídá a kopii slovníku se nepodařilo stáhnout.",
+  "copyError": "Kopírování se nezdařilo. Překlad můžete označit a zkopírovat ručně.",
+  "speak": "Přehrát výslovnost",
+  "speechError": "Výslovnost se nepodařilo přehrát.",
+  "helpSpeech": "Klepnutím na reproduktor si poslechnete slovo. V nainstalované aplikaci výslovnost funguje offline, webová aplikace používá server."
 }

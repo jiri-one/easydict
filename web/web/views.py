@@ -5,10 +5,10 @@ from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonRespo
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_POST
 
+from . import speech
 from .dictionary import LANGUAGES, MODES, Dictionary, DictionaryNotImported
-from .helpers import TEXTS, results_html
+from .helpers import MAX_SEARCHED_TEXT, TEXTS, results_html
 
-MAX_SEARCHED_TEXT = 50
 FORM_MODES = {"starts_with": "startsWith", "whole_word": "wholeWord", "fulltext": "fulltext"}
 
 
@@ -83,4 +83,19 @@ def app(request):
         raise Http404('The web app is not built (app/tool/build_web.sh).')
     response = HttpResponse(html)
     response['Cache-Control'] = 'no-cache'
+    return response
+
+
+@require_GET
+def api_speech(request):
+    language = request.GET.get('lang')
+    text = request.GET.get('q', '')
+    if language not in LANGUAGES or not text.strip() or len(text) > 300 or '\x00' in text:
+        return JsonResponse({'error': 'Invalid speech request.'}, status=400)
+    try:
+        audio = speech.synthesize(text, language)
+    except speech.Unavailable:
+        return JsonResponse({'error': 'Pronunciation is unavailable.'}, status=503)
+    response = HttpResponse(audio, content_type='audio/wav')
+    response['Cache-Control'] = 'public, max-age=86400'
     return response
