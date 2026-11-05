@@ -24,6 +24,8 @@
       svobodného slovníku projektu Svobodné slovníky, dříve GNU/FDL Anglicko-Český slovník.
     </p>
     <ul>
+      <li>Offline Czech and English spoken pronunciation</li>
+      <li xml:lang="cs">Česká a anglická výslovnost bez internetu</li>
       <li>Results while you type, without an internet connection</li>
       <li xml:lang="cs">Výsledky už během psaní a bez připojení k internetu</li>
       <li>Search by the start of a word, by whole words or anywhere in the text</li>
@@ -106,6 +108,8 @@
         <p>The first release of the new EasyDict for Linux, Windows, macOS and Android.</p>
         <p xml:lang="cs">První vydání nového EasyDictu pro Linux, Windows, macOS a Android.</p>
         <ul>
+      <li>Offline Czech and English spoken pronunciation</li>
+      <li xml:lang="cs">Česká a anglická výslovnost bez internetu</li>
           <li>Dictionary data updated to the latest version of the free English–Czech dictionary</li>
           <li xml:lang="cs">Slovníková data v poslední verzi svobodného anglicko-českého slovníku</li>
           <li>Czech words are also found in other forms</li>

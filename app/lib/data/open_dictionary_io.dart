@@ -5,6 +5,7 @@ import 'dart:isolate';
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
+import 'bundled_assets.dart';
 import 'dictionary.dart';
 import 'sqlite_ffi.dart';
 
@@ -28,11 +29,7 @@ Future<Dictionary> openDictionary() async {
 }
 
 Future<String> _desktopDatabasePath() async {
-  final executableDir = File(Platform.resolvedExecutable).parent.path;
-  final assets = Platform.isMacOS
-      ? '$executableDir/../Frameworks/App.framework/Resources/flutter_assets'
-      : '$executableDir/data/flutter_assets';
-  final bundled = File('$assets/$_asset');
+  final bundled = File('$desktopAssetsDir/$_asset');
   if (bundled.existsSync()) return bundled.path;
   return _copyAsset(Directory.systemTemp.path);
 }

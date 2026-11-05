@@ -1,0 +1,39 @@
+{% if groups %}
+{% if base_forms %}<p class="result-message">{{ base_forms }}</p>{% endif %}
+{% for group in groups %}
+<section class="result-group">
+  <div class="result-headword">
+    <h2 class="result-word">{{ group.headword }}</h2>
+    {% include "web/speech_button.html" with text=group.speech language=language %}
+  </div>
+  <p class="result-status" role="status"></p>
+  {% for entry in group.entries %}
+  <details class="result-entry">
+    <summary>
+      <span class="result-summary">
+        <span class="result-translation">{{ entry.translation }}</span>
+        {% if entry.labels %}<span class="result-labels">{{ entry.labels }}</span>{% endif %}
+        {% if entry.special %}<span class="result-note">{{ entry.special }}</span>{% endif %}
+      </span>
+    </summary>
+    <div class="result-detail">
+      <p class="result-pair">{{ entry.source }} → <strong>{{ entry.translation }}</strong> {% include "web/speech_button.html" with text=entry.speech language=translation_language %}</p>
+      {% if entry.author %}
+      <p class="result-author">{{ texts.author }}: {{ entry.author }}</p>
+      {% endif %}
+      <div class="result-actions">
+        {% if entry.can_look_up %}
+        <button type="button" data-lookup-text="{{ entry.translation }}" data-lookup-language="{{ translation_language }}">{{ entry.look_up }}</button>
+        {% endif %}
+        <button type="button" data-copy-text="{{ entry.translation }}">{{ texts.copy }}</button>
+      </div>
+      <p class="result-status" role="status"></p>
+    </div>
+  </details>
+  {% endfor %}
+</section>
+{% endfor %}
+{% if more %}<p class="result-message">{{ more }}</p>{% endif %}
+{% else %}
+<p class="result-message">{{ texts.nothing }}</p>
+{% endif %}

@@ -259,4 +259,18 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get copyFailed =>
       'The EasyDict server is not answering, and the copy of the dictionary could not be downloaded.';
+
+  @override
+  String get copyError =>
+      'Copying failed. You can select the translation and copy it manually.';
+
+  @override
+  String get speak => 'Speak pronunciation';
+
+  @override
+  String get speechError => 'Could not play pronunciation.';
+
+  @override
+  String get helpSpeech =>
+      'Tap the speaker to hear a word. Pronunciation works offline in the installed app; the web app uses the server.';
 }

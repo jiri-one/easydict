@@ -505,6 +505,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The EasyDict server is not answering, and the copy of the dictionary could not be downloaded.'**
   String get copyFailed;
+
+  /// No description provided for @copyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Copying failed. You can select the translation and copy it manually.'**
+  String get copyError;
+
+  /// No description provided for @speak.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak pronunciation'**
+  String get speak;
+
+  /// No description provided for @speechError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not play pronunciation.'**
+  String get speechError;
+
+  /// No description provided for @helpSpeech.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the speaker to hear a word. Pronunciation works offline in the installed app; the web app uses the server.'**
+  String get helpSpeech;
 }
 
 class _AppLocalizationsDelegate

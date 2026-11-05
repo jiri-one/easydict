@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Opens the output of tool/build_pages.sh in a real browser and looks a word up in the copy.
-
-Outages are rare, so nothing else would show that the copy stopped working. Served from here, the
-app cannot reach the website: the API allows only the origin of the web app. So it falls back the
-way it would in an outage. Flutter draws on a canvas, so the check reads the accessibility tree.
-"""
+"""The fallback and the separate API origin can regress without breaking normal search."""
 
 import http.server
 import os
@@ -20,13 +15,25 @@ TIMEOUT = 120
 PAGE = rb"""<!doctype html>
 <iframe id="app" src="/?q=dog" width="500" height="800"></iframe>
 <script>
+  let speaking = false;
   setInterval(() => {
     const page = document.getElementById("app").contentDocument;
     page?.querySelector("flt-semantics-placeholder")?.click();
     const tree = page?.querySelector("flt-semantics-host")?.outerHTML ?? "";
-    if (/copy of the dictionary from/.test(tree) && /\bpes\b/.test(tree)) {
-      fetch("/found", { method: "POST" });
-    }
+    if (speaking || !/copy of the dictionary from/.test(tree) || !/\bpes\b/.test(tree)) return;
+    const button = [...page.querySelectorAll('[role="button"]')].find(element =>
+      (element.getAttribute("aria-label") ?? element.textContent).trim() === "Speak pronunciation");
+    if (!button) return;
+    speaking = true;
+    page.defaultView.HTMLMediaElement.prototype.play = function () {
+      const url = new URL(this.src);
+      const correct = url.origin === "https://easydict.jiri.one" &&
+        url.pathname === "/api/speech" && url.searchParams.get("lang") === "eng" &&
+        url.searchParams.get("q") === "dog";
+      fetch(correct ? "/found" : "/failed", { method: "POST", body: this.src });
+      return Promise.resolve();
+    };
+    button.click();
   }, 500);
 </script>
 """
@@ -47,6 +54,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(PAGE)
 
     def do_POST(self):
+        if self.path not in ("/found", "/failed"):
+            self.send_error(404)
+            return
+        if self.path == "/failed":
+            self.server.error = self.rfile.read(int(self.headers.get("Content-Length", 0))).decode()
         self.send_response(204)
         self.end_headers()
         self.server.found.set()
@@ -65,6 +77,7 @@ def browser():
 def main():
     server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     server.found = threading.Event()
+    server.error = None
     threading.Thread(target=server.serve_forever, daemon=True).start()
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as profile, open(Path(profile) / "log", "w+") as log:
         chrome = subprocess.Popen(
@@ -86,12 +99,14 @@ def main():
         finally:
             chrome.terminate()
             chrome.wait()
+        if answered and server.error is not None:
+            sys.exit(f"The speaker called the wrong API: {server.error}")
         if answered:
-            print("The copy of the dictionary answers in the browser.")
+            print("The dictionary copy answers and the speaker calls the website API.")
             return
         log.seek(0)
         print(*(line for line in log if "CONSOLE" in line), sep="", file=sys.stderr)
-    sys.exit(f"No result from the copy in {TIMEOUT} s.")
+    sys.exit(f"No result and speech request from the copy in {TIMEOUT} s.")
 
 
 if __name__ == "__main__":

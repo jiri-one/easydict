@@ -1,5 +1,6 @@
 name: Website image
 
+# app/ includes speech sources and voices, so changes there must rebuild the server.
 # The M1S runs the pushed image and takes a new one every night (podman auto-update), so what
 # reaches main goes live. app/ and data/ are in the image too: the page /app and the dictionary.
 on:
