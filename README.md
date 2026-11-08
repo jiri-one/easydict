@@ -36,7 +36,9 @@ You need [Flutter](https://docs.flutter.dev/get-started/install) 3.47 and Python
     ./tool/build_dictionary.sh   # builds assets/dictionary/easydict.sqlite from data/
     flutter run
 
-The web app for GitHub Pages is built with `./tool/build_pages.sh`; it searches through the website, and in a copy of the dictionary in the browser when the website is down, see [web/README.md](web/README.md).
+The static web app at [app.easydict.jiri.one](https://app.easydict.jiri.one) is built with `./tool/build_pages.sh` and deployed to Cloudflare Workers Static Assets. It searches through the website API on M1S, falling back to a copy of the dictionary in the browser when the website is down. The public hostname, API origin and browser storage stay the same.
+
+The CI workflow deploys tested builds from `main` to the assets-only Worker `easydict-app`. Its GitHub environment `cloudflare` is restricted to `main` and holds `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`; deployments require Workers Scripts Edit for that account. The Custom Domain is attached once outside CI, which leaves DNS unchanged. `wrangler.jsonc` disables public `workers.dev` and preview URLs; `wrangler rollback VERSION_ID` restores an earlier deployment. Django, PostgreSQL and the API remain on M1S with their existing deployment workflow.
 
 ## Licences
 

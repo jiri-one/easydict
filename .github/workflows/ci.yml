@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -45,29 +46,37 @@ jobs:
         run: ./tool/build_pages.sh
       - name: The copy of the dictionary in a browser
         run: ./tool/check_copy.py
-      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
+          name: web-app
           path: app/build/web
+          if-no-files-found: error
 
   web:
     name: Website
     uses: ./.github/workflows/web-tests.yml
 
-  # the public web app, app.easydict.jiri.one; the website follows at night (web-image.yml), so a
-  # new API has to reach main a day before the app starts to use it
+  # The API deploys nightly; new endpoints must be live before this app uses them.
   deploy:
-    name: GitHub Pages
-    if: github.event_name == 'push'
+    name: Cloudflare
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: [data, app, web]
     runs-on: ubuntu-24.04
-    permissions:
-      pages: write
-      id-token: write
-    concurrency: pages
+    concurrency:
+      group: cloudflare-easydict
+      cancel-in-progress: false
     environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      name: cloudflare
+      url: https://app.easydict.jiri.one
     steps:
-      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
-      - uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
-        id: deployment
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: web-app
+          path: app/build/web
+      - uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.158.0'
+          command: deploy

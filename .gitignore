@@ -7,6 +7,7 @@ __pycache__/
 # Build outputs
 /build/
 /data/build/
+.wrangler/
 
 # Editors
 .idea/
