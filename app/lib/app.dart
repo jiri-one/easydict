@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'data/dictionary.dart';
 import 'data/open_dictionary.dart';
@@ -10,6 +9,13 @@ import 'ui/logo.dart';
 
 /// The EasyDict blue of the logo.
 const brandColor = Color(0xFF387FF2);
+
+/// Not the generated [AppLocalizations.localizationsDelegates]: it lists the
+/// Material localizations of flutter_localizations, which material_ui ignores.
+const appLocalizationsDelegates = [
+  AppLocalizations.delegate,
+  ...GlobalMaterialLocalizations.delegates,
+];
 
 ThemeData appTheme(Brightness brightness) {
   final foreground = brightness == Brightness.light
@@ -91,12 +97,7 @@ class EasyDictApp extends StatelessWidget {
       themeMode: settings.themeMode,
       themeAnimationDuration: Duration.zero,
       locale: settings.locale,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: _DictionaryLoader(settings: settings, initialQuery: initialQuery),
     ),

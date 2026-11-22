@@ -17,6 +17,8 @@ analyzer:
     - macos/**
     - linux/**
     - web/**
+    # gen-l10n still imports flutter_localizations; it is regenerated on every build.
+    - lib/l10n/app_localizations*.dart
 
 linter:
   # The lint rules applied to this project can be customized in the

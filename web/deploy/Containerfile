@@ -23,7 +23,7 @@ RUN apt-get update \
 RUN useradd --create-home flutter
 USER flutter
 # the version that .github/workflows build the app with
-ARG FLUTTER_VERSION=3.47.7
+ARG FLUTTER_VERSION=3.50.1
 RUN git clone --depth 1 --branch "$FLUTTER_VERSION" https://github.com/flutter/flutter.git /home/flutter/sdk \
     && /home/flutter/sdk/bin/flutter --disable-analytics \
     && /home/flutter/sdk/bin/flutter precache --universal --web

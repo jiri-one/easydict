@@ -30,7 +30,7 @@ Tips:
 
 ## Building the app
 
-You need [Flutter](https://docs.flutter.dev/get-started/install) 3.47 and Python 3.9 or newer.
+You need [Flutter](https://docs.flutter.dev/get-started/install) 3.50 and Python 3.9 or newer.
 
     cd app
     ./tool/build_dictionary.sh   # builds assets/dictionary/easydict.sqlite from data/
