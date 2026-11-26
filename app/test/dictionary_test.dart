@@ -362,4 +362,54 @@ void main() {
       expect(result.truncated, isTrue);
     });
   });
+
+  group('diacritic twins', () {
+    late SqlDictionary twins;
+    late Directory twinsTmp;
+
+    setUpAll(() async {
+      // 25 entries with "dostat" (get) before the one with "dostát" (comply)
+      twinsTmp = await Directory.systemTemp.createTemp('easydict_twins');
+      final source = File('${twinsTmp.path}/en-cs.txt');
+      source.writeAsStringSync(
+        [
+          for (var i = 0; i < 25; i++) 'get $i\tdostat $i\tv:\t\t',
+          'comply\tdostát\tv:\t\t',
+        ].join('\n'),
+      );
+      final db = '${twinsTmp.path}/twins.sqlite';
+      final build = await Process.run('python3', [
+        '../data/tools/build_db.py',
+        db,
+        '--en-cs',
+        source.path,
+        '--hunspell-dir',
+        'test/fixtures/hunspell',
+        '--wiktionary',
+        'test/fixtures/forms.tsv',
+      ]);
+      expect(build.exitCode, 0, reason: '${build.stdout}${build.stderr}');
+      twins = await SqlDictionary.open(await IsolateSqlReader.open(db));
+    });
+
+    tearDownAll(() async {
+      await twins.close();
+      await twinsTmp.delete(recursive: true);
+    });
+
+    test('a negated word keeps the typed diacritics', () async {
+      final typed = await twins.search(
+        'nedostát',
+        Language.cze,
+        SearchMode.startsWith,
+      );
+      expect(typed.baseForms, ['dostát']);
+      final folded = await twins.search(
+        'nedostat',
+        Language.cze,
+        SearchMode.startsWith,
+      );
+      expect(folded.baseForms, ['dostat']);
+    });
+  });
 }
