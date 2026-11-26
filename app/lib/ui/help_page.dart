@@ -25,49 +25,51 @@ class HelpPage extends StatelessWidget {
     );
     return Scaffold(
       appBar: AppBar(title: Text(l10n.help)),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          section(l10n.speak, l10n.helpSpeech),
-          section(l10n.helpModesTitle, l10n.helpModes),
-          section(l10n.helpFormsTitle, l10n.helpForms),
-          section(
-            l10n.helpTipsTitle,
-            [
-              if (kIsWeb) ...[
-                l10n.helpTips,
-                l10n.helpTipsWeb,
-              ] else ...[
-                '${l10n.helpTips} ${l10n.helpTipsOffline}',
-                if (defaultTargetPlatform == TargetPlatform.android)
-                  l10n.helpTipsAndroid
-                else
-                  l10n.helpTipsDesktop,
-              ],
-            ].join('\n\n'),
-          ),
-          Text(l10n.helpLabelsTitle, style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
-          for (final (label, (cs, en)) in noteExplanations)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 104,
-                    child: Text(
-                      label,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.tertiary,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            section(l10n.speak, l10n.helpSpeech),
+            section(l10n.helpModesTitle, l10n.helpModes),
+            section(l10n.helpFormsTitle, l10n.helpForms),
+            section(
+              l10n.helpTipsTitle,
+              [
+                if (kIsWeb) ...[
+                  l10n.helpTips,
+                  l10n.helpTipsWeb,
+                ] else ...[
+                  '${l10n.helpTips} ${l10n.helpTipsOffline}',
+                  if (defaultTargetPlatform == TargetPlatform.android)
+                    l10n.helpTipsAndroid
+                  else
+                    l10n.helpTipsDesktop,
+                ],
+              ].join('\n\n'),
+            ),
+            Text(l10n.helpLabelsTitle, style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            for (final (label, (cs, en)) in noteExplanations)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 104,
+                      child: Text(
+                        label,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.tertiary,
+                        ),
                       ),
                     ),
-                  ),
-                  Expanded(child: Text(czech ? cs : en)),
-                ],
+                    Expanded(child: Text(czech ? cs : en)),
+                  ],
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

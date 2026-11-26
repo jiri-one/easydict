@@ -6,6 +6,12 @@ import 'api.dart';
 import 'dictionary.dart';
 
 web.HTMLAudioElement? _audio;
+
+void stopSpeech() {
+  _audio?.pause();
+  _audio = null;
+}
+
 Future<void> speak(String text, Language language) async {
   _audio?.pause();
   final audio = web.HTMLAudioElement();
