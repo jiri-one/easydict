@@ -20,7 +20,8 @@ Builds:
     subdir: app
     sudo:
       - apt-get update
-      - apt-get install -y python3
+      - apt-get install -y python3 openjdk-21-jdk-headless
+      - update-alternatives --auto java
     output: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
     srclibs:
       - flutter@3.50.1
@@ -49,7 +50,8 @@ Builds:
     subdir: app
     sudo:
       - apt-get update
-      - apt-get install -y python3
+      - apt-get install -y python3 openjdk-21-jdk-headless
+      - update-alternatives --auto java
     output: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
     srclibs:
       - flutter@3.50.1
@@ -78,7 +80,8 @@ Builds:
     subdir: app
     sudo:
       - apt-get update
-      - apt-get install -y python3
+      - apt-get install -y python3 openjdk-21-jdk-headless
+      - update-alternatives --auto java
     output: build/app/outputs/flutter-apk/app-x86_64-release.apk
     srclibs:
       - flutter@3.50.1
