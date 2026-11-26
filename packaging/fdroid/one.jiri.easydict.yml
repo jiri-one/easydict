@@ -15,35 +15,6 @@ Repo: https://github.com/jiri-one/easydict.git
 
 Builds:
   - versionName: 1.0.0
-    versionCode: 2001
-    commit: v1.0.0
-    subdir: app
-    sudo:
-      - apt-get update
-      - apt-get install -y python3
-    output: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-    srclibs:
-      - flutter@3.50.1
-    rm:
-      - app/linux
-      - app/macos
-      - app/windows
-      - web
-    prebuild:
-      - sdkmanager 'cmake;3.22.1'
-      - export PUB_CACHE=$(pwd)/.pub-cache
-      - $$flutter$$/bin/flutter config --no-analytics
-      - $$flutter$$/bin/flutter pub get --enforce-lockfile
-      - sed -i -e '/signingConfig = /d' android/app/build.gradle.kts
-    scandelete:
-      - app/.pub-cache
-    build:
-      - export PUB_CACHE=$(pwd)/.pub-cache
-      - ./tool/build_dictionary.sh
-      - $$flutter$$/bin/flutter build apk --release --split-per-abi --target-platform=android-arm64
-    ndk: r28c
-
-  - versionName: 1.0.0
     versionCode: 1001
     commit: v1.0.0
     subdir: app
@@ -70,6 +41,35 @@ Builds:
       - export PUB_CACHE=$(pwd)/.pub-cache
       - ./tool/build_dictionary.sh
       - $$flutter$$/bin/flutter build apk --release --split-per-abi --target-platform=android-arm
+    ndk: r28c
+
+  - versionName: 1.0.0
+    versionCode: 2001
+    commit: v1.0.0
+    subdir: app
+    sudo:
+      - apt-get update
+      - apt-get install -y python3
+    output: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+    srclibs:
+      - flutter@3.50.1
+    rm:
+      - app/linux
+      - app/macos
+      - app/windows
+      - web
+    prebuild:
+      - sdkmanager 'cmake;3.22.1'
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+      - sed -i -e '/signingConfig = /d' android/app/build.gradle.kts
+    scandelete:
+      - app/.pub-cache
+    build:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - ./tool/build_dictionary.sh
+      - $$flutter$$/bin/flutter build apk --release --split-per-abi --target-platform=android-arm64
     ndk: r28c
 
   - versionName: 1.0.0

@@ -10,7 +10,7 @@
 All paths are relative to the root of the repository.
 
 1. Raise the version in `app/pubspec.yaml` (`1.0.1+2`: the number after `+` must grow) and `app/lib/version.dart`.
-2. Add the release with its date to `packaging/linux/one.jiri.easydict.metainfo.xml` and a changelog `app/fastlane/metadata/android/{en-US,cs-CZ}/changelogs/<number after +>.txt`.
+2. Add the release with its date to `packaging/linux/one.jiri.easydict.metainfo.xml` and the same changelog as `app/fastlane/metadata/android/{en-US,cs-CZ}/changelogs/<code>.txt` for each code of F-Droid's per-ABI APKs: 1000, 2000 and 4000 plus the number after `+` (`1002.txt`, `2002.txt`, `4002.txt`).
 3. Commit, tag and push: `git tag v1.0.1 && git push origin main v1.0.1`. The `Release` workflow builds Linux, Windows, macOS and Android and publishes a GitHub release.
 4. Flathub: in `packaging/flatpak/flatpak-flutter.yml`, point the app source to the new tag (`tag: v1.0.1` instead of `branch`), then generate the offline manifest and check it:
 
