@@ -37,13 +37,21 @@ final _speech = _library
       )
     >('ed_speech');
 
+var _spoken = false;
+
 Future<void> speak(String text, Language language) async {
+  _spoken = true;
   final request = _replace();
   final path = await _assetPath();
   final result = await Isolate.run(
     () => _synthesize(path, language.name, text, request),
   );
   if (result < 0) throw StateError('Speech failed');
+}
+
+void stopSpeech() {
+  // Without speaking first, there is no need to load the library.
+  if (_spoken) _replace();
 }
 
 int _synthesize(String path, String language, String text, int request) =>
@@ -101,11 +109,13 @@ Future<String> _extractAssets() async {
   } finally {
     if (await partial.exists()) await partial.delete(recursive: true);
   }
-  // An update leaves the old voices behind, a killed app an unfinished copy.
+  // Older voices and their unfinished copies. An unfinished copy of this
+  // version may still be written by a second engine (text selected in another
+  // app).
   await for (final entry in Directory(base).list()) {
     if (entry is Directory &&
         entry.path.startsWith('$base/easydict-speech-') &&
-        entry.path != target.path) {
+        !entry.path.startsWith(target.path)) {
       await entry.delete(recursive: true);
     }
   }

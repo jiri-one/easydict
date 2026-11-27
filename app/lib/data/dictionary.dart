@@ -445,7 +445,7 @@ class SqlDictionary implements Dictionary {
   Future<List<String>?> _baseFormsMatching(String key, String? exact) async {
     final lemmas = _lemmasOf(await _formRows(key), exact);
     if (lemmas.isNotEmpty) return lemmas;
-    final word = await _czechWord(key);
+    final word = await _czechWord(key, exact);
     if (word != null && (exact == null || word == exact)) return null;
     // negated and superlative forms are not stored
     for (final prefix in _negationPrefixes) {
@@ -459,7 +459,7 @@ class SqlDictionary implements Dictionary {
       final restExact = exact?.substring(prefix.length);
       final restLemmas = _lemmasOf(await _formRows(restKey), restExact);
       if (restLemmas.isNotEmpty) return restLemmas;
-      final restWord = await _czechWord(restKey);
+      final restWord = await _czechWord(restKey, restExact);
       if (restWord != null && (restExact == null || restWord == restExact)) {
         return [restWord];
       }
@@ -481,7 +481,21 @@ class SqlDictionary implements Dictionary {
       if (exact == null || form == exact) lemma,
   }.toList();
 
-  Future<String?> _czechWord(String key) async {
+  Future<String?> _czechWord(String key, String? exact) async {
+    if (exact != null) {
+      // Twins such as "dostat" and "dostát" fold alike, and the first entries
+      // may all hold the other one.
+      final rows = await _db.select(
+        'SELECT e.cze FROM words w JOIN entries e ON e.id = w.entry_id '
+        'WHERE w.lang = 1 AND w.word = ? AND instr(e.cze, ?) > 0 LIMIT 20',
+        [key, exact],
+      );
+      for (final row in rows) {
+        if (words((row['cze']! as String).toLowerCase()).contains(exact)) {
+          return exact;
+        }
+      }
+    }
     final rows = await _db.select(
       'SELECT e.cze FROM words w JOIN entries e ON e.id = w.entry_id '
       'WHERE w.lang = 1 AND w.word = ? LIMIT 20',

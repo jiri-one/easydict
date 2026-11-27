@@ -1,11 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import '../data/dictionary.dart';
 import '../data/failover_dictionary.dart';
+import '../data/speech.dart';
 import '../l10n/app_localizations.dart';
 import '../search_controller.dart';
 import '../settings.dart';
@@ -64,11 +65,17 @@ class _HomePageState extends State<HomePage> {
     if (dictionary is FailoverDictionary) {
       dictionary.onServerBack = _search.retry;
     }
-    _lifecycle = AppLifecycleListener(onResume: _lookUpClipboard);
+    _lifecycle = AppLifecycleListener(
+      onResume: _lookUpClipboard,
+      onHide: stopSpeech,
+    );
     if (widget.initialQuery.isNotEmpty) _lookUpText(widget.initialQuery);
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       _selectedText.setMethodCallHandler((call) async {
-        if (call.method == 'text') _lookUpText(call.arguments as String);
+        if (call.method != 'text' || !mounted) return;
+        // Text selected in the About page would be looked up behind it.
+        Navigator.of(context).popUntil((route) => route.isFirst);
+        _lookUpText(call.arguments as String);
       });
       _selectedText.invokeMethod<String>('initialText').then((text) {
         if (text != null && mounted) _lookUpText(text);
@@ -153,12 +160,22 @@ class _HomePageState extends State<HomePage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(l10n.appTitle),
-              Text(l10n.appSubtitle, style: theme.textTheme.bodyMedium),
-            ],
+          // The bar does not grow with the text, and two lines of large text
+          // would be cut off.
+          title: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: kToolbarHeight),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l10n.appTitle),
+                  Text(l10n.appSubtitle, style: theme.textTheme.bodyMedium),
+                ],
+              ),
+            ),
           ),
           actions: [
             PopupMenuButton<VoidCallback>(

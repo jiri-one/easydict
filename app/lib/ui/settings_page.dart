@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../data/dictionary.dart';
 import '../l10n/app_localizations.dart';
@@ -20,57 +20,59 @@ class SettingsPage extends StatelessWidget {
             defaultTargetPlatform == TargetPlatform.macOS);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settings)),
-      body: ListenableBuilder(
-        listenable: settings,
-        builder: (context, _) => ListView(
-          children: [
-            _Section(l10n.settingsSearch),
-            _Choice<Language>(
-              title: l10n.defaultLanguage,
-              value: settings.language,
-              options: {Language.eng: l10n.english, Language.cze: l10n.czech},
-              onChanged: (value) => settings.language = value,
-            ),
-            _Choice<SearchMode>(
-              title: l10n.defaultMode,
-              value: settings.mode,
-              options: {
-                SearchMode.startsWith: l10n.modeStartsWith,
-                SearchMode.wholeWord: l10n.modeWholeWord,
-                SearchMode.fulltext: l10n.modeFulltext,
-              },
-              onChanged: (value) => settings.mode = value,
-            ),
-            if (desktop)
-              SwitchListTile(
-                title: Text(l10n.clipboardLookup),
-                subtitle: Text(l10n.clipboardLookupHint),
-                value: settings.clipboardLookup,
-                onChanged: (value) => settings.clipboardLookup = value,
+      body: SafeArea(
+        child: ListenableBuilder(
+          listenable: settings,
+          builder: (context, _) => ListView(
+            children: [
+              _Section(l10n.settingsSearch),
+              _Choice<Language>(
+                title: l10n.defaultLanguage,
+                value: settings.language,
+                options: {Language.eng: l10n.english, Language.cze: l10n.czech},
+                onChanged: (value) => settings.language = value,
               ),
-            _Section(l10n.settingsAppearance),
-            _Choice<ThemeMode>(
-              title: l10n.theme,
-              value: settings.themeMode,
-              options: {
-                ThemeMode.system: l10n.themeSystem,
-                ThemeMode.light: l10n.themeLight,
-                ThemeMode.dark: l10n.themeDark,
-              },
-              onChanged: (value) => settings.themeMode = value,
-            ),
-            _Choice<String>(
-              title: l10n.appLanguage,
-              value: settings.locale?.languageCode ?? '',
-              options: {
-                '': l10n.systemLanguage,
-                'cs': 'Čeština',
-                'en': 'English',
-              },
-              onChanged: (value) =>
-                  settings.locale = value.isEmpty ? null : Locale(value),
-            ),
-          ],
+              _Choice<SearchMode>(
+                title: l10n.defaultMode,
+                value: settings.mode,
+                options: {
+                  SearchMode.startsWith: l10n.modeStartsWith,
+                  SearchMode.wholeWord: l10n.modeWholeWord,
+                  SearchMode.fulltext: l10n.modeFulltext,
+                },
+                onChanged: (value) => settings.mode = value,
+              ),
+              if (desktop)
+                SwitchListTile(
+                  title: Text(l10n.clipboardLookup),
+                  subtitle: Text(l10n.clipboardLookupHint),
+                  value: settings.clipboardLookup,
+                  onChanged: (value) => settings.clipboardLookup = value,
+                ),
+              _Section(l10n.settingsAppearance),
+              _Choice<ThemeMode>(
+                title: l10n.theme,
+                value: settings.themeMode,
+                options: {
+                  ThemeMode.system: l10n.themeSystem,
+                  ThemeMode.light: l10n.themeLight,
+                  ThemeMode.dark: l10n.themeDark,
+                },
+                onChanged: (value) => settings.themeMode = value,
+              ),
+              _Choice<String>(
+                title: l10n.appLanguage,
+                value: settings.locale?.languageCode ?? '',
+                options: {
+                  '': l10n.systemLanguage,
+                  'cs': 'Čeština',
+                  'en': 'English',
+                },
+                onChanged: (value) =>
+                    settings.locale = value.isEmpty ? null : Locale(value),
+              ),
+            ],
+          ),
         ),
       ),
     );

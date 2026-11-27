@@ -3,9 +3,9 @@ import 'package:easydict/data/dictionary.dart';
 import 'package:easydict/l10n/app_localizations.dart';
 import 'package:easydict/ui/results_view.dart';
 import 'package:easydict/ui/speech_button.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'contrast.dart';
 
@@ -42,7 +42,7 @@ Widget app({
 }) => MaterialApp(
   locale: Locale(locale),
   theme: appTheme(brightness),
-  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  localizationsDelegates: appLocalizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
   home: Scaffold(
     body: MediaQuery(

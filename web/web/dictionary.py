@@ -326,7 +326,7 @@ class Dictionary:
         lemmas = self._lemmas_of(self._form_rows(key), exact)
         if lemmas:
             return lemmas
-        word = self._czech_word(key)
+        word = self._czech_word(key, exact)
         if word is not None and (exact is None or word == exact):
             return None
         # negated and superlative forms are not stored
@@ -343,7 +343,7 @@ class Dictionary:
             rest_lemmas = self._lemmas_of(self._form_rows(rest_key), rest_exact)
             if rest_lemmas:
                 return rest_lemmas
-            rest_word = self._czech_word(rest_key)
+            rest_word = self._czech_word(rest_key, rest_exact)
             if rest_word is not None and (rest_exact is None or rest_word == rest_exact):
                 return [rest_word]
         return []
@@ -360,7 +360,18 @@ class Dictionary:
     def _lemmas_of(rows: list[tuple[str, str]], exact: str | None) -> list[str]:
         return list(dict.fromkeys(lemma for form, lemma in rows if exact is None or form == exact))
 
-    def _czech_word(self, key: str) -> str | None:
+    def _czech_word(self, key: str, exact: str | None) -> str | None:
+        if exact is not None:
+            # Twins such as "dostat" and "dostát" fold alike, and the first entries may all
+            # hold the other one.
+            rows = self._select(
+                "SELECT r.cze FROM web_word w JOIN web_record r ON r.id = w.record_id "
+                "WHERE w.lang = %s AND w.word = %s AND strpos(r.cze, %s) > 0 "
+                "ORDER BY w.record_id LIMIT 20",
+                [CZE, key, exact],
+            )
+            if any(exact in words(cze.lower()) for (cze,) in rows):
+                return exact
         # ordered like the app's SQLite returns them (by its primary key)
         rows = self._select(
             "SELECT r.cze FROM web_word w JOIN web_record r ON r.id = w.record_id "

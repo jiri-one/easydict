@@ -134,3 +134,15 @@ class ManyMatchesTests(DictionaryTestCase):
         result = self.dictionary.search("car", "eng", "fulltext")
         self.assertIn("carving", headwords(result))
         self.assertTrue(result.truncated)
+
+
+class DiacriticTwinTests(DictionaryTestCase):
+    # 25 entries with "dostat" (get) before the one with "dostát" (comply)
+    en_cs_lines = [*(f"get {i}\tdostat {i}\tv:\t\t" for i in range(25)), "comply\tdostát\tv:\t\t"]
+
+    def setUp(self):
+        self.dictionary = Dictionary.load()
+
+    def test_a_negated_word_keeps_the_typed_diacritics(self):
+        self.assertEqual(self.dictionary.search("nedostát", "cze", "startsWith").base_forms, ["dostát"])
+        self.assertEqual(self.dictionary.search("nedostat", "cze", "startsWith").base_forms, ["dostat"])

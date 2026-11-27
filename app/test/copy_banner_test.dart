@@ -1,12 +1,13 @@
 import 'dart:async';
 
+import 'package:easydict/app.dart';
 import 'package:easydict/data/dictionary.dart';
 import 'package:easydict/data/failover_dictionary.dart';
 import 'package:easydict/l10n/app_localizations.dart';
 import 'package:easydict/settings.dart';
 import 'package:easydict/ui/home_page.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_dictionary.dart';
@@ -34,7 +35,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: HomePage(dictionary: dictionary, settings: settings),
       ),
